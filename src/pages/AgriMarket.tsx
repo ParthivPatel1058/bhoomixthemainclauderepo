@@ -17,6 +17,7 @@ import { AGRI_PRODUCTS as products, type Product } from '@/data/agriProducts';
 import { supabase } from '@/integrations/supabase/client';
 import PageHeader from '@/components/layout/PageHeader';
 import { cn } from '@/lib/utils';
+import SpotlightCard from '@/components/SpotlightCard';
 
 // Import product images
 
@@ -278,10 +279,10 @@ const AgriMarket = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product, index) => (
-            <Card
+            <SpotlightCard
               key={product.id}
-              className="glass hover:shadow-2xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:scale-[1.02] animate-fade-in rounded-[2rem] border-2 border-primary/10"
-              style={{ animationDelay: `${index * 0.05}s` }}
+              className="glass animate-fade-in overflow-hidden transition-[box-shadow,border-color] duration-500 hover:shadow-floating"
+              spotlightColor="rgba(31, 122, 90, 0.16)"
             >
               <CardHeader>
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -346,7 +347,7 @@ const AgriMarket = () => {
                   disabled={!product.inStock}
                 />
               </CardContent>
-            </Card>
+            </SpotlightCard>
           ))}
         </div>
 
