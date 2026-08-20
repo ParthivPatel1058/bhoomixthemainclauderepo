@@ -43,7 +43,7 @@ const WeatherWidget = () => {
   }
 
   return (
-    <div className="glass rounded-3xl p-6 hover:shadow-xl transition-all duration-300">
+    <div className="glass rounded-3xl p-6 hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2 mb-1">
           <MapPin className="h-5 w-5 text-primary animate-pulse" />

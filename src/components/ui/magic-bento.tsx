@@ -110,11 +110,11 @@ function BentoCard({
             >
               {item.title}
             </span>
-            <span className="mt-1 block max-h-0 overflow-hidden text-sm leading-relaxed text-white/75 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-24 group-hover:opacity-100">
+            <span className="mt-1 block max-h-0 overflow-hidden text-sm leading-relaxed text-white/75 opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-24 group-hover:opacity-100">
               {item.summary}
             </span>
           </span>
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-all duration-500 group-hover:rotate-45 group-hover:border-white/70 group-hover:bg-white group-hover:text-neutral-900">
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 group-hover:rotate-45 group-hover:border-white/70 group-hover:bg-white group-hover:text-neutral-900">
             <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
           </span>
         </span>

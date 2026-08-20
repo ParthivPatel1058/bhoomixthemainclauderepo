@@ -46,7 +46,7 @@ const GovSchemes = () => {
   };
 
   const Card = ({ s }: { s: Scheme }) => (
-    <article className="glass flex flex-col rounded-2xl p-6 transition-all hover:shadow-xl">
+    <article className="glass flex flex-col rounded-2xl p-6 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:shadow-xl">
       <div className="mb-3 flex flex-wrap gap-2">
         {s.state && (
           <span className="rounded-full bg-secondary/20 px-3 py-1 text-xs font-semibold text-foreground">
@@ -133,7 +133,7 @@ const GovSchemes = () => {
         <div className="scrollbar-hide -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-2">
           <button
             onClick={() => setCategory('all')}
-            className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+            className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
               category === 'all'
                 ? 'bg-primary text-primary-foreground'
                 : 'glass text-foreground hover:bg-primary/10'
@@ -145,7 +145,7 @@ const GovSchemes = () => {
             <button
               key={c}
               onClick={() => setCategory(c)}
-              className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+              className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                 category === c
                   ? 'bg-primary text-primary-foreground'
                   : 'glass text-foreground hover:bg-primary/10'
@@ -166,7 +166,7 @@ const GovSchemes = () => {
             <button
               key={opt.id}
               onClick={() => setState(opt.id)}
-              className={`flex-shrink-0 rounded-full px-4 py-1.5 text-sm transition-all ${
+              className={`flex-shrink-0 rounded-full px-4 py-1.5 text-sm transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                 state === opt.id
                   ? 'bg-secondary font-semibold text-secondary-foreground'
                   : 'glass text-muted-foreground hover:text-foreground'

@@ -74,7 +74,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ open, onOpenChange })
                       navigate(item.path);
                       onOpenChange(false);
                     }}
-                    className="w-full flex items-center gap-3 p-4 rounded-[1.5rem] bg-card/50 border border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 group"
+                    className="w-full flex items-center gap-3 p-4 rounded-[1.5rem] bg-card/50 border border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 group"
                   >
                     <Icon className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
                     <span className="font-medium text-foreground">{item.label}</span>

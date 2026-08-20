@@ -598,7 +598,7 @@ const CropDisease = () => {
                 {filteredPlants.map((plant) => (
                   <div
                     key={plant.id}
-                    className="glass flex flex-col overflow-hidden transition-all duration-200 hover:border-primary/40 hover:shadow-md"
+                    className="glass flex flex-col overflow-hidden transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200 hover:border-primary/40 hover:shadow-md"
                   >
                     <div className="relative aspect-square overflow-hidden bg-muted">
                       <img
@@ -667,7 +667,7 @@ const CropDisease = () => {
                 {DISEASES.map((d) => (
                   <div
                     key={d.name}
-                    className="glass p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-md"
+                    className="glass p-5 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200 hover:border-primary/40 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>

@@ -55,7 +55,7 @@ export default function Surface({
   return (
     <Tag
       className={cn(
-        'rounded-lg transition-all duration-500 ease-[var(--ease-editorial)]',
+        'rounded-lg transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 ease-[var(--ease-editorial)]',
         VARIANT[variant],
         PADDING[padding],
         interactive &&

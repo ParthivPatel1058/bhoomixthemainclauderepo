@@ -161,7 +161,7 @@ const KisanHelp = () => {
               {t('cropDiseaseDetection')}
             </h2>
             
-            <div className="border-2 border-dashed border-primary/30 rounded-2xl p-12 text-center mb-6 hover:border-primary/60 transition-all cursor-pointer">
+            <div className="border-2 border-dashed border-primary/30 rounded-2xl p-12 text-center mb-6 hover:border-primary/60 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] cursor-pointer">
               <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
               <label htmlFor="image-upload" className="cursor-pointer">
                 {selectedImage ? <img src={selectedImage} alt="Uploaded crop" className="max-h-64 mx-auto rounded-lg" /> : <div>

@@ -182,7 +182,7 @@ const ShopLocator = () => {
             {shops.map((shop, index) => (
               <Card 
                 key={shop.id} 
-                className="glass hover:shadow-2xl transition-all hover:scale-[1.02] animate-fade-in"
+                className="glass hover:shadow-2xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:scale-[1.02] animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <CardHeader>

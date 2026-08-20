@@ -39,7 +39,7 @@ const Support = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Information */}
             <div className="space-y-6">
-              <Card className="glass hover:shadow-xl transition-all">
+              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Phone className="h-5 w-5 text-primary" />
@@ -62,7 +62,7 @@ const Support = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass hover:shadow-xl transition-all">
+              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Mail className="h-5 w-5 text-primary" />
@@ -82,7 +82,7 @@ const Support = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass hover:shadow-xl transition-all">
+              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-primary" />
@@ -108,7 +108,7 @@ const Support = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass btn-metal hover:shadow-xl transition-all">
+              <Card className="glass btn-metal hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
                     <MessageCircle className="h-5 w-5" />
@@ -133,7 +133,7 @@ const Support = () => {
 
             {/* Contact Form */}
             <div>
-              <Card className="glass hover:shadow-xl transition-all">
+              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <HelpCircle className="h-5 w-5 text-primary" />
@@ -210,7 +210,7 @@ const Support = () => {
               </Card>
 
               {/* FAQ Quick Links */}
-              <Card className="glass mt-6 hover:shadow-xl transition-all">
+              <Card className="glass mt-6 hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <CardHeader>
                   <CardTitle className="text-lg">
                     {tx('Quick Help', 'त्वरित सहायता')}

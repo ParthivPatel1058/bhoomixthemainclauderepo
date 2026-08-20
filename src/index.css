@@ -1473,6 +1473,34 @@ All colors MUST be HSL.
     text-wrap: balance;
   }
 
+  /* Focus ring of last resort. The shadcn primitives all pair their
+     `outline-none` with a `focus-visible:ring`, but the app also has plenty of
+     hand-rolled buttons and links that inherit whatever the UA gives them.
+     :focus-visible rather than :focus, so a mouse click does not leave a ring
+     behind on something the pointer already indicated. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+  }
+
+  /* Per-effect reduced-motion rules exist further up for the hero, the metal
+     buttons, the shiny text and the bento cards. This is the catch-all for
+     everything nobody remembered to opt out — including anything added later.
+     Motion is reduced to near-zero rather than removed outright: `animation:
+     none` can leave an element stuck at its from-state if the end state is
+     what the layout expects. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   ::selection {
     background: hsl(var(--primary) / 0.25);
   }

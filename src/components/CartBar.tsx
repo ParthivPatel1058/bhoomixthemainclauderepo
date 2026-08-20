@@ -17,7 +17,7 @@ export default function CartBar() {
   return (
     <>
       <div
-        className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-4 transition-all duration-500 ${
+        className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-4 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 ${
           totalItems > 0 ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0'
         }`}
       >

@@ -134,7 +134,7 @@ const PartnerRegistration = () => {
           {features.map((feature) => (
             <div 
               key={feature.label}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-300 animate-fade-in border border-border/50" 
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card/50 backdrop-blur-sm hover:bg-card transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 animate-fade-in border border-border/50" 
               style={{ animationDelay: feature.delay }}
             >
               <div className="p-3 rounded-full bg-primary/10 hover:scale-110 transition-transform duration-300">

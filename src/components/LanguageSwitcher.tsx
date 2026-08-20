@@ -19,7 +19,7 @@ const LanguageSwitcher = () => {
           variant="outline"
           size="sm"
           aria-label="Change language"
-          className="glass border-primary/20 transition-all hover:border-primary/40"
+          className="glass border-primary/20 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:border-primary/40"
         >
           <Languages className="mr-2 h-4 w-4" />
           {/* Endonyms can be long; the code keeps the header compact. */}

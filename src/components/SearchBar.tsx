@@ -18,7 +18,7 @@ const SearchBar = () => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="group relative w-full max-w-2xl glass p-2 !rounded-full transition-all duration-500 hover:shadow-elevated focus-within:shadow-glow-primary focus-within:border-primary/50">
+    <form onSubmit={handleSearch} className="group relative w-full max-w-2xl glass p-2 !rounded-full transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 hover:shadow-elevated focus-within:shadow-glow-primary focus-within:border-primary/50">
       <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors duration-300 group-focus-within:text-primary" />
       <Input
         type="text"

@@ -210,7 +210,7 @@ const PartnerOrders = () => {
         ) : (
           <div className="grid gap-6">
             {orders.map((order) => (
-              <Card key={order.id} className="p-6 glass hover:shadow-lg transition-all">
+              <Card key={order.id} className="p-6 glass hover:shadow-lg transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                 <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">

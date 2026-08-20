@@ -423,7 +423,7 @@ export default function Login() {
                 key={m}
                 type="button"
                 onClick={() => setMethod(m)}
-                className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
+                className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                   method === m
                     ? "bg-white text-stone-800 shadow-[0_4px_10px_-3px_rgba(60,60,50,0.28),inset_0_1px_0_rgba(255,255,255,0.95)]"
                     : "text-stone-500 hover:text-stone-700"

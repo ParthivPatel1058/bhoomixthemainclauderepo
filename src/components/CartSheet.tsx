@@ -193,7 +193,7 @@ const CartSheet = ({ open, onOpenChange, cartItems, onUpdateQuantity, onRemoveIt
               </div>
 
               <Button 
-                className="w-full h-14 text-lg font-bold gradient-primary hover:opacity-90 transition-all"
+                className="w-full h-14 text-lg font-bold gradient-primary hover:opacity-90 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]"
                 onClick={handlePlaceOrder}
                 disabled={isPlacingOrder}
               >

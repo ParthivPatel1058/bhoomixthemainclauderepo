@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/WobloIcon';
 
 const CTRL_BTN =
-  'flex items-center justify-center rounded-full border transition-all duration-300 ' +
+  'flex items-center justify-center rounded-full border transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 ' +
   'border-black/[0.08] bg-black/[0.03] text-neutral-700 hover:bg-black/[0.07] hover:text-neutral-950 ' +
   'dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.15] dark:hover:text-white ' +
   'active:scale-95 shadow-sm';
@@ -93,7 +93,7 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="sticky top-3 z-50 mx-3 lg:mx-5 xl:mx-6 transition-all duration-300">
+    <nav className="sticky top-3 z-50 mx-3 lg:mx-5 xl:mx-6 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
       <div
         className="relative flex h-[68px] items-center justify-between gap-3 overflow-hidden rounded-full border px-3 sm:px-4 backdrop-blur-2xl
                    border-black/[0.07] bg-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.9)]
@@ -112,7 +112,7 @@ const Navigation = () => {
             to="/"
             className="group flex flex-shrink-0 items-center gap-2.5 transition-transform duration-300 hover:scale-[1.02]"
           >
-            <div className="relative overflow-hidden rounded-full ring-2 ring-black/5 dark:ring-white/10 transition-all group-hover:ring-primary/40">
+            <div className="relative overflow-hidden rounded-full ring-2 ring-black/5 dark:ring-white/10 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] group-hover:ring-primary/40">
               <img
                 src={logo}
                 alt="BhoomiX"
@@ -151,7 +151,7 @@ const Navigation = () => {
           <Link
             to="/addresses"
             title={deliverTo ?? undefined}
-            className="hidden items-center gap-2 rounded-full border py-1.5 pl-3 pr-3.5 transition-all md:flex
+            className="hidden items-center gap-2 rounded-full border py-1.5 pl-3 pr-3.5 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] md:flex
                        border-black/[0.07] bg-black/[0.035] hover:bg-black/[0.06] hover:border-primary/30
                        dark:border-white/[0.12] dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:hover:border-primary/40
                        min-w-0 max-w-[210px] lg:max-w-[240px]"
@@ -175,7 +175,7 @@ const Navigation = () => {
         <div className="flex flex-1 items-center justify-center px-1 sm:px-3">
           <form
             onSubmit={handleSearch}
-            className="group relative w-full max-w-xs transition-all duration-300 focus-within:max-w-md lg:max-w-md lg:focus-within:max-w-lg"
+            className="group relative w-full max-w-xs transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 focus-within:max-w-md lg:max-w-md lg:focus-within:max-w-lg"
           >
             <Search
               strokeWidth={2}
@@ -186,7 +186,7 @@ const Navigation = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tx('Search crops, products, advisory…', 'फसल, उत्पाद, सलाह खोजें…')}
-              className="h-10 w-full rounded-full border pl-10 pr-14 text-xs font-medium outline-none transition-all duration-300
+              className="h-10 w-full rounded-full border pl-10 pr-14 text-xs font-medium outline-none transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300
                          border-black/[0.07] bg-black/[0.035] text-neutral-900 placeholder:text-neutral-400
                          focus:border-primary/50 focus:bg-white focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]
                          dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white dark:placeholder:text-white/45
@@ -305,7 +305,7 @@ const Navigation = () => {
                       key={item.path}
                       to={item.path}
                       onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-3 rounded-2xl p-3.5 transition-all duration-300 ${
+                      className={`flex items-center gap-3 rounded-2xl p-3.5 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 ${
                         active
                           ? 'bg-primary/10 font-bold text-primary shadow-sm'
                           : 'text-muted-foreground hover:bg-foreground/[0.06] hover:text-foreground'

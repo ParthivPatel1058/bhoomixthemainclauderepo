@@ -119,7 +119,7 @@ export default function QuantityStepper({
         onClick={onAdd}
         disabled={busy}
         className={cn(
-          'flex h-11 items-center justify-center gap-2 rounded-xl border-2 text-sm font-bold uppercase tracking-wide transition-all duration-300',
+          'flex h-11 items-center justify-center gap-2 rounded-xl border-2 text-sm font-bold uppercase tracking-wide transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300',
           'border-[hsl(var(--aqua))] text-[hsl(var(--aqua-deep))] hover:bg-[hsl(var(--aqua)/0.12)] active:scale-[0.98]',
           'disabled:opacity-60',
           className,

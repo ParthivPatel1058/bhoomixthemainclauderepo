@@ -250,7 +250,7 @@ const AgriMarket = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`glass rounded-[2rem] p-6 hover:scale-105 transition-all ${
+                className={`glass rounded-[2rem] p-6 hover:scale-105 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                   isActive ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
                 }`}
               >
@@ -270,7 +270,7 @@ const AgriMarket = () => {
           {filteredProducts.map((product, index) => (
             <Card
               key={product.id}
-              className="glass hover:shadow-2xl transition-all hover:scale-[1.02] animate-fade-in rounded-[2rem] border-2 border-primary/10"
+              className="glass hover:shadow-2xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:scale-[1.02] animate-fade-in rounded-[2rem] border-2 border-primary/10"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <CardHeader>
@@ -353,7 +353,7 @@ const AgriMarket = () => {
       {totalItems > 0 && (
         <button
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-6 right-6 z-40 glass-strong rounded-[2rem] p-4 shadow-2xl hover:scale-110 transition-all animate-scale-in"
+          className="fixed bottom-6 right-6 z-40 glass-strong rounded-[2rem] p-4 shadow-2xl hover:scale-110 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] animate-scale-in"
         >
           <div className="relative">
             <ShoppingBag className="h-6 w-6 text-primary" />

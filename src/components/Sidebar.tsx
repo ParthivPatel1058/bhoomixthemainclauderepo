@@ -164,7 +164,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     );
 
     const rowClass = cn(
-      "bhoomix-sidebar-row group/row relative flex items-center transition-all duration-200",
+      "bhoomix-sidebar-row group/row relative flex items-center transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200",
       collapsed ? "h-11 w-11 justify-center" : "h-11 gap-3 px-3",
       nested && !collapsed && "h-10 pl-3",
       active
@@ -173,7 +173,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     );
 
     const flyout = collapsed && (
-      <span className="bhoomix-sidebar-flyout pointer-events-none absolute left-[calc(100%+14px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap px-3 py-2 text-xs font-semibold opacity-0 transition-all duration-200 group-hover/row:opacity-100">
+      <span className="bhoomix-sidebar-flyout pointer-events-none absolute left-[calc(100%+14px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap px-3 py-2 text-xs font-semibold opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200 group-hover/row:opacity-100">
         {tx(item.label.en, item.label.hi)}
       </span>
     );
@@ -210,7 +210,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <button
         onClick={onToggle}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="bhoomix-sidebar-toggle absolute -right-3.5 top-[72px] z-50 flex h-8 w-8 items-center justify-center border transition-all"
+        className="bhoomix-sidebar-toggle absolute -right-3.5 top-[72px] z-50 flex h-8 w-8 items-center justify-center border transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]"
       >
         {collapsed ? (
           <ChevronsRight strokeWidth={2.5} className="h-3.5 w-3.5" />
@@ -265,7 +265,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                           key={child.path}
                           to={child.path}
                           className={cn(
-                            "bhoomix-sidebar-row flex h-9 items-center gap-2.5 px-3 text-sm transition-all duration-200",
+                            "bhoomix-sidebar-row flex h-9 items-center gap-2.5 px-3 text-sm transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200",
                             childActive
                               ? "bhoomix-sidebar-row-active font-medium"
                               : "bhoomix-sidebar-row-idle",
@@ -316,7 +316,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               onClick={signOut}
               title={tx("Sign Out", "साइन आउट")}
               aria-label="Sign out"
-              className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-9 w-9 items-center justify-center transition-all"
+              className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-9 w-9 items-center justify-center transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]"
             >
               <LogOut strokeWidth={1.75} className="h-4 w-4" />
             </button>
@@ -326,7 +326,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             onClick={signOut}
             title={tx("Sign Out", "साइन आउट")}
             aria-label="Sign out"
-            className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-11 w-11 items-center justify-center transition-all"
+            className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-11 w-11 items-center justify-center transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]"
           >
             <LogOut strokeWidth={1.75} className="h-[18px] w-[18px]" />
           </button>

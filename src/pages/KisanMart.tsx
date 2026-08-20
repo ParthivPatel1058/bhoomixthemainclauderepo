@@ -104,7 +104,7 @@ const KisanMart = () => {
             </div>
             <button 
               onClick={() => setIsCartOpen(true)}
-              className="relative glass rounded-2xl px-4 py-3 flex items-center gap-2 hover:bg-primary/10 transition-all"
+              className="relative glass rounded-2xl px-4 py-3 flex items-center gap-2 hover:bg-primary/10 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]"
             >
               <ShoppingCart className="h-5 w-5 text-primary" />
               <span className="font-bold text-foreground">{getCartCount()}</span>
@@ -132,7 +132,7 @@ const KisanMart = () => {
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             <button
               onClick={() => setSelectedCategory('All')}
-              className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold transition-all ${
+              className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                 selectedCategory === 'All'
                   ? 'bg-primary text-primary-foreground'
                   : 'glass text-foreground hover:bg-primary/10'
@@ -144,7 +144,7 @@ const KisanMart = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.name)}
-                className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold transition-all flex items-center gap-2 ${
+                className={`flex-shrink-0 px-6 py-2 rounded-full font-semibold transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] flex items-center gap-2 ${
                   selectedCategory === category.name
                     ? 'bg-primary text-primary-foreground'
                     : 'glass text-foreground hover:bg-primary/10'

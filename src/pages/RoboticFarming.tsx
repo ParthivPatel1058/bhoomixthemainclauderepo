@@ -310,7 +310,7 @@ const RoboticFarming = () => {
 
         {/* General Information */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {robots.map((robot, idx) => <div key={idx} className="glass rounded-2xl p-6 hover:shadow-xl transition-all">
+          {robots.map((robot, idx) => <div key={idx} className="glass rounded-2xl p-6 hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 rounded-xl bg-primary/10">
                   <Bot className="h-6 w-6 text-primary" />
@@ -338,7 +338,7 @@ const RoboticFarming = () => {
                   {tx(stateData.state, stateData.state)}
                 </h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {stateData.robots.map((robot, robotIdx) => <div key={robotIdx} className="glass rounded-2xl p-6 hover:shadow-xl transition-all">
+                  {stateData.robots.map((robot, robotIdx) => <div key={robotIdx} className="glass rounded-2xl p-6 hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
                       <h4 className="text-xl font-bold text-foreground mb-3">{robot.name}</h4>
                       <div className="space-y-2 mb-4">
                         <p className="text-sm text-muted-foreground">

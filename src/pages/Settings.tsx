@@ -72,7 +72,7 @@ const Settings = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                         activeTab === tab.id
                           ? 'accent-grad accent-ink shadow-lg'
                           : 'hover:bg-accent/50 text-foreground'
@@ -105,7 +105,7 @@ const Settings = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         onClick={() => setTheme('light')}
-                        className={`glass rounded-2xl p-6 border-2 transition-all ${
+                        className={`glass rounded-2xl p-6 border-2 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                           theme === 'light'
                             ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
                             : 'border-border hover:border-primary/50'
@@ -116,7 +116,7 @@ const Settings = () => {
                       </button>
                       <button
                         onClick={() => setTheme('dark')}
-                        className={`glass rounded-2xl p-6 border-2 transition-all ${
+                        className={`glass rounded-2xl p-6 border-2 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
                           theme === 'dark'
                             ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20'
                             : 'border-border hover:border-primary/50'
@@ -138,7 +138,7 @@ const Settings = () => {
                     </Label>
                     <LanguagePicker
                       trigger={
-                        <button className="glass flex w-full items-center justify-between gap-4 rounded-2xl border-2 border-primary/40 p-6 text-left transition-all hover:border-primary">
+                        <button className="glass flex w-full items-center justify-between gap-4 rounded-2xl border-2 border-primary/40 p-6 text-left transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] hover:border-primary">
                           <span>
                             <span className="mb-1 block text-2xl font-bold text-primary">
                               {LANGUAGE_MAP[language]?.native ?? language}

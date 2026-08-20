@@ -39,7 +39,7 @@ export default function FeatureRing({ items, en }: FeatureRingProps) {
     <div className="relative mx-auto aspect-square w-full max-w-[300px] sm:max-w-[440px] lg:max-w-[560px]">
       {/* Centre caption */}
       <div className="absolute inset-0 flex items-center justify-center text-center px-8 pointer-events-none">
-        <div className="transition-all duration-300">
+        <div className="transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
           <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
             {centreTitle}
           </h2>

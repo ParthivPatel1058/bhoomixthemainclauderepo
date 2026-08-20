@@ -47,7 +47,7 @@ const InteractiveHoverButton = React.forwardRef<
       />
 
       {/* Resting label */}
-      <span className="relative z-10 flex items-center justify-center gap-2 transition-all duration-300 group-hover:translate-x-8 group-hover:opacity-0">
+      <span className="relative z-10 flex items-center justify-center gap-2 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 group-hover:translate-x-8 group-hover:opacity-0">
         {icon}
         {text}
       </span>
@@ -55,7 +55,7 @@ const InteractiveHoverButton = React.forwardRef<
       {/* Hover label */}
       <span
         className={cn(
-          "absolute inset-0 z-10 flex -translate-x-8 items-center justify-center gap-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100",
+          "absolute inset-0 z-10 flex -translate-x-8 items-center justify-center gap-2 opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 group-hover:translate-x-0 group-hover:opacity-100",
           solid ? "text-white" : "text-neutral-900",
         )}
       >

@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Active state is a frosted pill with an aqua rim and soft glow rather
       // than a filled block, so it sits on the glass surfaces without shouting.
-      "relative inline-flex items-center justify-center whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold ring-offset-background transition-all duration-500 " +
+      "relative inline-flex items-center justify-center whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold ring-offset-background transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 " +
         "text-muted-foreground hover:text-foreground " +
         "data-[state=active]:text-foreground " +
         "data-[state=active]:bg-[hsl(var(--aqua)/0.14)] " +
