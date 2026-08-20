@@ -203,14 +203,14 @@ export default function MandiPrices() {
 
                       <div className="mb-3 flex items-baseline gap-1.5">
                         <IndianRupee className="h-5 w-5 text-foreground" />
-                        <span className="text-2xl font-bold text-foreground">{p.modalPrice}</span>
+                        <span data-numeric className="text-2xl font-bold text-foreground">{p.modalPrice}</span>
                         <span className="text-sm text-muted-foreground">
                           {tx('/ quintal', '/ क्विंटल')}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>
+                        <span data-numeric>
                           {tx('Range', 'सीमा')}: ₹{p.minPrice} – ₹{p.maxPrice}
                         </span>
                         {p.arrivalDate && <span>{p.arrivalDate}</span>}

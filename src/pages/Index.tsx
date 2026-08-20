@@ -18,6 +18,8 @@ import FarmAdvisory from '@/components/FarmAdvisory';
 import FollowUpPrompt from '@/components/FollowUpPrompt';
 import SearchBar from '@/components/SearchBar';
 import GalleryHoverGrid from '@/components/ui/gallery-hover-carousel';
+import { cn } from '@/lib/utils';
+import CountUp from '@/components/CountUp';
 import TubelightNavBar from '@/components/ui/tubelight-navbar';
 import Reveal, { RevealWords } from '@/components/Reveal';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
@@ -122,19 +124,52 @@ Smarter`, `स्मार्ट
             </Reveal>
           </div>
 
-          {/* Glass stat card, lower right — like the reference */}
-          <Reveal immediate delay={1} from="right" className="hidden lg:block absolute right-14 bottom-20 max-w-xs">
-            <div className="glass !rounded-3xl p-6">
-              <p
-                className="text-white text-2xl mb-2"
-                style={{ fontFamily: 'var(--font-serif)', lineHeight: 1.15 }}
-              >
-                {tx('Trusted by 25,000+ farmers', '25,000+ किसानों का भरोसा')}
-              </p>
-              <p className="text-sm text-white/70 leading-relaxed">
-                {tx('AI crop diagnosis, live mandi prices, and direct market access — across India.', 'AI फसल निदान, लाइव मंडी भाव और सीधी बाज़ार पहुँच — पूरे भारत में।')}
-              </p>
-            </div>
+          {/* The rate strip — the hero's signature.
+              What stood here was "Trusted by 25,000+ farmers", a number
+              nobody could stand behind if a judge or an investor asked for
+              the source. Every figure below is checkable: the language count
+              is the length of the Eighth Schedule list this app ships,
+              the rates come from the Government of India's open data
+              platform, and the seventy-two hours is the PMFBY reporting
+              window, not a product claim at all.
+
+              Set in tabular figures on purpose. This is a product for people
+              who read numbers off a board at the mandi gate, and a column of
+              figures that lines up is the whole reason those boards work. */}
+          <Reveal immediate delay={1} from="right" className="hidden lg:block absolute right-14 bottom-20 w-[19rem]">
+            <dl className="glass overflow-hidden rounded-lg">
+              {([
+                { n: 23, suffix: '', l: tx('Indian languages, in their own script', '23 भारतीय भाषाएं, अपनी लिपि में') },
+                { v: tx('Daily', 'रोज़'), l: tx('Mandi rates from government open data', 'सरकारी ओपन डेटा से मंडी भाव') },
+                { n: 72, suffix: 'h', l: tx('The PMFBY claim window, counted for you', 'पीएमएफबीवाई दावा समय, आपके लिए गिना गया') },
+              ] as { n?: number; suffix?: string; v?: string; l: string }[]).map((row, i) => (
+                <div
+                  key={row.l}
+                  className={cn(
+                    'flex items-baseline gap-4 px-5 py-3.5',
+                    i > 0 && 'border-t border-white/15',
+                  )}
+                >
+                  <dt
+                    data-numeric
+                    className="flex min-w-[3.25rem] items-baseline text-2xl font-semibold leading-none tracking-tight text-white"
+                  >
+                    {/* The two real quantities count up; "Daily" is a word and
+                        stays put. Animating a number that is not a measurement
+                        is the kind of flourish that reads as decoration. */}
+                    {typeof row.n === 'number' ? (
+                      <>
+                        <CountUp to={row.n} duration={1.4} delay={1.1 + i * 0.12} />
+                        {row.suffix}
+                      </>
+                    ) : (
+                      row.v
+                    )}
+                  </dt>
+                  <dd className="text-[13px] leading-snug text-white/70">{row.l}</dd>
+                </div>
+              ))}
+            </dl>
           </Reveal>
         </section>
 

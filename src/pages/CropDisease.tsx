@@ -171,7 +171,7 @@ function PhotoScan({ id, mode, title, hint, analyzeLabel }: PhotoScanProps) {
       {!preview ? (
         <label
           htmlFor={id}
-          className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-border rounded-xl py-14 px-6 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors text-center"
+          className="neu-inset flex cursor-pointer flex-col items-center justify-center gap-3 px-6 py-16 text-center transition-[box-shadow,border-color] duration-500 hover:border-primary/40"
         >
           <div className="p-3.5 rounded-full bg-primary/10">
             <Upload className="h-6 w-6 text-primary" />

@@ -54,8 +54,8 @@ export default function PageHeader({
             <span className="mb-4 flex items-center gap-3">
               {/* The rule anchors the eyebrow to the left margin so the block
                   reads as one mark rather than a floating caption. */}
-              <span aria-hidden className="h-px w-8 bg-secondary" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-secondary">
+              <span aria-hidden className="h-px w-8 bg-accent-ink" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-accent-ink">
                 {eyebrow}
               </span>
             </span>
@@ -86,7 +86,7 @@ export default function PageHeader({
                 data-numeric
                 className={cn(
                   'mt-1 text-2xl font-semibold leading-none tracking-tight',
-                  s.emphasis ? 'text-secondary' : 'text-foreground',
+                  s.emphasis ? 'text-accent-ink' : 'text-foreground',
                 )}
               >
                 {s.value}

@@ -119,8 +119,8 @@ const Navigation = () => {
                 className="h-9 w-9 rounded-full object-cover"
               />
             </div>
-            <span className="font-display text-base font-bold tracking-tight sm:inline">
-              <GradientText animationSpeed={8}>BhoomiX</GradientText>
+            <span className="font-display text-[17px] font-bold tracking-[-0.03em] text-foreground sm:inline">
+              Bhoomi<span className="text-accent-ink">X</span>
             </span>
           </Link>
 

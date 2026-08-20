@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import SceneParallax from "@/components/SceneParallax";
+import DesignPreview, { DesignPreviewIndex } from "@/pages/DesignPreview";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import AppShell from "@/components/AppShell";
@@ -86,6 +87,18 @@ const App = () => {
                     Guarding it would bounce the user away before they could set
                     a password — and the link only works once. */}
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
+
+                {/* Dev-only design preview: the real pages in the real
+                    shell, outside the auth guard, so layout work can be
+                    looked at instead of inferred. `import.meta.env.DEV` is a
+                    literal at build time, so Vite drops the whole branch —
+                    and the lazy imports it holds — from production. */}
+                {import.meta.env.DEV && (
+                  <Route element={<AppShell />}>
+                    <Route path="/preview" element={<DesignPreviewIndex />} />
+                    <Route path="/preview/:page" element={<DesignPreview />} />
+                  </Route>
+                )}
 
                 {/* Protected Routes — all rendered inside AppShell so the
                     desktop Sidebar persists across navigation. */}
