@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { AGRI_PRODUCTS as products, type Product } from '@/data/agriProducts';
 import { supabase } from '@/integrations/supabase/client';
 import PageHeader from '@/components/layout/PageHeader';
+import { cn } from '@/lib/utils';
 
 // Import product images
 
@@ -250,12 +251,21 @@ const AgriMarket = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`glass rounded-[2rem] p-6 hover:scale-105 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] ${
-                  isActive ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : ''
-                }`}
+                className={cn(
+                  'glass p-6 transition-[transform,box-shadow,border-color,background-color,color]',
+                  'duration-500 ease-[var(--ease-editorial)] hover:-translate-y-1',
+                  isActive && 'ring-1 ring-primary',
+                )}
               >
-                <div className={`inline-flex p-4 rounded-[1.5rem] bg-gradient-to-br ${category.color} mb-3 mx-auto`}>
-                  <Icon className="h-6 w-6 text-white" />
+                <div
+                  className={cn(
+                    'mx-auto mb-3 inline-flex rounded-md p-4 transition-colors duration-500',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-foreground/[0.06] text-foreground/70',
+                  )}
+                >
+                  <Icon className="h-6 w-6" />
                 </div>
                 <div className="font-semibold text-foreground text-sm">
                   {tx(category.name, category.nameHi)}

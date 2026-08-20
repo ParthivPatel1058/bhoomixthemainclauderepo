@@ -114,7 +114,7 @@ function BentoCard({
               {item.summary}
             </span>
           </span>
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 group-hover:rotate-45 group-hover:border-white/70 group-hover:bg-white group-hover:text-neutral-900">
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 group-hover:rotate-45 group-hover:border-white/70 group-hover:bg-white group-hover:text-foreground">
             <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
           </span>
         </span>

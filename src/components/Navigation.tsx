@@ -41,7 +41,7 @@ import {
 
 const CTRL_BTN =
   'flex items-center justify-center rounded-full border transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 ' +
-  'border-black/[0.08] bg-black/[0.03] text-neutral-700 hover:bg-black/[0.07] hover:text-neutral-950 ' +
+  'border-black/[0.08] bg-black/[0.03] text-muted-foreground hover:bg-black/[0.07] hover:text-foreground ' +
   'dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.15] dark:hover:text-white ' +
   'active:scale-95 shadow-sm';
 
@@ -130,7 +130,7 @@ const Navigation = () => {
                        border-black/[0.07] bg-black/[0.035] hover:bg-black/[0.05]
                        dark:border-white/[0.12] dark:bg-white/[0.06] dark:hover:bg-white/[0.09]"
           >
-            <span className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-white/90">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground dark:text-white/90">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -138,10 +138,10 @@ const Navigation = () => {
               {weather.city}
             </span>
             <span className="h-3.5 w-px bg-black/10 dark:bg-white/15" />
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-neutral-900 dark:text-white">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground dark:text-white">
               <WeatherIcon icon={weather.conditionIcon} className="h-3.5 w-3.5 text-primary" />
               <span>{weather.temperature}°</span>
-              <span className="hidden text-[11px] font-normal text-neutral-500 dark:text-white/60 md:inline">
+              <span className="hidden text-[11px] font-normal text-muted-foreground dark:text-white/60 md:inline">
                 {weather.condition}
               </span>
             </span>
@@ -158,16 +158,16 @@ const Navigation = () => {
           >
             <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
             <div className="min-w-0 flex-1">
-              <span className="block text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-white/60 leading-tight">
+              <span className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground dark:text-white/60 leading-tight">
                 {defaultAddress
                   ? tx('Deliver to', 'यहाँ डिलीवरी')
                   : tx('Set location', 'स्थान चुनें')}
               </span>
-              <span className="block truncate text-xs font-bold text-neutral-900 dark:text-white leading-tight">
+              <span className="block truncate text-xs font-bold text-foreground dark:text-white leading-tight">
                 {deliverTo ?? tx('Add address', 'पता जोड़ें')}
               </span>
             </div>
-            <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-neutral-400 dark:text-white/45" />
+            <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground dark:text-white/45" />
           </Link>
         </div>
 
@@ -179,7 +179,7 @@ const Navigation = () => {
           >
             <Search
               strokeWidth={2}
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 transition-colors group-focus-within:text-primary dark:text-white/45"
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary dark:text-white/45"
             />
             <input
               ref={searchRef}
@@ -187,14 +187,14 @@ const Navigation = () => {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tx('Search crops, products, advisory…', 'फसल, उत्पाद, सलाह खोजें…')}
               className="h-10 w-full rounded-full border pl-10 pr-14 text-xs font-medium outline-none transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300
-                         border-black/[0.07] bg-black/[0.035] text-neutral-900 placeholder:text-neutral-400
+                         border-black/[0.07] bg-black/[0.035] text-foreground placeholder:text-muted-foreground
                          focus:border-primary/50 focus:bg-white focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]
                          dark:border-white/[0.12] dark:bg-white/[0.06] dark:text-white dark:placeholder:text-white/45
                          dark:focus:border-primary/60 dark:focus:bg-black/60 dark:focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.25)]"
             />
             <kbd
               className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold sm:flex
-                         border-black/10 bg-black/5 text-neutral-400 dark:border-white/15 dark:bg-white/10 dark:text-white/40"
+                         border-black/10 bg-black/5 text-muted-foreground dark:border-white/15 dark:bg-white/10 dark:text-white/40"
             >
               <Command className="h-2.5 w-2.5" />K
             </kbd>

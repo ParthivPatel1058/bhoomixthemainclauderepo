@@ -31,7 +31,7 @@ const InteractiveHoverButton = React.forwardRef<
       className={cn(
         "group relative cursor-pointer overflow-hidden rounded-full border px-7 py-3.5 text-center text-[13px] font-semibold tracking-wide transition-colors duration-300",
         solid
-          ? "border-white/25 bg-white text-neutral-900"
+          ? "border-white/25 bg-white text-foreground"
           : "border-white/30 bg-white/10 text-white backdrop-blur-xl",
         className,
       )}
@@ -56,7 +56,7 @@ const InteractiveHoverButton = React.forwardRef<
       <span
         className={cn(
           "absolute inset-0 z-10 flex -translate-x-8 items-center justify-center gap-2 opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 group-hover:translate-x-0 group-hover:opacity-100",
-          solid ? "text-white" : "text-neutral-900",
+          solid ? "text-white" : "text-foreground",
         )}
       >
         {text}

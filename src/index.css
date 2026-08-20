@@ -343,7 +343,7 @@
 }
 
 .bhoomix-sidebar-avatar {
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #fff;
   background: var(--sidebar-ink);
   box-shadow: 4px 4px 9px rgb(0 13 16 / 0.2), inset 1px 1px 0 rgb(255 255 255 / 0.12);
@@ -1326,7 +1326,7 @@ All colors MUST be HSL.
        PageHeader — both of which are small. Same hue, taken down to 36%
        lightness for 4.60:1. Two tokens because one value genuinely cannot do
        both jobs: dark enough to read is too dark to fill with. */
-    --accent-ink: 38 68% 34%;
+    --accent-ink: 38 68% 32%;
 
     --muted: 150 12% 92%;
     --muted-foreground: 160 9% 35%;

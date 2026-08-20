@@ -223,8 +223,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className={cn("flex items-center pt-5 pb-4", collapsed ? "justify-center" : "px-4 gap-2.5")}>
         <img src={logo} alt="" className="h-8 w-8 flex-shrink-0 rounded-xl object-cover ring-1 ring-black/10 dark:ring-white/15" />
         {!collapsed && (
-          <span className="font-display truncate text-[17px] font-bold tracking-[-0.04em] text-neutral-900 dark:text-white">
-            Bhoomi<span className="text-neutral-400 dark:text-white/50">X</span>
+          <span className="font-display truncate text-[17px] font-bold tracking-[-0.04em] text-foreground dark:text-white">
+            Bhoomi<span className="text-muted-foreground dark:text-white/50">X</span>
           </span>
         )}
       </div>
@@ -292,16 +292,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           <button
             onClick={() => navigate("/settings")}
             title="Settings"
-            className="bhoomix-sidebar-avatar flex h-9 w-9 flex-shrink-0 items-center justify-center text-[11px] font-bold accent-solid"
+            className="bhoomix-sidebar-avatar flex h-9 w-9 flex-shrink-0 items-center justify-center text-[11px] font-bold"
           >
             {initials}
           </button>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold leading-tight text-neutral-900 dark:text-white">
+              <p className="truncate text-xs font-semibold leading-tight text-foreground dark:text-white">
                 {user?.email || "Signed In"}
               </p>
-              <p className="text-[11px] text-neutral-500 dark:text-white/50">
+              <p className="text-[11px] text-muted-foreground dark:text-white/50">
                 {tx("Farmer Account", "किसान खाता")}
               </p>
             </div>
