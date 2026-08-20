@@ -20,6 +20,8 @@ import SearchBar from '@/components/SearchBar';
 import GalleryHoverGrid from '@/components/ui/gallery-hover-carousel';
 import { cn } from '@/lib/utils';
 import CountUp from '@/components/CountUp';
+import ParallaxHero, { ParallaxLayer } from '@/components/ui/parallax-hero';
+import HillDivider from '@/components/ui/hill-divider';
 import TubelightNavBar from '@/components/ui/tubelight-navbar';
 import Reveal, { RevealWords } from '@/components/Reveal';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
@@ -75,9 +77,13 @@ const Index = () => {
       <Navigation />
 
       <main className="pt-4 md:pt-5 pb-16">
-        {/* Hero — glass editorial over the fixed cinematic backdrop */}
-        <section className="relative px-6 lg:px-14 pt-10 pb-16 min-h-[86vh] flex flex-col justify-center">
-          <div className="max-w-3xl">
+        {/* Hero — parallax over the fixed cinematic backdrop.
+            Three depths: the eyebrow and lede sit furthest back, the headline
+            leads, and the figures travel between them. The headline moving
+            fastest is what makes the field behind it read as distance rather
+            than as wallpaper. */}
+        <ParallaxHero className="relative flex min-h-[86vh] flex-col justify-center px-6 pb-16 pt-10 lg:px-14">
+          <ParallaxLayer speed={-60} className="max-w-3xl">
             <Reveal immediate delay={0.05} distance={16}>
               <span className="eyebrow text-white/70">
                 {tx('Tools & advisory for every farming decision', 'हर कृषि निर्णय के लिए उपकरण और सलाह')}
@@ -122,7 +128,7 @@ Smarter`, `स्मार्ट
                 onClick={() => navigate('/agri-market')}
               />
             </Reveal>
-          </div>
+          </ParallaxLayer>
 
           {/* The rate strip — the hero's signature.
               What stood here was "Trusted by 25,000+ farmers", a number
@@ -136,12 +142,13 @@ Smarter`, `स्मार्ट
               Set in tabular figures on purpose. This is a product for people
               who read numbers off a board at the mandi gate, and a column of
               figures that lines up is the whole reason those boards work. */}
-          <Reveal immediate delay={1} from="right" className="hidden lg:block absolute right-14 bottom-20 w-[19rem]">
+          <ParallaxLayer speed={-170} className="absolute bottom-20 right-14 hidden lg:block">
+          <Reveal immediate delay={1} from="right" className="w-[19rem]">
             <dl className="glass overflow-hidden rounded-lg">
               {([
                 { n: 23, suffix: '', l: tx('Indian languages, in their own script', '23 भारतीय भाषाएं, अपनी लिपि में') },
                 { v: tx('Daily', 'रोज़'), l: tx('Mandi rates from government open data', 'सरकारी ओपन डेटा से मंडी भाव') },
-                { n: 72, suffix: 'h', l: tx('The PMFBY claim window, counted for you', 'पीएमएफबीवाई दावा समय, आपके लिए गिना गया') },
+                { v: '72h', l: tx('The PMFBY claim window, counted for you', 'पीएमएफबीवाई दावा समय, आपके लिए गिना गया') },
               ] as { n?: number; suffix?: string; v?: string; l: string }[]).map((row, i) => (
                 <div
                   key={row.l}
@@ -171,8 +178,20 @@ Smarter`, `स्मार्ट
               ))}
             </dl>
           </Reveal>
-        </section>
+          </ParallaxLayer>
+        </ParallaxHero>
 
+        {/* Everything below the hero sits on a ground of its own.
+            The field photograph is the hero's backdrop, not the page's: with
+            it running the full height, the gallery heading was white type over
+            a bright sky and simply disappeared. The automated contrast sweep
+            never caught it because it skips elements whose background is an
+            image — there is no colour behind them to measure against. */}
+        <div className="relative bg-background">
+          {/* A ridge, not a fade. A landscape does not end in a horizontal
+              line, and the straight gradient that was here read as the photo
+              simply running out. */}
+          <HillDivider height={190} className="-top-[120px]" />
         <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           {/* Mobile search */}
           <div className="mt-6 md:hidden">
@@ -218,6 +237,7 @@ Smarter`, `स्मार्ट
           <div className="mt-16">
             <FarmAdvisory />
           </div>
+        </div>
         </div>
       </main>
 

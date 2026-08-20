@@ -28,6 +28,8 @@ export default {
         floating: "var(--e-floating)",
       },
       colors: {
+        // Text-weight ochre. The fill ochre fails AA at small sizes on paper.
+        "accent-ink": "hsl(var(--accent-ink))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

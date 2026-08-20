@@ -233,6 +233,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Navigation */}
       <nav
+        data-lenis-prevent
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 space-y-1",
           "[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5",

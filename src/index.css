@@ -516,7 +516,7 @@
   background-image: linear-gradient(
     120deg,
     currentColor 38%,
-    rgba(255, 250, 235, 0.98) 50%,
+    hsl(var(--shine)) 50%,
     currentColor 62%
   );
   background-size: 220% 100%;
@@ -1328,6 +1328,20 @@ All colors MUST be HSL.
        both jobs: dark enough to read is too dark to fill with. */
     --accent-ink: 38 68% 32%;
 
+    /* Hero ridge. Two depths of land plus the rim light on the near crest.
+       Filling these with --background gave two pale bands that read as fog,
+       so they carry their own earth tone and resolve to the page colour at
+       the foot of the band instead. Sage and olive: a crop field at distance,
+       warm enough to read as ground rather than as a grey shape. */
+    --hill-far: 132 14% 72%;
+    --hill-near: 138 20% 48%;
+    --hill-rim: 96 22% 84%;
+
+    /* Sweep band for .shiny-text. On paper a white sweep is invisible and
+       left headings looking half-erased, so the light theme sweeps warm
+       gold — a highlight that actually contrasts with dark ink. */
+    --shine: 38 72% 52%;
+
     --muted: 150 12% 92%;
     --muted-foreground: 160 9% 35%;
 
@@ -1443,6 +1457,15 @@ All colors MUST be HSL.
     --accent-foreground: 160 30% 6%;
     --accent-ink: 38 80% 68%;
 
+    /* After dark the land drops almost to the page colour and the rim carries
+       the shape, which is how a ridge actually reads at dusk. */
+    --hill-far: 158 18% 13%;
+    --hill-near: 160 22% 10%;
+    --hill-rim: 150 14% 97% / 0.22;
+
+    /* Sweep band for .shiny-text. Near-white over ink. */
+    --shine: 44 60% 96%;
+
     --destructive: 0 68% 58%;
     --destructive-foreground: 0 0% 100%;
 
@@ -1522,10 +1545,18 @@ All colors MUST be HSL.
     inset: -28px;
     z-index: -1;
     background:
-      linear-gradient(180deg, hsl(210 40% 8% / 0.55) 0%, hsl(205 35% 10% / 0.3) 45%, hsl(210 45% 6% / 0.78) 100%),
+      /* Vertical scrim. Was thinnest (0.3) at 45%, which is precisely where
+         the headline sits — so the one band that needed the most protection
+         had the least, and white type landed on pale sky. Hues moved from
+         blue-grey to the green-cast ink the rest of the palette uses. */
+      linear-gradient(180deg, hsl(162 30% 6% / 0.62) 0%, hsl(160 26% 8% / 0.52) 42%, hsl(162 32% 5% / 0.8) 100%),
+      /* Left-hand wedge. The copy column is flush left at every breakpoint,
+         so it gets its own gradient rather than relying on the vertical one
+         to be dark enough everywhere across the frame. */
+      linear-gradient(100deg, hsl(162 32% 5% / 0.55) 0%, hsl(162 32% 5% / 0.22) 38%, transparent 66%),
       var(--scene-image);
-    background-size: cover, cover;
-    background-position: center, center;
+    background-size: cover, cover, cover;
+    background-position: center, center, center;
     background-repeat: no-repeat;
     pointer-events: none;
     /* Driven by SceneParallax, which writes the two variables on :root. The

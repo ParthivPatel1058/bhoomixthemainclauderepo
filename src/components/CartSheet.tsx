@@ -133,7 +133,7 @@ const CartSheet = ({ open, onOpenChange, cartItems, onUpdateQuantity, onRemoveIt
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div data-lenis-prevent className="flex-1 overflow-y-auto p-6 space-y-4">
               {cartItems.map((item) => (
                 <div key={item.id} className="glass rounded-xl p-4 flex gap-4">
                   <img 

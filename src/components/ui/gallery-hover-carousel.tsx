@@ -28,10 +28,10 @@ export default function GalleryHoverGrid({
   return (
     <section className="w-full">
       <Reveal className="mb-8 max-w-2xl" blur distance={22}>
-        <h2 className="page-title text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.65)]">
+        <h2 className="page-title text-foreground">
           <ShinyText text={heading} speed={6} />
         </h2>
-        <p className="mt-2 text-sm text-white/80 drop-shadow-[0_1px_12px_rgba(0,0,0,0.6)] sm:text-base">{subheading}</p>
+        <p className="mt-2 text-sm text-muted-foreground sm:text-base">{subheading}</p>
       </Reveal>
 
       <Reveal distance={34}>

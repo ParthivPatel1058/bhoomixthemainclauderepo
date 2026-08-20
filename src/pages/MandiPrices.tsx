@@ -126,7 +126,7 @@ export default function MandiPrices() {
                 onClick={() => setCommodity('')}
                 className={`min-h-11 flex-shrink-0 rounded-full border px-4 text-sm font-semibold transition-colors ${
                   commodity === ''
-                    ? 'border-primary bg-primary/10 text-primary'
+                    ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -138,7 +138,7 @@ export default function MandiPrices() {
                   onClick={() => setCommodity(c)}
                   className={`min-h-11 flex-shrink-0 rounded-full border px-4 text-sm font-semibold transition-colors ${
                     commodity === c
-                      ? 'border-primary bg-primary/10 text-primary'
+                      ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground'
                   }`}
                 >

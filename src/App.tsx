@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import SceneParallax from "@/components/SceneParallax";
+import SmoothScroll from "@/components/SmoothScroll";
 import DesignPreview, { DesignPreviewIndex } from "@/pages/DesignPreview";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
@@ -68,6 +69,9 @@ const App = () => {
           {/* Drives the backdrop drift. Renders nothing; it only
               writes two custom properties on the root. */}
           <SceneParallax />
+          {/* Momentum scrolling, and the ticker ScrollTrigger runs on.
+              Mounts nothing when the visitor has asked for reduced motion. */}
+          <SmoothScroll />
           <ThemeSwitchDefs />
           <Toaster />
           <Sonner />

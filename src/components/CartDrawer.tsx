@@ -184,7 +184,7 @@ export default function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
         ) : (
           <>
             {/* Lines */}
-            <div className="flex-1 space-y-3 overflow-y-auto p-5">
+            <div data-lenis-prevent className="flex-1 space-y-3 overflow-y-auto p-5">
               {lines.map((l) => (
                 <div key={l.key} className="glass flex gap-3 rounded-2xl p-3">
                   <img
