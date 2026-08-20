@@ -14,13 +14,18 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Outfit", "Plus Jakarta Sans", "system-ui", "sans-serif"],
-        sans: ["Plus Jakarta Sans", "Outfit", "system-ui", "sans-serif"],
+        // Both point at the CSS variables so the script-aware stack that
+        // LanguageContext writes on every language change reaches Tailwind
+        // utilities too, not just the hand-written CSS.
+        display: ["var(--font-display)"],
+        sans: ["var(--font-body)"],
       },
       boxShadow: {
         "glow-primary": "0 10px 30px -8px hsl(var(--glow-primary) / 0.5), 0 4px 12px -4px hsl(var(--glow-primary) / 0.35)",
         "glow-secondary": "0 10px 30px -8px hsl(var(--glow-secondary) / 0.5), 0 4px 12px -4px hsl(var(--glow-secondary) / 0.35)",
         "elevated": "0 20px 60px -15px hsl(152 45% 20% / 0.25)",
+        raised: "var(--e-raised)",
+        floating: "var(--e-floating)",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -67,10 +72,19 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      // Four steps, mapped onto the --r-* tokens. The previous scale derived
+      // everything from --radius, which made `rounded-lg` 12px and `rounded-md`
+      // 10px — near-identical, so "squaring" a component by moving between
+      // them changed nothing visible. These are far enough apart to read.
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        none: "var(--r-sharp)",
+        sm: "var(--r-sm)",
+        md: "var(--r-md)",
+        lg: "var(--r-lg)",
+        xl: "var(--r-lg)",
+        "2xl": "var(--r-lg)",
+        "3xl": "var(--r-lg)",
+        full: "var(--r-pill)",
       },
       keyframes: {
         /* Two squares chasing each other round the corners of a box. The

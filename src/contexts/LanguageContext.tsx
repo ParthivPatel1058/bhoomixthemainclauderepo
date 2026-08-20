@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AUTHORED, LANGUAGE_MAP, isRTL, type LanguageCode } from '@/i18n/languages';
+import { ensureScriptFor, fontStackFor } from '@/lib/fonts';
 import { translations } from '@/i18n/strings';
 
 interface LanguageContextType {
@@ -115,9 +116,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   // Scripts like Urdu, Kashmiri and Sindhi run right to left.
+  //
+  // The webfont for the language's script is requested here too. Without it
+  // every non-Latin language fell back to a system face, so the app was
+  // designed in English and improvised in the other twenty-two.
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = isRTL(language) ? 'rtl' : 'ltr';
+    ensureScriptFor(language);
+    document.documentElement.style.setProperty('--font-script', fontStackFor(language));
   }, [language]);
 
   // Warm the cache with the whole static table so the shell is translated in

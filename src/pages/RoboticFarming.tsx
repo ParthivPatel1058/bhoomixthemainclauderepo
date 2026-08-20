@@ -3,6 +3,7 @@ import BackButton from '@/components/BackButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Bot, Cog, Wrench, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import PageHeader from '@/components/layout/PageHeader';
 const RoboticFarming = () => {
   const {
     t, language, tx } = useLanguage();
@@ -299,13 +300,11 @@ const RoboticFarming = () => {
       </div>
       
       <div className="pt-8 pb-12 px-4 container mx-auto">
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {tx('Agricultural Robotics', 'कृषि रोबोटिक्स')}
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            {tx('Modern Agricultural Machinery & Automation', 'आधुनिक कृषि मशीनरी और स्वचालन')}
-          </p>
+        <div className="mb-12">
+          <PageHeader
+        eyebrow={tx('Technology', 'तकनीक')}
+        title={tx('Agricultural Robotics', 'कृषि रोबोटिक्स')}
+      />
         </div>
 
 

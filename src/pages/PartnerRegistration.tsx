@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Truck, Wallet, Clock, MapPin, Zap, Calculator, IndianRupee } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import PageHeader from '@/components/layout/PageHeader';
 
 const PartnerRegistration = () => {
   const { user } = useAuth();
@@ -121,12 +122,11 @@ const PartnerRegistration = () => {
               <Truck className="h-10 w-10 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {tx('Become a Delivery Partner', 'डिलीवरी पार्टनर बनें')}
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            {tx('Join our delivery network and start earning', 'हमारे डिलीवरी नेटवर्क में शामिल हों और कमाई शुरू करें')}
-          </p>
+          <PageHeader
+        eyebrow={tx('Delivery network', 'डिलीवरी नेटवर्क')}
+        title={tx('Become a Delivery Partner', 'डिलीवरी पार्टनर बनें')}
+        lede={tx('Join our delivery network and start earning', 'हमारे डिलीवरी नेटवर्क में शामिल हों और कमाई शुरू करें')}
+      />
         </div>
 
         {/* Animated Features Grid */}

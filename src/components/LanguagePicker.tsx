@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, Globe, Search, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LANGUAGES, AUTHORED } from '@/i18n/languages';
 import { cn } from '@/lib/utils';
+import { ensureAllScripts } from '@/lib/fonts';
 
 /**
  * Language chooser for all 22 Eighth Schedule languages plus English.
@@ -22,6 +23,13 @@ export default function LanguagePicker({ trigger }: { trigger?: React.ReactNode 
   const { language, setLanguage, tx, translating } = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+
+  // Every endonym is on screen at once here, so this is the one place that
+  // genuinely needs all eleven scripts. Requested on open rather than on mount
+  // so the cost lands only on people who actually go looking for it.
+  useEffect(() => {
+    if (open) ensureAllScripts();
+  }, [open]);
 
   const current = LANGUAGES.find((l) => l.code === language);
 

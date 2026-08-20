@@ -133,7 +133,10 @@ function BentoCard({
  * re-render React for every card.
  */
 export default function MagicBento({
-  items,
+  // Defaulted rather than left bare: the dev server does not typecheck, so a
+  // caller that forgets `items` used to throw inside render and take the whole
+  // page down to the error boundary. An empty grid is a far cheaper failure.
+  items = [],
   proximity = 380,
   simple = false,
   className,

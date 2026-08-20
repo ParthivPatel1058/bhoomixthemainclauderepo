@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Navigation from '@/components/Navigation';
+import PageHeader from '@/components/layout/PageHeader';
 import { MapPin, Package, Phone, Navigation as NavIcon, CheckCircle, Truck, PackageCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -171,9 +172,10 @@ const PartnerOrders = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 gradient-text">
-            {tx('🚚 Partner Deliveries', '🚚 पार्टनर डिलीवरी')}
-          </h1>
+          <PageHeader
+        eyebrow={tx('Partner', 'पार्टनर')}
+        title={tx('🚚 Partner Deliveries', '🚚 पार्टनर डिलीवरी')}
+      />
           <p className="text-muted-foreground">
             {tx('Accept and deliver orders in your area', 'अपने क्षेत्र में ऑर्डर स्वीकार करें और डिलीवर करें')}
           </p>

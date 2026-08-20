@@ -1,36 +1,38 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutGrid,
-  ScanSearch,
-  ShoppingBag,
-  Store,
-  Landmark,
-  IndianRupee,
-  ShieldAlert,
-  Sprout,
-  Leaf,
-  Carrot,
-  Bot,
-  MapPin,
-  Truck,
-  Package,
-  Settings as SettingsIcon,
-  ChevronRight,
-  ChevronUp,
   ChevronsRight,
   ChevronsLeft,
+  ChevronRight,
+  ChevronUp,
+  Settings as SettingsIcon,
   LogOut,
   Sun,
   Moon,
-  LifeBuoy,
-  HelpCircle,
-
+  MapPin,
+  Carrot,
 } from "lucide-react";
+import {
+  WobloOverviewIcon,
+  WobloCropAiIcon,
+  WobloAdvisoryIcon,
+  WobloMarketIcon,
+  WobloMartIcon,
+  WobloSproutIcon,
+  WobloLeafIcon,
+  WobloBotIcon,
+  WobloCardIcon,
+  WobloShieldIcon,
+  WobloSchemesIcon,
+  WobloPackageIcon,
+  WobloTruckIcon,
+  WobloSyncIcon,
+  WobloShopLocatorIcon,
+  WobloSupportIcon,
+} from "@/components/ui/WobloIcon";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useOrderCount } from "@/hooks/useOrderCount";
 import ThemeSwitch from "@/components/ui/theme-switch";
 import { cn } from "@/lib/utils";
@@ -38,7 +40,7 @@ import logo from "@/assets/bhoomix-logo.jpeg";
 
 interface Item {
   path: string;
-  icon: typeof LayoutGrid;
+  icon: React.ComponentType<{ className?: string; size?: number | string }>;
   label: { en: string; hi: string };
   /** Nested children turn this row into an expandable group. */
   children?: Item[];
@@ -46,37 +48,37 @@ interface Item {
 }
 
 const NAV: Item[] = [
-  { path: "/", icon: LayoutGrid, label: { en: "Overview", hi: "अवलोकन" } },
-  { path: "/crop-disease", icon: ScanSearch, label: { en: "Crop Intelligence", hi: "फसल इंटेलिजेंस" } },
-  { path: "/kisan-help", icon: HelpCircle, label: { en: "Crop Advisory", hi: "फसल सलाह" } },
-  { path: "/agri-market", icon: ShoppingBag, label: { en: "Agri Market", hi: "कृषि बाज़ार" } },
-  { path: "/kisan-mart", icon: Store, label: { en: "AgriNova Mart", hi: "एग्रीनोवा मार्ट" } },
+  { path: "/", icon: WobloOverviewIcon, label: { en: "Overview", hi: "अवलोकन" } },
+  { path: "/crop-disease", icon: WobloCropAiIcon, label: { en: "Crop Intelligence", hi: "फसल इंटेलिजेंस" } },
+  { path: "/kisan-help", icon: WobloAdvisoryIcon, label: { en: "Crop Advisory", hi: "फसल सलाह" } },
+  { path: "/agri-market", icon: WobloMarketIcon, label: { en: "Agri Market", hi: "कृषि बाज़ार" } },
+  { path: "/kisan-mart", icon: WobloMartIcon, label: { en: "AgriNova Mart", hi: "एग्रीनोवा मार्ट" } },
   {
     path: "#farming",
-    icon: Sprout,
+    icon: WobloSproutIcon,
     label: { en: "Farming Guides", hi: "खेती गाइड" },
     children: [
-      { path: "/organic-farming", icon: Leaf, label: { en: "Organic", hi: "जैविक" } },
+      { path: "/organic-farming", icon: WobloLeafIcon, label: { en: "Organic", hi: "जैविक" } },
       { path: "/vegetable-farming", icon: Carrot, label: { en: "Vegetable", hi: "सब्ज़ी" } },
-      { path: "/robotic-farming", icon: Bot, label: { en: "Robotic", hi: "रोबोटिक" } },
+      { path: "/robotic-farming", icon: WobloBotIcon, label: { en: "Robotic", hi: "रोबोटिक" } },
     ],
   },
-  { path: "/mandi-prices", icon: IndianRupee, label: { en: "Mandi Prices", hi: "मंडी भाव" } },
-  { path: "/damage-report", icon: ShieldAlert, label: { en: "Damage Claim", hi: "नुकसान दावा" } },
-  { path: "/gov-schemes", icon: Landmark, label: { en: "Schemes", hi: "योजनाएं" } },
-  { path: "/orders", icon: Package, label: { en: "Orders", hi: "ऑर्डर" }, badgeKey: "orders" },
+  { path: "/mandi-prices", icon: WobloCardIcon, label: { en: "Mandi Prices", hi: "मंडी भाव" } },
+  { path: "/damage-report", icon: WobloShieldIcon, label: { en: "Damage Claim", hi: "नुकसान दावा" } },
+  { path: "/gov-schemes", icon: WobloSchemesIcon, label: { en: "Schemes", hi: "योजनाएं" } },
+  { path: "/orders", icon: WobloPackageIcon, label: { en: "Orders", hi: "ऑर्डर" }, badgeKey: "orders" },
   { path: "/addresses", icon: MapPin, label: { en: "Addresses", hi: "पते" } },
   {
     path: "#delivery",
-    icon: Truck,
+    icon: WobloTruckIcon,
     label: { en: "Delivery", hi: "डिलीवरी" },
     children: [
-      { path: "/partner-registration", icon: Truck, label: { en: "Become a Partner", hi: "पार्टनर बनें" } },
-      { path: "/partner-orders", icon: Package, label: { en: "Partner Orders", hi: "पार्टनर ऑर्डर" } },
+      { path: "/partner-registration", icon: WobloTruckIcon, label: { en: "Become a Partner", hi: "पार्टनर बनें" } },
+      { path: "/partner-orders", icon: WobloSyncIcon, label: { en: "Partner Orders", hi: "पार्टनर ऑर्डर" } },
     ],
   },
-  { path: "/shop-locator", icon: MapPin, label: { en: "Nearby Shops", hi: "नज़दीकी दुकानें" } },
-  { path: "/support", icon: LifeBuoy, label: { en: "Support", hi: "सहायता" } },
+  { path: "/shop-locator", icon: WobloShopLocatorIcon, label: { en: "Nearby Shops", hi: "नज़दीकी दुकानें" } },
+  { path: "/support", icon: WobloSupportIcon, label: { en: "Support", hi: "सहायता" } },
 ];
 
 interface SidebarProps {
@@ -85,18 +87,14 @@ interface SidebarProps {
 }
 
 /**
- * Application sidebar. Expanded it shows labelled rows with an accent bar on
- * the active item and an inline expandable sub-tree; collapsed it becomes an
- * icon rail where each icon reveals its label in a floating gradient pill.
+ * Application sidebar with premium Woblo icons.
  */
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, tx } = useLanguage();
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
   const orderCount = useOrderCount();
-  const en = language === "en";
 
   const [openGroup, setOpenGroup] = useState<string | null>("#farming");
 
@@ -124,16 +122,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {active && (
           <motion.span
             layoutId="sidebar-accent"
-            className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-none accent-grad-v"
+            className="bhoomix-sidebar-accent absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2"
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
           />
         )}
 
         <span className="relative flex-shrink-0">
-          <Icon strokeWidth={1.75} className="h-[18px] w-[18px]" />
+          <Icon className="h-[18px] w-[18px]" />
           {/* In the rail the badge rides on the icon */}
           {collapsed && badge && (
-            <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full accent-solid px-1 text-[9px] font-bold text-white">
+            <span className="bhoomix-sidebar-badge absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center px-1 text-[9px] font-bold text-white">
               {badge}
             </span>
           )}
@@ -145,7 +143,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               {tx(item.label.en, item.label.hi)}
             </span>
             {badge && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full accent-solid px-1.5 text-[10px] font-bold text-white">
+              <span className="bhoomix-sidebar-badge flex h-5 min-w-5 items-center justify-center px-1.5 text-[10px] font-bold text-white">
                 {badge}
               </span>
             )}
@@ -166,16 +164,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     );
 
     const rowClass = cn(
-      "group/row relative flex items-center rounded-md transition-colors duration-200",
+      "bhoomix-sidebar-row group/row relative flex items-center transition-all duration-200",
       collapsed ? "h-11 w-11 justify-center" : "h-11 gap-3 px-3",
       nested && !collapsed && "h-10 pl-3",
       active
-        ? "bg-black/[0.06] text-neutral-900 dark:bg-white/[0.10] dark:text-white"
-        : "text-neutral-500 hover:bg-black/[0.04] hover:text-neutral-900 dark:text-white/60 dark:hover:bg-white/[0.06] dark:hover:text-white",
+        ? "bhoomix-sidebar-row-active"
+        : "bhoomix-sidebar-row-idle",
     );
 
     const flyout = collapsed && (
-      <span className="pointer-events-none absolute left-[calc(100%+14px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-md accent-grad accent-ink px-3 py-2 text-xs font-semibold opacity-0 shadow-lg transition-all duration-200 group-hover/row:opacity-100">
+      <span className="bhoomix-sidebar-flyout pointer-events-none absolute left-[calc(100%+14px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap px-3 py-2 text-xs font-semibold opacity-0 transition-all duration-200 group-hover/row:opacity-100">
         {tx(item.label.en, item.label.hi)}
       </span>
     );
@@ -204,7 +202,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed left-3 top-3 bottom-3 z-40 hidden lg:flex flex-col rounded-lg border transition-[width] duration-300 backdrop-blur-2xl border-black/10 bg-white/80 shadow-[0_24px_70px_rgba(30,40,60,0.16)] dark:border-white/10 dark:bg-[#0b0d12]/85 dark:shadow-[0_24px_70px_rgba(0,0,0,0.5)]",
+        "bhoomix-sidebar fixed left-3 top-3 bottom-3 z-40 hidden lg:flex flex-col border transition-[width] duration-300",
         collapsed ? "w-[76px]" : "w-[264px]",
       )}
     >
@@ -212,7 +210,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <button
         onClick={onToggle}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="absolute -right-3.5 top-[72px] z-50 flex h-7 w-7 items-center justify-center rounded-md border shadow-lg transition-colors border-black/10 bg-white text-neutral-500 hover:text-neutral-900 dark:border-white/15 dark:bg-[#141821] dark:text-white/70 dark:hover:text-white"
+        className="bhoomix-sidebar-toggle absolute -right-3.5 top-[72px] z-50 flex h-8 w-8 items-center justify-center border transition-all"
       >
         {collapsed ? (
           <ChevronsRight strokeWidth={2.5} className="h-3.5 w-3.5" />
@@ -223,21 +221,17 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Brand */}
       <div className={cn("flex items-center pt-5 pb-4", collapsed ? "justify-center" : "px-4 gap-2.5")}>
-        <img src={logo} alt="" className="h-8 w-8 flex-shrink-0 rounded-md object-cover ring-1 ring-black/10 dark:ring-white/15" />
+        <img src={logo} alt="" className="h-8 w-8 flex-shrink-0 rounded-xl object-cover ring-1 ring-black/10 dark:ring-white/15" />
         {!collapsed && (
-          <span className="truncate text-[17px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+          <span className="font-display truncate text-[17px] font-bold tracking-[-0.04em] text-neutral-900 dark:text-white">
             Bhoomi<span className="text-neutral-400 dark:text-white/50">X</span>
           </span>
         )}
       </div>
 
-      <div className={cn("h-px bg-black/10 dark:bg-white/10", collapsed ? "mx-4" : "mx-4")} />
+      <div className={cn("bhoomix-sidebar-divider", collapsed ? "mx-4" : "mx-4")} />
 
       {/* Navigation */}
-      {/* `min-h-0` is what actually makes this scroll. A flex child defaults
-          to `min-height:auto`, so without it the list grows to its content
-          height, pushes the user footer off the bottom of the dock, and
-          `overflow-y-auto` never engages. */}
       <nav
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 space-y-1",
@@ -258,86 +252,84 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="relative ml-[22px] mt-1 space-y-1 pl-3">
-                    {/* connector line */}
-                    <span className="absolute left-0 top-1 bottom-1 w-px bg-black/12 dark:bg-white/15" />
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.path}
-                        to={child.path}
-                        className={cn(
-                          "flex h-9 items-center gap-2.5 rounded-md px-3 text-sm transition-colors duration-200",
-                          isActive(child.path)
-                            ? "bg-black/[0.06] font-medium text-neutral-900 dark:bg-white/[0.10] dark:text-white"
-                            : "text-neutral-500 hover:bg-black/[0.04] hover:text-neutral-900 dark:text-white/55 dark:hover:bg-white/[0.05] dark:hover:text-white",
-                        )}
-                      >
-                        <span className="flex-1 truncate">
-                          {tx(child.label.en, child.label.hi)}
-                        </span>
-                        <ChevronRight strokeWidth={2} className="h-3.5 w-3.5 opacity-50" />
-                      </Link>
-                    ))}
+                  <div className="relative mt-1 ml-4 pl-3 space-y-1">
+                    <span className="bhoomix-sidebar-rule absolute left-0 top-1 bottom-1 w-px" />
+                    {item.children.map((child) => {
+                      const childActive = isActive(child.path);
+                      const ChildIcon = child.icon;
+                      return (
+                        <Link
+                          key={child.path}
+                          to={child.path}
+                          className={cn(
+                            "bhoomix-sidebar-row flex h-9 items-center gap-2.5 px-3 text-sm transition-all duration-200",
+                            childActive
+                              ? "bhoomix-sidebar-row-active font-medium"
+                              : "bhoomix-sidebar-row-idle",
+                          )}
+                        >
+                          <ChildIcon className="h-4 w-4" />
+                          <span className="truncate">{tx(child.label.en, child.label.hi)}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         ))}
-
       </nav>
 
-      {/* Settings */}
-      <div className={cn("pb-3", collapsed ? "px-3" : "px-3")}>
-        <Row item={{ path: "/settings", icon: SettingsIcon, label: { en: "Settings", hi: "सेटिंग्स" } }} />
-      </div>
+      <div className="bhoomix-sidebar-divider mx-4" />
 
-      <div className="mx-4 h-px bg-black/10 dark:bg-white/10" />
+      {/* User / Preferences footer */}
+      <div className={cn("p-3", collapsed ? "flex flex-col items-center gap-2" : "space-y-2")}>
+        <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3 px-2 py-1.5")}>
+          <button
+            onClick={() => navigate("/settings")}
+            title="Settings"
+            className="bhoomix-sidebar-avatar flex h-9 w-9 flex-shrink-0 items-center justify-center text-[11px] font-bold accent-solid"
+          >
+            {initials}
+          </button>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold leading-tight text-neutral-900 dark:text-white">
+                {user?.email || "Signed In"}
+              </p>
+              <p className="text-[11px] text-neutral-500 dark:text-white/50">
+                {tx("Farmer Account", "किसान खाता")}
+              </p>
+            </div>
+          )}
+        </div>
 
-      {/* User */}
-      <div className={cn("flex items-center py-4", collapsed ? "justify-center px-3" : "gap-3 px-4")}>
-        <button
-          onClick={() => navigate("/settings")}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md accent-grad accent-ink text-[11px] font-bold ring-2 ring-black/5 dark:ring-white/10"
-        >
-          {initials || "BX"}
-        </button>
-        {!collapsed && (
-          <>
-            <span className="flex-1 truncate text-sm font-medium capitalize text-neutral-800 dark:text-white/85">{name}</span>
+        {/* Theme and signout actions */}
+        {!collapsed ? (
+          <div className="flex items-center justify-between pt-1 px-1">
+            <ThemeSwitch size={12} />
             <button
               onClick={signOut}
+              title={tx("Sign Out", "साइन आउट")}
               aria-label="Sign out"
-              className="transition-colors text-neutral-400 hover:text-neutral-900 dark:text-white/50 dark:hover:text-white"
+              className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-9 w-9 items-center justify-center transition-all"
             >
-              <LogOut strokeWidth={1.75} className="h-[18px] w-[18px]" />
+              <LogOut strokeWidth={1.75} className="h-4 w-4" />
             </button>
-          </>
-        )}
-      </div>
-
-      {/* Theme switch — the illustrated toggle needs ~79px of width, so the
-          icon-rail keeps a compact button instead. */}
-      <div className={cn("pb-4", collapsed ? "px-3" : "px-4")}>
-        {collapsed ? (
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="flex h-11 w-11 items-center justify-center rounded-md transition-colors text-neutral-500 hover:bg-black/[0.04] hover:text-neutral-900 dark:text-white/60 dark:hover:bg-white/[0.06] dark:hover:text-white"
-          >
-            {theme === "dark" ? (
-              <Moon strokeWidth={2} className="h-[18px] w-[18px]" />
-            ) : (
-              <Sun strokeWidth={2} className="h-[18px] w-[18px]" />
-            )}
-          </button>
-        ) : (
-          <div className="flex justify-center">
-            <ThemeSwitch size={13} />
           </div>
+        ) : (
+          <button
+            onClick={signOut}
+            title={tx("Sign Out", "साइन आउट")}
+            aria-label="Sign out"
+            className="bhoomix-sidebar-row bhoomix-sidebar-row-idle flex h-11 w-11 items-center justify-center transition-all"
+          >
+            <LogOut strokeWidth={1.75} className="h-[18px] w-[18px]" />
+          </button>
         )}
       </div>
     </aside>

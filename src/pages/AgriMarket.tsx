@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { AGRI_PRODUCTS as products, type Product } from '@/data/agriProducts';
 import { supabase } from '@/integrations/supabase/client';
+import PageHeader from '@/components/layout/PageHeader';
 
 // Import product images
 
@@ -210,7 +211,7 @@ const AgriMarket = () => {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen">
       <Navigation />
 
       <div className="px-4 lg:px-6 pt-5">
@@ -218,11 +219,12 @@ const AgriMarket = () => {
       </div>
       
       <div className="pt-8 pb-12 px-4 container mx-auto">
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            {t('agriMarketTitle')}
-          </h1>
-          <p className="text-xl text-muted-foreground mb-6">{t('agriMarketDesc')}</p>
+        <div className="mb-12">
+          <PageHeader
+        eyebrow={tx('Farm inputs', 'कृषि सामग्री')}
+        title={t('agriMarketTitle')}
+        lede={t('agriMarketDesc')}
+      />
           
           {/* Search */}
           <div className="max-w-md mx-auto">

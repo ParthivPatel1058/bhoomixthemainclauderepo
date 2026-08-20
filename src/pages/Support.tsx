@@ -1,12 +1,12 @@
 import { Phone, Mail, MapPin, MessageCircle, Clock, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Navigation from '@/components/Navigation';
-import BackButton from '@/components/BackButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import PageShell from '@/components/layout/PageShell';
+import PageHeader from '@/components/layout/PageHeader';
 
 const Support = () => {
   const { language, tx } = useLanguage();
@@ -21,24 +21,20 @@ const Support = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-background">
-      <Navigation />
-
-      <div className="px-4 lg:px-6 pt-5">
-        <BackButton />
-      </div>
-      
-      <div className="pt-8 pb-16 px-4">
-        <div className="container mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              {tx('Help & Support', 'सहायता और समर्थन')}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {tx('We\'re here to help! Reach out to us for any assistance', 'हम मदद के लिए यहां हैं! किसी भी सहायता के लिए हमसे संपर्क करें')}
-            </p>
-          </div>
+    <PageShell width="wide">
+          <PageHeader
+        eyebrow={tx('Help', 'सहायता')}
+        title={tx('Support', 'सहायता')}
+        lede={tx(
+          'Call, write, or come by. Someone answers every one of these.',
+          'कॉल करें, लिखें, या मिलने आएं। इनमें से हर एक का जवाब मिलता है।',
+        )}
+        stats={[
+          { label: tx('Phone', 'फोन'), value: '24/7', emphasis: true },
+          { label: tx('Email reply', 'ईमेल उत्तर'), value: tx('under 24 hrs', '24 घंटे से कम') },
+          { label: tx('Office', 'कार्यालय'), value: tx('Mon-Sat', 'सोम-शनि') },
+        ]}
+      />
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Information */}
@@ -237,9 +233,7 @@ const Support = () => {
               </Card>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </PageShell>
   );
 };
 

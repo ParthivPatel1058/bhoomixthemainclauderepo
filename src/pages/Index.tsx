@@ -1,4 +1,15 @@
-import { ShoppingBag, HelpCircle, Store, Landmark, Bot, Leaf, Truck, Carrot, ScanSearch } from 'lucide-react';
+import React from 'react';
+import {
+  WobloCropAiIcon,
+  WobloMarketIcon,
+  WobloMartIcon,
+  WobloAdvisoryIcon,
+  WobloSchemesIcon,
+  WobloBotIcon,
+  WobloLeafIcon,
+  WobloTruckIcon,
+} from '@/components/ui/WobloIcon';
+import { Carrot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
@@ -29,7 +40,7 @@ interface Feature {
   titleHi: string;
   description: string;
   descriptionHi: string;
-  icon: typeof ScanSearch;
+  icon: React.ComponentType<{ className?: string; size?: number | string }>;
   emoji: string;
   img: string;
   href: string;
@@ -41,15 +52,15 @@ interface Feature {
 }
 
 const FEATURES: Feature[] = [
-  { title: 'Crop Intelligence', titleHi: 'फसल इंटेलिजेंस', description: 'Scan crop photos to identify diseases, browse the disease library, and get treatment advice', descriptionHi: 'फसल की फोटो स्कैन करके रोग पहचानें और उपचार की सलाह पाएं', icon: ScanSearch, emoji: '🔬', img: imgDisease, href: '/crop-disease', cta: 'Scan Now', ctaHi: 'स्कैन करें', gradient: 'primary', badge: 'New', badgeHi: 'नया' },
-  { title: 'Agri Market', titleHi: 'कृषि बाज़ार', description: 'Seeds, fertilizers, tools, and crop protection', descriptionHi: 'बीज, उर्वरक, उपकरण और फसल सुरक्षा', icon: ShoppingBag, emoji: '🛒', img: imgMarket, href: '/agri-market', cta: 'Browse Products', ctaHi: 'उत्पाद देखें', gradient: 'secondary' },
-  { title: 'AgriNova Mart', titleHi: 'एग्रीनोवा मार्ट', description: 'Everyday groceries and farm household supplies', descriptionHi: 'रोज़मर्रा का किराना और घरेलू सामान', icon: Store, emoji: '🏪', img: imgMart, href: '/kisan-mart', cta: 'Browse Store', ctaHi: 'स्टोर देखें', gradient: 'primary' },
-  { title: 'Crop Advisory', titleHi: 'फसल सलाह', description: 'Ask a question or identify crop disease from a photo', descriptionHi: 'प्रश्न पूछें या फोटो से फसल रोग पहचानें', icon: HelpCircle, emoji: '👨‍🌾', img: imgAdvisory, href: '/kisan-help', cta: 'Get Advice', ctaHi: 'सलाह लें', gradient: 'secondary' },
-  { title: 'Government Schemes', titleHi: 'सरकारी योजनाएं', description: 'Explore latest government benefits and schemes for farmers', descriptionHi: 'किसानों के लिए नवीनतम सरकारी लाभ और योजनाओं का अन्वेषण करें', icon: Landmark, emoji: '🏛️', img: imgSchemes, href: '/gov-schemes', cta: 'View Schemes', ctaHi: 'योजनाएं देखें', gradient: 'primary' },
-  { title: 'Robotic Farming', titleHi: 'रोबोटिक कृषि', description: 'Discover modern farming robots and automation technology', descriptionHi: 'आधुनिक कृषि रोबोट और स्वचालन प्रौद्योगिकी की खोज करें', icon: Bot, emoji: '🤖', img: imgRobotic, href: '/robotic-farming', cta: 'Explore Tech', ctaHi: 'तकनीक जानें', gradient: 'secondary' },
-  { title: 'Organic Farming', titleHi: 'जैविक खेती', description: 'Complete guide to organic farming with certified seeds and natural fertilizers', descriptionHi: 'प्रमाणित बीजों और प्राकृतिक उर्वरकों के साथ जैविक खेती की संपूर्ण मार्गदर्शिका', icon: Leaf, emoji: '🌱', img: imgOrganic, href: '/organic-farming', cta: 'Explore Organic', ctaHi: 'जैविक खेती देखें', gradient: 'primary' },
+  { title: 'Crop Intelligence', titleHi: 'फसल इंटेलिजेंस', description: 'Scan crop photos to identify diseases, browse the disease library, and get treatment advice', descriptionHi: 'फसल की फोटो स्कैन करके रोग पहचानें और उपचार की सलाह पाएं', icon: WobloCropAiIcon, emoji: '🔬', img: imgDisease, href: '/crop-disease', cta: 'Scan Now', ctaHi: 'स्कैन करें', gradient: 'primary', badge: 'New', badgeHi: 'नया' },
+  { title: 'Agri Market', titleHi: 'कृषि बाज़ार', description: 'Seeds, fertilizers, tools, and crop protection', descriptionHi: 'बीज, उर्वरक, उपकरण और फसल सुरक्षा', icon: WobloMarketIcon, emoji: '🛒', img: imgMarket, href: '/agri-market', cta: 'Browse Products', ctaHi: 'उत्पाद देखें', gradient: 'secondary' },
+  { title: 'AgriNova Mart', titleHi: 'एग्रीनोवा मार्ट', description: 'Everyday groceries and farm household supplies', descriptionHi: 'रोज़मर्रा का किराना और घरेलू सामान', icon: WobloMartIcon, emoji: '🏪', img: imgMart, href: '/kisan-mart', cta: 'Browse Store', ctaHi: 'स्टोर देखें', gradient: 'primary' },
+  { title: 'Crop Advisory', titleHi: 'फसल सलाह', description: 'Ask a question or identify crop disease from a photo', descriptionHi: 'प्रश्न पूछें या फोटो से फसल रोग पहचानें', icon: WobloAdvisoryIcon, emoji: '👨‍🌾', img: imgAdvisory, href: '/kisan-help', cta: 'Get Advice', ctaHi: 'सलाह लें', gradient: 'secondary' },
+  { title: 'Government Schemes', titleHi: 'सरकारी योजनाएं', description: 'Explore latest government benefits and schemes for farmers', descriptionHi: 'किसानों के लिए नवीनतम सरकारी लाभ और योजनाओं का अन्वेषण करें', icon: WobloSchemesIcon, emoji: '🏛️', img: imgSchemes, href: '/gov-schemes', cta: 'View Schemes', ctaHi: 'योजनाएं देखें', gradient: 'primary' },
+  { title: 'Robotic Farming', titleHi: 'रोबोटिक कृषि', description: 'Discover modern farming robots and automation technology', descriptionHi: 'आधुनिक कृषि रोबोट और स्वचालन प्रौद्योगिकी की खोज करें', icon: WobloBotIcon, emoji: '🤖', img: imgRobotic, href: '/robotic-farming', cta: 'Explore Tech', ctaHi: 'तकनीक जानें', gradient: 'secondary' },
+  { title: 'Organic Farming', titleHi: 'जैविक खेती', description: 'Complete guide to organic farming with certified seeds and natural fertilizers', descriptionHi: 'प्रमाणित बीजों और प्राकृतिक उर्वरकों के साथ जैविक खेती की संपूर्ण मार्गदर्शिका', icon: WobloLeafIcon, emoji: '🌱', img: imgOrganic, href: '/organic-farming', cta: 'Explore Organic', ctaHi: 'जैविक खेती देखें', gradient: 'primary' },
   { title: 'Vegetable Farming', titleHi: 'सब्जी की खेती', description: 'Comprehensive guide to all vegetables, farming methods, and tools', descriptionHi: 'सभी सब्जियों, खेती के तरीकों और उपकरणों की व्यापक मार्गदर्शिका', icon: Carrot, emoji: '🥕', img: imgVegetable, href: '/vegetable-farming', cta: 'View Guide', ctaHi: 'मार्गदर्शिका देखें', gradient: 'secondary' },
-  { title: 'Delivery Partner', titleHi: 'डिलीवरी पार्टनर', description: 'Join as a delivery partner and start earning with flexible hours', descriptionHi: 'डिलीवरी पार्टनर के रूप में शामिल हों और लचीले घंटों में कमाई शुरू करें', icon: Truck, emoji: '🚚', img: imgDelivery, href: '/partner-registration', cta: 'Join Now', ctaHi: 'अभी जुड़ें', gradient: 'primary' },
+  { title: 'Delivery Partner', titleHi: 'डिलीवरी पार्टनर', description: 'Join as a delivery partner and start earning with flexible hours', descriptionHi: 'डिलीवरी पार्टनर के रूप में शामिल हों और लचीले घंटों में कमाई शुरू करें', icon: WobloTruckIcon, emoji: '🚚', img: imgDelivery, href: '/partner-registration', cta: 'Join Now', ctaHi: 'अभी जुड़ें', gradient: 'primary' },
 ];
 
 const Index = () => {
@@ -71,7 +82,7 @@ const Index = () => {
               </span>
             </Reveal>
 
-            <h1 className="font-serif-display uppercase text-[clamp(3rem,10vw,9rem)] text-white mt-6 mb-3 drop-shadow-[0_2px_30px_rgba(0,0,0,0.45)]">
+            <h1 className="hero-display text-white mt-6 mb-4 drop-shadow-[0_2px_30px_rgba(0,0,0,0.45)]">
               <RevealWords
                 immediate
                 key={language}
@@ -134,42 +145,27 @@ Smarter`, `स्मार्ट
           </div>
 
           {/* Premium gooey quick-nav */}
-          {/*
-            Five pills do not fit a phone screen. Scroll the strip itself rather
-            than letting it push the whole page sideways.
-          */}
           <Reveal className="scrollbar-hide mt-14 flex justify-center overflow-x-auto px-4" delay={0.05}>
-            {/* The gooey particle nav looked the same on every page — it had no
-                notion of where you were. The tubelight reads the route, so the
-                glow already sits on the section you are in. */}
             <TubelightNavBar
               items={[
-                { name: tx('Crop AI', 'फसल एआई'), url: '/crop-disease', icon: ScanSearch },
-                { name: tx('Market', 'बाज़ार'), url: '/agri-market', icon: ShoppingBag },
-                { name: tx('Mart', 'मार्ट'), url: '/kisan-mart', icon: Store },
-                { name: tx('Advisory', 'सलाह'), url: '/kisan-help', icon: HelpCircle },
-                { name: tx('Schemes', 'योजनाएं'), url: '/gov-schemes', icon: Landmark },
+                { name: tx('Crop AI', 'फसल एआई'), url: '/crop-disease', icon: WobloCropAiIcon },
+                { name: tx('Market', 'बाज़ार'), url: '/agri-market', icon: WobloMarketIcon },
+                { name: tx('Mart', 'मार्ट'), url: '/kisan-mart', icon: WobloMartIcon },
+                { name: tx('Advisory', 'सलाह'), url: '/kisan-help', icon: WobloAdvisoryIcon },
+                { name: tx('Schemes', 'योजनाएं'), url: '/gov-schemes', icon: WobloSchemesIcon },
               ]}
             />
           </Reveal>
 
-          {/* Above everything when it has something to ask. A follow-up a week
-              after a diagnosis is the one thing we need back from the farmer,
-              and it renders nothing when there is nothing pending. */}
+          {/* Follow-up advisory */}
           <div className="mt-12">
             <FollowUpPrompt />
           </div>
 
-          {/* Weather-driven advice, above the gallery: this is what a farmer
-              opens the app to check, so it should not sit under a link grid. */}
-          <section>
-            <FarmAdvisory />
-          </section>
-
-          {/* Feature gallery — hover-reveal 3×3 grid.
+          {/* Feature gallery — hover-reveal bento grid.
               Negative margins cancel the parent container's padding so the
               grid runs edge to edge instead of sitting in a column. */}
-          <section className="mt-12 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+          <section className="mt-16 mb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
             <GalleryHoverGrid
               heading={tx('Everything you need', 'आपकी हर ज़रूरत')}
               subheading={tx('From seed to sale — explore every tool in one place.', 'बीज से बिक्री तक — हर टूल एक ही जगह।')}
@@ -182,6 +178,11 @@ Smarter`, `स्मार्ट
               }))}
             />
           </section>
+
+          {/* Farm Advisory */}
+          <div className="mt-16">
+            <FarmAdvisory />
+          </div>
         </div>
       </main>
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import PageHeader from '@/components/layout/PageHeader';
 
 interface Shop {
   id: number;
@@ -153,19 +154,18 @@ const ShopLocator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-background">
+    <div className="min-h-screen">
       <NavigationBar />
       
       <div className="pt-8 pb-16 px-4">
         <div className="container mx-auto">
           {/* Header */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              {tx('Find Nearby Shops', 'आस-पास की दुकानें खोजें')}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
-              {tx('Locate agricultural shops near you for seeds, fertilizers, and farming tools', 'बीज, उर्वरक और कृषि उपकरणों के लिए अपने पास की कृषि दुकानों का पता लगाएं')}
-            </p>
+          <div className="mb-12">
+            <PageHeader
+        eyebrow={tx('Nearby', 'आस-पास')}
+        title={tx('Find Nearby Shops', 'आस-पास की दुकानें खोजें')}
+        lede={tx('Agricultural shops near you for seeds, fertilizers, and farming tools', 'बीज, उर्वरक और कृषि उपकरणों के लिए आपके पास की कृषि दुकानें')}
+      />
             
             <Button 
               onClick={handleFindNearby}

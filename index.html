@@ -8,8 +8,19 @@
     <meta name="author" content="Bhoomi" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Latin faces load eagerly. Bricolage Grotesque is the display voice: a
+      variable grotesque with signage roots, which suits a product about mandi
+      boards and rate sheets far better than another luxury serif would.
+
+      Noto Sans Devanagari ships here too, not lazily, because Hindi is the
+      second language on effectively every screen. The remaining ten Indic and
+      Arabic families load on demand from src/lib/fonts.ts when a language that
+      needs them is selected — loading all eleven up front would cost every
+      farmer bandwidth for scripts they will never see.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700;800;900&family=Bodoni+Moda:opsz,wght@6..96,500..900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <meta property="og:description" content="Bhoomi — Tools and Advisory for Farmers" />
