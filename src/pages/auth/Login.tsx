@@ -341,7 +341,7 @@ export default function Login() {
           </div>
 
           <div className="mb-7 text-center">
-            <h1 className="font-display text-[34px] font-semibold leading-tight text-stone-800">
+            <h1 className="font-display text-[clamp(1.5rem,4.5vw,2.125rem)] font-semibold leading-tight text-stone-800 [overflow-wrap:anywhere]">
               {tx("Welcome back", "वापसी पर स्वागत है")}
             </h1>
             <p className="mt-1 text-sm text-stone-500">

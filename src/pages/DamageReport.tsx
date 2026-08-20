@@ -171,9 +171,9 @@ ${shots
         <BackButton />
       </div>
 
-      <div className="container mx-auto max-w-4xl px-4 pb-16 pt-8">
+      <div className="container mx-auto max-w-4xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8">
-          <h1 className="font-serif-display mb-3 text-4xl text-foreground md:text-5xl">
+          <h1 className="page-title mb-3 text-foreground">
             {tx('Crop Damage Report', 'फसल नुकसान रिपोर्ट')}
           </h1>
           <p className="max-w-2xl text-muted-foreground">

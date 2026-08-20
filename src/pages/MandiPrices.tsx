@@ -50,9 +50,9 @@ export default function MandiPrices() {
         <BackButton />
       </div>
 
-      <div className="container mx-auto px-4 pb-16 pt-8">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8 max-w-3xl">
-          <h1 className="font-serif-display mb-3 text-4xl text-foreground md:text-5xl">
+          <h1 className="page-title mb-3 text-foreground">
             {tx('Mandi Prices', 'मंडी भाव')}
           </h1>
           <p className="text-muted-foreground">

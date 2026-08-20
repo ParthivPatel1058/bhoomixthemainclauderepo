@@ -442,13 +442,13 @@ const Orders = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <div className="container mx-auto max-w-3xl px-4 lg:px-6">
+      <div className="container mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="pt-5">
           <BackButton />
         </div>
 
         <header className="pb-6 pt-8">
-          <h1 className="font-serif-display text-4xl text-foreground md:text-5xl">
+          <h1 className="page-title text-foreground">
             {tx('My Orders', 'मेरे ऑर्डर')}
           </h1>
           <p className="mt-1 text-muted-foreground">

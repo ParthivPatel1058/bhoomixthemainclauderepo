@@ -138,7 +138,7 @@ Smarter`, `स्मार्ट
           </Reveal>
         </section>
 
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           {/* Mobile search */}
           <div className="mt-6 md:hidden">
             <SearchBar />

@@ -56,8 +56,8 @@ const Settings = () => {
         <BackButton />
       </div>
       
-      <div className="pt-8 pb-12 px-4 container mx-auto">
-        <h1 className="font-serif-display mb-8 text-4xl text-foreground md:text-5xl">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+        <h1 className="page-title mb-8 text-foreground">
           {t('settingsTitle')}
         </h1>
 
@@ -304,7 +304,7 @@ const Settings = () => {
                 <CardContent className="space-y-6">
                   <div className="glass rounded-2xl p-6 text-center">
                     <div className="text-6xl mb-4">🌾</div>
-                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    <h3 className="mb-2 text-2xl font-semibold tracking-tight text-foreground">
                       KisanSmart
                     </h3>
                     <p className="text-muted-foreground mb-4">

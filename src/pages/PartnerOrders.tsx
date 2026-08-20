@@ -155,7 +155,7 @@ const PartnerOrders = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-muted-foreground">
               {tx('Loading orders...', 'ऑर्डर लोड हो रहे हैं...')}
@@ -170,7 +170,7 @@ const PartnerOrders = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <PageHeader
         eyebrow={tx('Partner', 'पार्टनर')}

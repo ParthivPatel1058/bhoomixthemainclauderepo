@@ -96,7 +96,7 @@ const KisanMart = () => {
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground">
                 <Zap className="h-6 w-6 text-secondary" />
                 {t('kisanMartTitle')}
               </h1>
@@ -159,7 +159,7 @@ const KisanMart = () => {
       </div>
 
       {/* Products Grid - Mobile App Style */}
-      <div className="pt-8 px-4 container mx-auto">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {filteredProducts.map((product) => (
             /*

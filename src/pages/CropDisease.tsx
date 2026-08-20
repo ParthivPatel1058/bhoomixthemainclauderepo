@@ -471,7 +471,7 @@ const CropDisease = () => {
         <BackButton />
       </div>
 
-      <main className="container mx-auto px-4 pt-8 md:pt-12 pb-16 max-w-5xl">
+      <main className="container mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         {/* Any scan still waiting on its outcome, asked before a new one is
             started — the answer is more valuable to us than another photo. */}
         <FollowUpPrompt />
@@ -482,7 +482,7 @@ const CropDisease = () => {
             <ScanSearch className="h-4 w-4" />
             {tx('Crop AI', 'फसल एआई')}
           </span>
-          <h1 className="font-display text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
+          <h1 className="page-title mb-2 text-foreground">
             {tx('Crop Intelligence Center', 'फसल इंटेलिजेंस केंद्र')}
           </h1>
           <p className="text-muted-foreground max-w-2xl">

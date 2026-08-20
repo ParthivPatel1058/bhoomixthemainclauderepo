@@ -299,7 +299,7 @@ const RoboticFarming = () => {
         <BackButton />
       </div>
       
-      <div className="pt-8 pb-12 px-4 container mx-auto">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="mb-12">
           <PageHeader
         eyebrow={tx('Technology', 'तकनीक')}

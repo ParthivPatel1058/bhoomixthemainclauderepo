@@ -49,13 +49,13 @@ export default function SearchResults() {
         <BackButton />
       </div>
 
-      <div className="container mx-auto px-4 pb-12 pt-8">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8">
           <p className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
             <Search className="h-4 w-4" />
             {tx('Search results', 'खोज परिणाम')}
           </p>
-          <h1 className="font-serif-display text-3xl text-foreground md:text-4xl">
+          <h1 className="page-title text-foreground">
             {query ? `"${query}"` : tx('Search BhoomiX', 'BhoomiX में खोजें')}
           </h1>
           {query && (

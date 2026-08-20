@@ -6,6 +6,19 @@
    Editorial luxury type (2026 premium serif direction)
    ============================================================ */
 
+/* The page title, matching <PageHeader>. Nine pages hand-rolled their own
+   size ramp on top of .font-serif-display — text-4xl/5xl, sometimes lg:6xl,
+   sometimes 3xl/4xl — so no two titles were the same size. One class, one
+   fluid ramp, and the size stops being a per-page decision. */
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
 .font-serif-display {
   font-family: var(--font-serif);
   font-weight: 300;

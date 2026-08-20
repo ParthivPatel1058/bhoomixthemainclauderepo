@@ -76,7 +76,7 @@ export default function Welcome() {
         {/* ── Content ──────────────────────────────────────────── */}
         <div className="flex flex-col justify-center gap-7 p-8 sm:p-11">
           <div>
-            <h1 className="font-display text-[34px] font-semibold leading-[1.15] text-stone-800 sm:text-[40px]">
+            <h1 className="font-display text-[clamp(1.5rem,4.5vw,2.5rem)] font-semibold leading-[1.15] text-stone-800 [overflow-wrap:anywhere]">
               {tx("Sign in to continue", "जारी रखने के लिए साइन इन करें")}
             </h1>
             <p className="mt-2 text-stone-500">

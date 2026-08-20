@@ -68,14 +68,14 @@ const VegetableFarming = () => {
     <div className="min-h-screen">
       <Navigation />
 
-      <div className="container mx-auto px-4 lg:px-6">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="pt-5">
           <BackButton />
         </div>
 
         {/* Page header */}
         <Reveal className="max-w-3xl pb-10 pt-8" blur distance={22}>
-          <h1 className="font-serif-display mb-3 text-4xl text-foreground md:text-5xl lg:text-6xl">
+          <h1 className="page-title mb-3 text-foreground">
             {tx('Vegetable Farming', 'सब्जी की खेती')}
           </h1>
           <p className="text-base leading-relaxed text-muted-foreground md:text-lg">

@@ -95,9 +95,9 @@ const GovSchemes = () => {
         <BackButton />
       </div>
 
-      <div className="container mx-auto px-4 pb-16 pt-8">
+      <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="max-w-3xl pb-8">
-          <h1 className="font-serif-display mb-3 text-4xl text-foreground md:text-5xl lg:text-6xl">
+          <h1 className="page-title mb-3 text-foreground">
             {tx('Government Schemes', 'सरकारी योजनाएं')}
           </h1>
           <p className="text-base leading-relaxed text-muted-foreground md:text-lg">

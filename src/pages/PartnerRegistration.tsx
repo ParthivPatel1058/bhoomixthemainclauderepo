@@ -113,7 +113,7 @@ const PartnerRegistration = () => {
         <BackButton />
       </div>
       
-      <div className="pt-8 pb-12 px-4 container mx-auto max-w-2xl">
+      <div className="container mx-auto max-w-2xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 animate-float">
             <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl" />
