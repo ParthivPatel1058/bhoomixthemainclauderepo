@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { trackSearch } from '@/lib/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
+import SpotlightSearch from '@/components/ui/spotlight-search';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWeather } from '@/hooks/useWeather';
 import { useAddresses, formatAddress } from '@/hooks/useAddresses';
@@ -70,16 +71,19 @@ const Navigation = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [spotlight, setSpotlight] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const initials = (user?.email ?? 'PA').slice(0, 2).toUpperCase();
 
-  // Cmd/Ctrl-K keyboard shortcut to focus search
+  // Cmd/Ctrl-K opens the spotlight. The badge in the search field has
+  // advertised this shortcut all along, but it only focused the inline input —
+  // which is not what a ⌘K badge means to anyone who has used one.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        searchRef.current?.focus();
+        setSpotlight(true);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -102,6 +106,8 @@ const Navigation = () => {
   ];
 
   return (
+    <>
+    <SpotlightSearch open={spotlight} onClose={() => setSpotlight(false)} />
     <nav className="sticky top-3 z-50 mx-3 lg:mx-5 xl:mx-6 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
       <div
         /* One treatment for both themes: a deep ink-green glass bar.
@@ -196,6 +202,9 @@ const Navigation = () => {
             <input
               ref={searchRef}
               value={query}
+              readOnly
+              onFocus={() => setSpotlight(true)}
+              onClick={() => setSpotlight(true)}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tx('Search crops, products, advisory…', 'फसल, उत्पाद, सलाह खोजें…')}
               className="h-10 w-full rounded-full border pl-10 pr-14 font-medium outline-none transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 border-white/[0.12] bg-white/[0.06] text-white placeholder:text-white/45 focus:border-primary/60 focus:bg-black/60 focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.25)]"
@@ -340,6 +349,7 @@ const Navigation = () => {
 
       <SettingsSidebar open={settingsOpen} onOpenChange={setSettingsOpen} />
     </nav>
+    </>
   );
 };
 
