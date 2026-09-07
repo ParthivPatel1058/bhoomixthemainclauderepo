@@ -19,16 +19,14 @@ export interface MandiPrice {
  * Covers 3,000+ regulated markets and 200+ commodities, refreshed daily by the
  * Directorate of Marketing & Inspection.
  *
- * The key is free and self-serve — register at data.gov.in and copy it from
- * *My Account* — but it is per-account, so it cannot be shipped in the repo.
- * The widely shared public demo key is permanently rate limited (verified: it
- * returns `{"error":"Rate limit exceeded"}` on every call), which is why the
- * hook reports a missing key rather than silently falling back to it.
+ * Everything goes through the `mandi-prices` edge function. There used to be a
+ * direct browser call here as a fallback, reading `VITE_DATAGOV_API_KEY`, and
+ * it was removed for two reasons: Vite inlines any `VITE_`-prefixed value into
+ * the public bundle, and — worse — that path trusted the upstream
+ * `filters[state]` parameter, which returns rows from other states. A farmer
+ * being shown Andhra Pradesh's rate under a "Madhya Pradesh" heading is a
+ * costlier failure than the page saying it cannot load.
  */
-const RESOURCE_ID = '9ef84268-d588-465a-a308-a864a43d0070';
-const BASE = `https://api.data.gov.in/resource/${RESOURCE_ID}`;
-const API_KEY = import.meta.env.VITE_DATAGOV_API_KEY as string | undefined;
-
 export type MandiStatus = 'loading' | 'ok' | 'no-key' | 'error' | 'empty';
 
 interface Options {
@@ -38,75 +36,42 @@ interface Options {
   limit?: number;
 }
 
+/** The function answers 503 when its DATAGOV_API_KEY secret is missing. */
+async function statusFromError(error: unknown): Promise<MandiStatus> {
+  const context = (error as { context?: unknown })?.context as Response | undefined;
+  return context?.status === 503 ? 'no-key' : 'error';
+}
+
 export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
   const [prices, setPrices] = useState<MandiPrice[]>([]);
   const [status, setStatus] = useState<MandiStatus>('loading');
 
   useEffect(() => {
-    // No early return on a missing key: the edge function is the normal path
-    // and carries the key itself. A key in the browser is the exception now,
-    // kept only as a fallback for local work against an undeployed function.
     let cancelled = false;
     setStatus('loading');
 
     (async () => {
-      // Preferred path: the edge function holds the key server-side and caches
-      // for an hour. Falls through to the direct call below when the function
-      // is not deployed yet, so prices never simply stop working.
       try {
-        const { data, error } = await supabase.functions.invoke('mandi-prices', {
-          body: { state, commodity, limit },
-        });
-        if (!error && Array.isArray((data as { prices?: MandiPrice[] })?.prices)) {
-          if (cancelled) return;
-          const viaProxy = (data as { prices: MandiPrice[] }).prices;
-          setPrices(viaProxy);
-          setStatus(viaProxy.length ? 'ok' : 'empty');
-          return;
-        }
-      } catch {
-        // Function absent or erroring — fall back to the direct call.
-      }
-
-      // The function is the only path in production. Reaching here without a
-      // key means it is unreachable and there is nothing left to try.
-      if (!API_KEY) {
-        if (!cancelled) setStatus('no-key');
-        return;
-      }
-
-      try {
-        const params = new URLSearchParams({
-          'api-key': API_KEY,
-          format: 'json',
-          limit: String(limit),
-        });
-        if (state) params.set('filters[state]', state);
-        if (commodity) params.set('filters[commodity]', commodity);
-
-        const res = await fetch(`${BASE}?${params}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        // The platform answers 200 with an `error` body for a bad or throttled
-        // key, so a successful status alone is not enough to trust the payload.
-        if (data?.error) throw new Error(String(data.error));
-
-        const records: MandiPrice[] = (data?.records ?? []).map((r: Record<string, string>) => ({
-          state: r.state ?? '',
-          district: r.district ?? '',
-          market: r.market ?? '',
-          commodity: r.commodity ?? '',
-          variety: r.variety ?? '',
-          arrivalDate: r.arrival_date ?? '',
-          minPrice: Number(r.min_price) || 0,
-          maxPrice: Number(r.max_price) || 0,
-          modalPrice: Number(r.modal_price) || 0,
-        }));
+        const { data, error } = await supabase.functions.invoke<{ prices?: MandiPrice[] }>(
+          'mandi-prices',
+          { body: { state, commodity, limit } },
+        );
 
         if (cancelled) return;
-        setPrices(records);
-        setStatus(records.length ? 'ok' : 'empty');
+
+        if (error) {
+          setStatus(await statusFromError(error));
+          return;
+        }
+
+        const rows = Array.isArray(data?.prices) ? data.prices : null;
+        if (!rows) {
+          setStatus('error');
+          return;
+        }
+
+        setPrices(rows);
+        setStatus(rows.length ? 'ok' : 'empty');
       } catch {
         if (!cancelled) setStatus('error');
       }
@@ -117,5 +82,5 @@ export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
     };
   }, [state, commodity, limit]);
 
-  return { prices, status, hasKey: Boolean(API_KEY) };
+  return { prices, status };
 }

@@ -71,15 +71,18 @@ export default function MandiPrices() {
             </h2>
             <p className="mb-4 max-w-2xl text-muted-foreground">
               {tx(
-                'Live prices come from the Government of India open data platform. The key is free and takes about two minutes — register, open My Account, and copy the key.',
-                'भाव भारत सरकार के ओपन डेटा प्लेटफ़ॉर्म से आते हैं। कुंजी निःशुल्क है और लगभग दो मिनट लगते हैं — पंजीकरण करें, My Account खोलें, और कुंजी कॉपी करें।',
+                'Live prices come from the Government of India open data platform. The key is free and takes about two minutes — register, open My Account, and copy the key. It is then set once on the server, not in the app.',
+                'भाव भारत सरकार के ओपन डेटा प्लेटफ़ॉर्म से आते हैं। कुंजी निःशुल्क है और लगभग दो मिनट लगते हैं — पंजीकरण करें, My Account खोलें, और कुंजी कॉपी करें। इसे सर्वर पर एक बार सेट किया जाता है, ऐप में नहीं।',
               )}
             </p>
             <pre className="mb-4 overflow-x-auto rounded-xl bg-black/[0.06] p-4 text-sm dark:bg-white/[0.06]">
-              <code>VITE_DATAGOV_API_KEY="your-key-here"</code>
+              <code>supabase secrets set DATAGOV_API_KEY=your-key-here</code>
             </pre>
             <p className="mb-5 text-sm text-muted-foreground">
-              {tx('Add that line to .env, then restart the dev server.', 'इसे .env में जोड़ें, फिर सर्वर पुनः चालू करें।')}
+              {tx(
+                'Run that once, then redeploy the mandi-prices function.',
+                'इसे एक बार चलाएँ, फिर mandi-prices फ़ंक्शन दोबारा डिप्लॉय करें।',
+              )}
             </p>
             <a
               href="https://www.data.gov.in/"

@@ -1,21 +1,23 @@
 /**
- * Gemini AI client for BhoomiX.
+ * AI client for BhoomiX crop vision and Kisan advisory chat.
  *
- * Provides crop detection, disease diagnosis, and agricultural chat
- * using the Gemini API directly from the browser. The API key is read from
- * the VITE_GEMINI_API_KEY environment variable so it is bundled at build time.
+ * Calls the Supabase Edge Functions rather than a model provider directly, so
+ * no provider key is ever shipped to the browser. A Vite `VITE_*` variable is
+ * inlined into the public bundle at build time — anyone can read it in DevTools
+ * — which is why the keys live in Supabase secrets instead.
  *
- * NOTE: This is intentionally client-side. For production, move the key to a
- * server-side edge function (Supabase already has the `crop-vision` and
- * `kisan-ai-chat` functions set up for that).
+ *   crop-vision    structured crop identification and disease diagnosis
+ *   kisan-ai-chat  advisory chat, text and image
+ *
+ * Set the provider keys once, server-side:
+ *   supabase secrets set GEMINI_API_KEY=...   used by crop-vision and translate
+ *   supabase secrets set NVIDIA_API_KEY=...   used by kisan-ai-chat
+ *
+ * The exported names are unchanged so the two calling pages (CropDisease,
+ * KisanHelp) did not have to be touched.
  */
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-
-// Model to use — flash is fast, cheap, and supports vision.
-const MODEL = 'gemini-2.0-flash';
-
-const GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { supabase } from '@/integrations/supabase/client';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -39,237 +41,108 @@ export interface CropVisionResult {
 /* Internal helpers                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Strip the `data:image/…;base64,` prefix and return {mimeType, data}. */
-function parseDataUrl(dataUrl: string) {
-  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-  if (!match) throw new Error('Image must be a base64 data URL');
-  return { mimeType: match[1], data: match[2] };
+/** Only 'en' and 'hi' are understood server-side; anything else falls back. */
+function normaliseLanguage(language: string): 'en' | 'hi' {
+  return language === 'hi' ? 'hi' : 'en';
 }
 
-async function callGemini(body: Record<string, unknown>): Promise<string> {
-  const res = await fetch(`${GENERATE_URL}?key=${GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+/**
+ * The edge functions answer failures with `{ error: string }` and a non-2xx
+ * status. supabase-js turns that into a FunctionsHttpError and hangs the raw
+ * Response off `context`, so the readable message has to be dug out of there.
+ */
+async function readEdgeError(error: unknown): Promise<string | null> {
+  const context = (error as { context?: unknown }).context;
+  if (!context || typeof (context as Response).json !== 'function') return null;
 
-  if (!res.ok) {
-    const text = await res.text();
-    console.error('Gemini error', res.status, text.slice(0, 500));
-    if (res.status === 429) throw new Error('Too many requests. Try again shortly.');
-    throw new Error('Could not get a response from the AI right now');
+  try {
+    const payload = await (context as Response).json();
+    return typeof payload?.error === 'string' ? payload.error : null;
+  } catch {
+    return null;
+  }
+}
+
+async function invokeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+
+  if (error) {
+    const message = await readEdgeError(error);
+    console.error(`Edge function "${name}" failed`, message ?? error);
+    throw new Error(message ?? 'Could not reach the AI service right now');
   }
 
-  const json = await res.json();
-  const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    console.error('Gemini returned no content', JSON.stringify(json).slice(0, 500));
-    throw new Error('AI returned an empty response');
-  }
-  return text;
+  if (!data) throw new Error('The AI returned an empty response');
+  return data;
 }
 
 /* ------------------------------------------------------------------ */
 /* Crop Vision (crop detection + disease diagnosis)                   */
 /* ------------------------------------------------------------------ */
 
-function cropVisionSchema(mode: 'crop' | 'disease') {
-  const common = {
-    isPlant: { type: 'BOOLEAN' },
-    crop: { type: 'STRING' },
-    confidence: { type: 'NUMBER' },
-    summary: { type: 'STRING' },
-    advisory: { type: 'ARRAY', items: { type: 'STRING' } },
-  };
-
-  if (mode === 'crop') {
-    return {
-      type: 'OBJECT',
-      properties: {
-        ...common,
-        stage: { type: 'STRING' },
-        health: { type: 'STRING', enum: ['Healthy', 'Stressed', 'Diseased', 'Unknown'] },
-      },
-      required: ['isPlant', 'crop', 'confidence', 'summary', 'advisory', 'stage', 'health'],
-    };
-  }
-
-  return {
-    type: 'OBJECT',
-    properties: {
-      ...common,
-      disease: { type: 'STRING' },
-      severity: { type: 'STRING', enum: ['High', 'Medium', 'Low', 'None'] },
-      symptoms: { type: 'STRING' },
-      treatment: { type: 'ARRAY', items: { type: 'STRING' } },
-    },
-    required: ['isPlant', 'crop', 'confidence', 'summary', 'advisory', 'disease', 'severity', 'symptoms', 'treatment'],
-  };
-}
-
-function cropVisionPrompt(mode: 'crop' | 'disease', language: string) {
-  const langLine =
-    language === 'hi'
-      ? 'Write EVERY string value in Hindi (Devanagari script), including crop and disease names. Do not use English.'
-      : 'Write every string value in plain English.';
-
-  const audience =
-    'You are an agronomy assistant for smallholder farmers in India. Advice must be practical, ' +
-    'low-cost, locally available, and safe. Prefer cultural and organic measures first; if you name ' +
-    'a chemical, give the active ingredient rather than a brand.';
-
-  const notPlant =
-    'If the photo does not clearly show a plant or crop, set isPlant to false, set confidence to 0, ' +
-    'and say so in summary instead of guessing.';
-
-  if (mode === 'crop') {
-    return `${audience}
-
-Identify the crop in this photo. ${notPlant}
-
-- crop: the crop or plant name.
-- stage: growth stage you can see (seedling, vegetative, tillering, flowering, fruiting, maturity).
-- health: overall condition visible in the photo.
-- confidence: 0 to 1, how sure you are of the identification.
-- summary: two or three sentences on what you see.
-- advisory: 3 to 5 specific actions for this crop at this stage right now.
-
-${langLine}`;
-  }
-
-  return `${audience}
-
-Diagnose the problem visible on this crop. ${notPlant}
-
-- crop: the affected crop.
-- disease: the most likely disease, pest or deficiency. If the plant looks healthy, use the word for "no disease detected" and set severity to None.
-- severity: how far it has progressed.
-- confidence: 0 to 1, how sure you are of the diagnosis.
-- symptoms: the visible signs you based the diagnosis on.
-- summary: two or three sentences a farmer can act on.
-- treatment: 3 to 5 concrete treatment steps, most urgent first.
-- advisory: 2 to 4 measures to stop it returning next season.
-
-${langLine}`;
-}
-
 /**
- * Analyse a crop or disease image using Gemini vision.
- * Returns the structured result, identical to what the `crop-vision`
- * edge function returns.
+ * Analyse a crop or disease image.
+ *
+ * The prompt, the response schema and the model all live in the `crop-vision`
+ * edge function, so the diagnosis stays identical no matter which client asks.
  */
 export async function analyzeCropImage(
   imageDataUrl: string,
   mode: 'crop' | 'disease',
   language: string,
 ): Promise<{ mode: string; language: string; result: CropVisionResult }> {
-  const { mimeType, data } = parseDataUrl(imageDataUrl);
-
-  const text = await callGemini({
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          { text: cropVisionPrompt(mode, language) },
-          { inline_data: { mime_type: mimeType, data } },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      responseMimeType: 'application/json',
-      responseSchema: cropVisionSchema(mode),
-    },
-  });
-
-  let result: CropVisionResult;
-  try {
-    result = JSON.parse(text);
-  } catch {
-    console.error('Gemini returned non-JSON for crop vision', text.slice(0, 300));
-    throw new Error('Could not analyse the image right now');
+  if (!imageDataUrl.startsWith('data:image/')) {
+    throw new Error('Image must be a base64 data URL');
   }
 
-  return { mode, language, result };
+  return invokeFunction<{ mode: string; language: string; result: CropVisionResult }>(
+    'crop-vision',
+    { image: imageDataUrl, mode, language: normaliseLanguage(language) },
+  );
 }
 
 /* ------------------------------------------------------------------ */
 /* Kisan AI Chat (text + image)                                       */
 /* ------------------------------------------------------------------ */
 
-const IDENTITY_EN =
-  'Your name is BhoomiX AgriNova, an AI assistant trained by BhoomiX for Indian agriculture. ' +
-  'If anyone asks what model, AI, LLM, or company you are, who built or trained you, or which technology powers you, ' +
-  'you must ONLY reply that you are trained by BhoomiX AgriNova. ' +
-  'Never mention Google, Gemini, OpenAI, Meta, Llama, ChatGPT, or any other company, provider, or model name. ';
-
-const IDENTITY_HI =
-  'आपका नाम BhoomiX AgriNova है, जो भारतीय कृषि के लिए BhoomiX द्वारा प्रशिक्षित एक AI सहायक है। ' +
-  'यदि कोई पूछे कि आप कौन-सा मॉडल, AI, LLM या कंपनी हैं, आपको किसने बनाया या प्रशिक्षित किया, या आपको कौन-सी तकनीक चलाती है, ' +
-  'तो आपको केवल यह कहना है कि आप BhoomiX AgriNova द्वारा प्रशिक्षित हैं। ' +
-  'Google, Gemini, OpenAI, Meta, Llama, ChatGPT या किसी अन्य कंपनी, प्रदाता या मॉडल का नाम कभी न बताएं। ';
-
-/**
- * Send a text question to the Kisan AI chat (Gemini-backed).
- */
-export async function kisanChat(
-  message: string,
-  language: string,
-): Promise<string> {
-  const isHindi = language === 'hi';
-  const systemPrompt = isHindi
-    ? IDENTITY_HI + 'आप भारतीय किसानों की मदद करने वाले एक विशेषज्ञ कृषि सलाहकार हैं। फसलों, उर्वरकों, कीट नियंत्रण और खेती की तकनीकों के बारे में स्पष्ट, व्यावहारिक सलाह दें। जवाब 2-3 वाक्यों में संक्षिप्त और कार्रवाई योग्य रखें।'
-    : IDENTITY_EN + 'You are an expert agricultural advisor helping Indian farmers. Provide clear, practical advice about crops, fertilizers, pest control, and farming techniques. Keep answers concise and actionable in 2-3 sentences.';
-
-  return callGemini({
-    contents: [
-      { role: 'user', parts: [{ text: systemPrompt + '\n\nUser question: ' + message }] },
-    ],
-    generationConfig: {
-      temperature: 0.6,
-      maxOutputTokens: 500,
-    },
+/** Send a text question to the Kisan advisory chat. */
+export async function kisanChat(message: string, language: string): Promise<string> {
+  const data = await invokeFunction<{ reply: string }>('kisan-ai-chat', {
+    message,
+    type: 'text',
+    language: normaliseLanguage(language),
   });
+
+  return data.reply;
 }
 
-/**
- * Analyse a crop image for diseases via the Kisan AI chat (Gemini vision).
- */
+/** Analyse a crop photo through the Kisan advisory chat. */
 export async function kisanImageAnalysis(
   imageDataUrl: string,
   language: string,
 ): Promise<string> {
-  const { mimeType, data } = parseDataUrl(imageDataUrl);
-  const isHindi = language === 'hi';
+  if (!imageDataUrl.startsWith('data:image/')) {
+    throw new Error('Image must be a base64 data URL');
+  }
 
-  const systemPrompt = isHindi
-    ? IDENTITY_HI + 'आप फसल रोगों में विशेषज्ञता रखने वाले एक पादप रोगविज्ञानी हैं। केवल मुख्य बिंदुओं में संक्षिप्त विश्लेषण दें:\n• रोग का नाम\n• गंभीरता\n• उपचार (1-2 उपाय)\n• रोकथाम टिप\n\nलंबा विवरण न दें, केवल मुख्य बातें।'
-    : IDENTITY_EN + 'You are an expert plant pathologist. Provide BRIEF analysis in key highlights only:\n• Disease name\n• Severity level\n• Treatment (1-2 methods)\n• Prevention tip\n\nDo NOT write long descriptions. Keep it brief and highlight main points only.';
-
-  const analysisPrompt = isHindi
-    ? 'इस फसल की तस्वीर का विश्लेषण करें। केवल मुख्य बिंदुओं में संक्षिप्त जवाब दें।'
-    : 'Analyze this crop image. Provide brief answer in key highlights only.';
-
-  return callGemini({
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          { text: systemPrompt + '\n\n' + analysisPrompt },
-          { inline_data: { mime_type: mimeType, data } },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.6,
-      maxOutputTokens: 500,
-    },
+  const data = await invokeFunction<{ reply: string }>('kisan-ai-chat', {
+    image: imageDataUrl,
+    type: 'image',
+    language: normaliseLanguage(language),
   });
+
+  return data.reply;
 }
 
 /**
- * Whether the Gemini API key is configured.
+ * Whether the AI features can be reached.
+ *
+ * The provider key is now a server-side secret the browser cannot see, so the
+ * only thing checkable from here is that Supabase itself is configured. A
+ * missing provider key surfaces later as a clear error from the edge function.
  */
 export function isGeminiConfigured(): boolean {
-  return Boolean(GEMINI_API_KEY);
+  return Boolean(
+    import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  );
 }

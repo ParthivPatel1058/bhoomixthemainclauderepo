@@ -1,0 +1,323 @@
+{
+  "$brief": "BhoomiX landing page — implementation brief for Manus. Paste this entire JSON in one message. Manus writes and runs real code, so this is a build spec, not a mood board. Follow the tokens exactly.",
+
+  "project": {
+    "name": "BhoomiX Landing",
+    "what": "A standalone marketing landing page for BhoomiX, an Indian agriculture platform. NEW static site, separate from the main app. It links out to https://bhoomix.vercel.app — it does not replace it.",
+    "audience": "Investors, press and competition judges. Desktop first, but must be genuinely usable on a phone.",
+    "single_job": "Make the reader believe two brothers found a real gap and built a real answer to it.",
+    "tone": "Confident and specific. Never breathless. No exclamation marks anywhere on the page."
+  },
+
+  "stack": {
+    "build": "Vite + React 18 + TypeScript + Tailwind CSS 3.4",
+    "motion": "framer-motion — useScroll and useTransform cover everything here",
+    "scroll": "lenis for smooth scroll",
+    "icons": "lucide-react",
+    "fonts": "Google Fonts",
+    "backend": "none. Static content, single build, no CMS.",
+    "forbidden": [
+      "Do NOT add GSAP. Two animation libraries competing for the same scroll position is a bug source, not a capability.",
+      "Do NOT add three.js or @react-three/fiber. There is no 3D scene in this brief; depth comes from layered parallax and material, which is cheaper and holds 60fps on a phone.",
+      "Do NOT add 'use client' — this is Vite, not Next.js. It does nothing.",
+      "Do NOT use Tailwind v4 syntax. Use bg-gradient-to-b, not bg-linear-to-b."
+    ]
+  },
+
+  "concept": {
+    "name": "The Mandi Board",
+    "thesis": "An Indian mandi price board is a physical object that shows crop rates changing through the day. It is the one artifact that belongs to BhoomiX's world, and it justifies every visual decision on this page. The layout is built as a board: extruded surfaces you could press, a live rate ticker, and figures set like a market listing.",
+    "why_two_themes": "Light theme is the daytime mandi — sunlit, physical, extruded, neumorphic. Dark theme is the night market — the same board lit from within, seen through glass. The two themes are the same object at two times of day, NOT a palette inversion. Put this in a code comment so it survives future edits.",
+    "signature_element": "THE RATE TICKER. A horizontal band of crop rates moving continuously across the page. Each rate updates with a split-flap flip, like a real board. In light mode it is a physical extruded strip; in dark mode it becomes an LED board behind glass. This is the one thing the page is remembered by — everything else stays quiet so it can be loud.",
+    "restraint_rule": "Spend the boldness on the ticker. Every other section is disciplined and calm. If a section competes with the ticker, simplify the section."
+  },
+
+  "themes": {
+    "implementation": "CSS custom properties on :root and [data-theme='dark']. A toggle in the header switches the attribute and persists to localStorage. Respect prefers-color-scheme on first visit. Transition background-color and color over 300ms; do NOT transition box-shadow or backdrop-filter, which janks.",
+
+    "light": {
+      "meaning": "Daytime mandi. Sunlit, papery, physical.",
+      "--surface": "150 20% 96%",
+      "--surface-2": "150 16% 92%",
+      "--surface-raised": "150 18% 94%",
+      "--ink": "160 30% 9%",
+      "--ink-soft": "160 12% 38%",
+      "--line": "150 14% 84%",
+      "--marigold": "38 92% 52%",
+      "--marigold-ink": "32 88% 34%",
+      "--indigo": "232 45% 32%",
+      "--leaf": "150 55% 26%",
+      "note": "Two accent hues only — marigold and indigo. Leaf green is for actions. Marigold at 38 92% 52% measures roughly 2.4:1 on the light surface and FAILS AA for text. Use --marigold for fills and the ticker glow only. Any marigold that appears as type uses --marigold-ink. Do not merge these two tokens."
+    },
+
+    "dark": {
+      "meaning": "Night market. The same board, lit from within, seen through glass.",
+      "--surface": "230 30% 7%",
+      "--surface-2": "230 26% 11%",
+      "--surface-raised": "230 24% 14%",
+      "--ink": "150 18% 95%",
+      "--ink-soft": "220 12% 68%",
+      "--line": "230 20% 22%",
+      "--marigold": "38 96% 60%",
+      "--marigold-ink": "38 96% 68%",
+      "--indigo": "232 60% 62%",
+      "--leaf": "156 62% 55%",
+      "note": "The dark ground is indigo-black (hue 230), never neutral grey. That single decision is what stops this looking like every other dark mode. Accent lightness is raised because a saturated marigold that reads well on paper goes muddy on near-black."
+    }
+  },
+
+  "materials": {
+    "rule": "Neumorphism and liquid glass are opposite metaphors — one is carved INTO the page, the other FLOATS ABOVE it. An element is never both. Assign each a job and hold the line.",
+
+    "neumorphism": {
+      "used_for": "Things you press or that feel physical: buttons, the theme toggle, stat tiles, the ticker strip in light mode, section number plates.",
+      "primary_in": "light theme",
+      "tokens_light": {
+        "--neu-light": "0 0% 100% / 0.92",
+        "--neu-shadow": "150 18% 70% / 0.72"
+      },
+      "tokens_dark": {
+        "--neu-light": "230 22% 20% / 0.55",
+        "--neu-shadow": "230 40% 3% / 0.65"
+      },
+      "utilities": {
+        ".neu-raised": "box-shadow: 6px 6px 14px hsl(var(--neu-shadow)), -6px -6px 14px hsl(var(--neu-light));",
+        ".neu-flat": "box-shadow: 3px 3px 8px hsl(var(--neu-shadow)), -3px -3px 8px hsl(var(--neu-light));",
+        ".neu-pressed": "box-shadow: inset 5px 5px 10px hsl(var(--neu-shadow)), inset -5px -5px 10px hsl(var(--neu-light));"
+      },
+      "radius": "14px to 20px. Sharp corners break the illusion of extrusion.",
+      "accessibility_rule": "CRITICAL. Neumorphism signals state with low-contrast soft shadows, which fails WCAG and disappears on a cheap screen in daylight. THE SHADOW CARRIES THE SHAPE; COLOUR AND TEXT CARRY THE MEANING. Never let a shadow be the only signal for pressed, focused, selected or disabled. Focus state is .neu-pressed PLUS a visible 2px --leaf ring at 2px offset. The ring is mandatory.",
+      "hard_constraint": "Neumorphism only works when an element and its parent are the SAME colour. It collapses on photographs and gradients. Never place a neumorphic element on an image."
+    },
+
+    "liquid_glass": {
+      "used_for": "Things that float over content: the sticky header, the theme toggle pill, the ticker housing in dark mode, any overlay.",
+      "primary_in": "dark theme",
+      "recipe_all_four_required": [
+        "backdrop-filter: blur(20px) saturate(180%) — the saturate is what stops it looking like grey fog. Never omit it.",
+        "background: hsl(var(--surface-2) / 0.58)",
+        "border: 1px solid hsl(var(--ink) / 0.12)",
+        "box-shadow: inset 0 1px 0 0 hsl(var(--ink) / 0.16), 0 8px 32px -12px hsl(230 50% 2% / 0.5)"
+      ],
+      "refractive_edge": "The detail that makes it read as liquid rather than merely frosted: a ::before holding a 1px inset gradient ring — linear-gradient(140deg, hsl(var(--ink)/0.35), transparent 40%, transparent 60%, hsl(var(--ink)/0.12)) — masked with mask-composite so only the border shows. Pure CSS. No SVG filter, no shader, no library.",
+      "fallback_required": "@supports not (backdrop-filter: blur(1px)) — fall back to an opaque hsl(var(--surface-2)). Without this, low-end Android renders unreadable text over content.",
+      "performance_limits": [
+        "Maximum FOUR backdrop-filter elements on screen at once.",
+        "Never put backdrop-filter inside a scrolling list.",
+        "Never animate blur radius. Animate opacity or transform instead.",
+        "will-change: transform only on panels that actually move."
+      ]
+    }
+  },
+
+  "typography": {
+    "principle": "Type is the personality of this page, not a delivery vehicle. The display face is signage — it should read like lettering on a market board.",
+    "faces": {
+      "display": {
+        "family": "Archivo Expanded",
+        "weights": [600, 700],
+        "why": "Wide, confident, sign-like. Expanded widths also sit far better beside Devanagari than a condensed face would — condensed display faces have no Indic companion and break the moment the page is translated."
+      },
+      "body": {
+        "family": "Instrument Sans",
+        "weights": [400, 500, 600]
+      },
+      "data": {
+        "family": "Martian Mono",
+        "weights": [400, 600],
+        "why": "Used ONLY for the rate ticker and numeric figures. A mono is justified because the content is tabular market data — it is not decoration."
+      },
+      "indic": "Noto Sans Devanagari, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, Gurmukhi, Oriya, plus Noto Nastaliq Urdu. Load ONLY the script the active language needs — loading all of them is several megabytes."
+    },
+    "scale": {
+      "display": "clamp(3.25rem, 7vw, 6rem) / 0.98, weight 700, letter-spacing -0.02em",
+      "h1": "clamp(2.25rem, 4.5vw, 3.5rem) / 1.05, weight 700, letter-spacing -0.015em",
+      "h2": "clamp(1.75rem, 3vw, 2.5rem) / 1.15, weight 600",
+      "h3": "1.375rem / 1.3, weight 600",
+      "body": "1.0625rem / 1.65, colour --ink-soft",
+      "body-lg": "1.1875rem / 1.7",
+      "eyebrow": "0.75rem / 1.4, weight 600, colour --marigold-ink, letter-spacing 0.16em, uppercase",
+      "figure": "clamp(2.5rem, 4vw, 3.75rem), Martian Mono 600, font-variant-numeric: tabular-nums"
+    },
+    "rules": [
+      "Every numeral on the page uses tabular-nums. Put it on a .figure utility, not per instance.",
+      "The eyebrow is the ONLY uppercase, letter-spaced element on the page. If the page is ever translated to an Indic language, drop the uppercase and the tracking — Devanagari has no capitals, and tracking breaks its headline stroke."
+    ]
+  },
+
+  "motion": {
+    "philosophy": "One orchestrated moment beats scattered effects. The ticker is the motion of this page; everything else is a quiet 500ms fade-up.",
+
+    "kinetic_text": {
+      "primary": {
+        "name": "Rate Ticker",
+        "placement": "A full-bleed band directly under the hero headline, and again as a thin strip pinned to the bottom of the viewport after the hero scrolls past.",
+        "content": "WHEAT ₹2,275/qtl ▲ 1.2%  ·  SOYBEAN ₹4,890/qtl ▼ 0.4%  ·  ONION ₹1,640/qtl ▲ 3.1%  ·  COTTON ₹7,120/qtl ▬  ·  GRAM ₹5,435/qtl ▲ 0.8%  ·  MUSTARD ₹5,650/qtl ▼ 1.1%",
+        "note_on_data": "These figures are illustrative. Label the strip 'Illustrative mandi rates' in small type. Do NOT present invented numbers as live data.",
+        "animation": "Continuous horizontal translateX in a seamless loop, roughly 60s per cycle. Duplicate the content twice in the DOM and translate by -50% so the loop has no seam. Pause on hover. Transform only.",
+        "flip_detail": "Every 4 seconds one random rate flips like a split-flap board: the digit block rotates on rotateX from 0 to -90deg, swaps content at the midpoint, then completes 90 to 0. 320ms, cubic-bezier(0.22, 1, 0.36, 1). This is the signature micro-interaction — get it right.",
+        "light_mode": "The strip is a .neu-raised physical board in --surface-raised.",
+        "dark_mode": "The strip becomes liquid glass over a dark LED field; figures glow in --marigold with a subtle text-shadow."
+      },
+      "secondary": {
+        "name": "Headline word reveal",
+        "spec": "The hero headline animates in word by word on load: each word from opacity 0, y 24px, blur 6px to full — 480ms, 55ms stagger. Once only, never on scroll. Under prefers-reduced-motion, render it plainly with no animation."
+      },
+      "forbidden": [
+        "No typewriter effect.",
+        "No text scramble or letter-shuffle effect.",
+        "No counting-up numbers.",
+        "No cursor-follower, no custom cursor.",
+        "No scroll-jacking."
+      ]
+    },
+
+    "scroll": {
+      "parallax": "Hero only. Three layers with useScroll + useTransform, scrub-linked: background y 0→10%, headline y 0→3%, ticker y 0→-5%. Nearer layers move MORE. Getting this backwards reads as a glitch, not depth.",
+      "section_entry": "Sections fade up 32px over 500ms with a 60ms stagger, triggered once at 20% viewport entry. Transform and opacity only.",
+      "sticky_header": "Transparent at scroll 0; becomes liquid glass between 0 and 80px. Interpolate opacity, not a class toggle."
+    },
+
+    "reduced_motion": "MANDATORY. Under prefers-reduced-motion: reduce — the ticker stops moving and renders as a static row of rates, the flip is disabled, parallax is never created, and section entry is instant. Do not merely shorten durations; skip creating the timelines."
+  },
+
+  "sections": [
+    {
+      "id": "hero",
+      "layout": "Full viewport. Left-aligned, not centred, on a 12-column grid with content in columns 1–8.",
+      "eyebrow": "AGRICULTURE PLATFORM · INDIA",
+      "headline": "The farm was twenty minutes away.",
+      "sub": "Everything in Indore arrives in ten minutes. None of it arrives fresh. BhoomiX connects the field to the door — and the farmer to the buyer, the scheme and the dealer.",
+      "actions": [
+        { "label": "Open the app", "href": "https://bhoomix.vercel.app", "style": "primary, --leaf fill, neumorphic in light, glass in dark" },
+        { "label": "How it works", "style": "text link with an arrow — NOT a second filled button" }
+      ],
+      "below": "The Rate Ticker band, full-bleed.",
+      "background": "A photograph of Indian farmland at low sun, heavily darkened in dark mode. No gradient mesh, no blobs.",
+      "forbidden": "No stat counters in the hero. No floating glass cards with fake metrics."
+    },
+    {
+      "id": "problem",
+      "eyebrow": "THE GAP",
+      "layout": "Two panels side by side, stacked under 900px. Each panel is a neumorphic plate in light, a glass pane in dark.",
+      "panels": [
+        {
+          "title": "In a small town, there is nothing.",
+          "body": "In Pawai, in Panna district, there is no Blinkit and no Zepto. For a small everyday thing, you travel to another town."
+        },
+        {
+          "title": "In the city, there is everything except freshness.",
+          "body": "In Indore you can get anything in ten minutes. But the rosemary was frozen, the corn was frozen, and the leaves for poha were not there at all."
+        }
+      ],
+      "closing_line": "Both problems have the same answer, and it was already sitting outside the city.",
+      "note": "This is the emotional centre of the page. Give it room. Do not compress it into cards."
+    },
+    {
+      "id": "services",
+      "eyebrow": "WHAT IT DOES",
+      "layout": "Not seven equal cards. Two large feature blocks with photographs, then five compact rows with an icon, a title and one line each. Varying the rhythm is what stops this reading as a template.",
+      "features_large": [
+        { "title": "Fresh produce, never frozen", "body": "Direct from a small farmer's field or farm stall to the door. No cold storage in between." },
+        { "title": "Photograph the leaf", "body": "The app names the disease, gives a confidence score, and prescribes a treatment you can buy in the same place." }
+      ],
+      "features_compact": [
+        { "title": "Local kirana ordering", "body": "The shop is already in the village. We route the order to it." },
+        { "title": "Government schemes", "body": "What you qualify for, what it pays, when it closes, and where to apply." },
+        { "title": "Seeds and pesticides", "body": "From dealers whose shops we visited and checked ourselves." },
+        { "title": "Second-hand machinery", "body": "Good equipment a two-acre farmer can actually afford." },
+        { "title": "Mandi prices", "body": "Current rates from Government of India open data." }
+      ]
+    },
+    {
+      "id": "model",
+      "eyebrow": "THE MODEL",
+      "headline": "We own nothing.",
+      "layout": "A four-row comparison, hairline separated, set like a ledger. Figures in Martian Mono.",
+      "rows": [
+        ["Instead of a warehouse", "the customer's own kirana shop"],
+        ["Instead of cold storage", "the farmer's field, the same day"],
+        ["Instead of inventory", "dealers who already hold stock"],
+        ["Instead of manufacturing", "resale of second-hand machinery"]
+      ],
+      "closing_line": "Asset-light by design, not by stage.",
+      "note": "This is the section investors read hardest. Keep it plain. No illustration."
+    },
+    {
+      "id": "languages",
+      "eyebrow": "REACH",
+      "layout": "Full-bleed band. All 23 language names set large, each in its own script, flowing as one paragraph rather than a marquee.",
+      "names": "हिन्दी বাংলা தமிழ் తెలుగు ಕನ್ನಡ മലയാളം ગુજરાતી ਪੰਜਾਬੀ ଓଡ଼ିଆ मराठी অসমীয়া اردو कोंकणी संस्कृतम् मैथिली नेपाली डोगरी बड़ो ᱥᱟᱱᱛᱟᱲᱤ ꯃꯤꯇꯩꯂꯣꯟ کٲشُر سنڌي English",
+      "caption": "23 languages. 11 scripts. Three read right to left.",
+      "requirement": "This section REQUIRES the Noto families listed in typography.faces.indic. Without them it renders as empty boxes. Load them for this section specifically."
+    },
+    {
+      "id": "founders",
+      "eyebrow": "WHO BUILT IT",
+      "layout": "Essay, one column, 68 characters wide, with two photographs breaking the text. NOT a team card grid.",
+      "body": "BhoomiX is built by two brothers. Parthiv is from Pawai, in Panna district — a town with no quick commerce of any kind. He moved to Indore, found a city where everything arrives in ten minutes and nothing arrives fresh, then visited the farms at Deoguradia and realised the produce had been twenty minutes away the whole time.",
+      "facts_strip": [
+        { "label": "Trademark", "value": "Registered" },
+        { "label": "Invested", "value": "₹40,000, their own money" },
+        { "label": "Outside funding", "value": "None" },
+        { "label": "Platform", "value": "Live on the web" }
+      ],
+      "note": "The facts strip is a neumorphic plate in light, glass in dark. Figures in Martian Mono."
+    },
+    {
+      "id": "close",
+      "layout": "Quiet. One line, one button. The ticker runs one last time along the bottom edge.",
+      "headline": "Open the app.",
+      "sub": "Live today, in 23 Indian languages.",
+      "cta": { "label": "bhoomix.vercel.app", "href": "https://bhoomix.vercel.app" }
+    }
+  ],
+
+  "content_rules": {
+    "facts_you_may_state": [
+      "23 Indian languages across 11 scripts, 3 right-to-left",
+      "Trademark registered",
+      "Built and self-funded by two brothers, roughly ₹40,000 of their own money",
+      "No outside funding raised",
+      "Web platform live; mobile apps in development"
+    ],
+    "facts_you_must_not_invent": "Do NOT invent user counts, revenue, GMV, farmer numbers, partner counts, funding, or testimonials. If a number is not in the list above, leave it out. Never write placeholder metrics like '10,000+ farmers' — they read as claims, and this page will be shown to people who verify claims.",
+    "voice": "Plain verbs, sentence case, no filler. The word 'revolutionary' does not appear on this page."
+  },
+
+  "accessibility": {
+    "gates_all_pass_fail": [
+      "All body text meets WCAG AA (4.5:1) in BOTH themes. Re-check every colour after switching theme — this is the most likely place the design breaks.",
+      "Marigold is never used for text at any size. Use --marigold-ink.",
+      "Text over glass meets AA against the LIGHTEST content that can pass behind it, not the average.",
+      "Every interactive element has a visible focus ring: 2px --leaf, 2px offset. A neumorphic or glass focus state alone is not sufficient.",
+      "prefers-reduced-motion stops the ticker, the flip, the parallax and all entry animation.",
+      "The ticker is aria-hidden — it is decorative motion, and a screen reader announcing scrolling rates forever is hostile. Provide the same rates in a static visually-hidden list if they matter.",
+      "Tap targets minimum 44×44px.",
+      "Full keyboard operation in a sensible order, with a skip-to-content link.",
+      "The theme toggle is a real button with an accessible name that states what it will do."
+    ]
+  },
+
+  "performance": {
+    "budget": "Under 180KB of JavaScript, gzipped, on first load.",
+    "lcp": "Under 2.5s on simulated Slow 4G with 4× CPU throttling — not on your laptop.",
+    "images": "AVIF or WebP, explicit width and height, lazy below the fold.",
+    "fonts": "Subset. Preload only the display face and the active body font. font-display: swap.",
+    "lighthouse": "Performance ≥ 90 and Accessibility ≥ 95 on MOBILE.",
+    "rule": "If a visual effect costs more than 20KB of JS, do it in CSS or cut it."
+  },
+
+  "acceptance_criteria": [
+    "npm run build succeeds and tsc --noEmit is clean.",
+    "The ticker loops seamlessly, with no visible seam or jump.",
+    "The split-flap flip fires and reads as a mechanical flip, not a fade.",
+    "Switching theme changes the material metaphor — neumorphic in light, glass in dark — not merely the colours.",
+    "No backdrop-filter element appears in light mode except the header.",
+    "The page is usable at 360px width.",
+    "prefers-reduced-motion produces a completely static page that still communicates everything.",
+    "Every claim on the page appears in content_rules.facts_you_may_state.",
+    "Mobile Lighthouse Performance ≥ 90, Accessibility ≥ 95.",
+    "No console errors or warnings."
+  ]
+}

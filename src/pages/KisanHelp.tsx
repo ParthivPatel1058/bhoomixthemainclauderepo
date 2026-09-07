@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
 import BackButton from '@/components/BackButton';
 import { Button } from '@/components/ui/button';
+import { SmoothInput } from '@/components/ui/smooth-input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { kisanChat, kisanImageAnalysis, isGeminiConfigured } from '@/lib/geminiApi';
@@ -217,10 +218,13 @@ const KisanHelp = () => {
             </div>
 
             <div className="flex gap-2">
-              <input 
-                type="text" 
+              {/* The wrapper carries the padding and background now, so `focus:`
+                  becomes `focus-within:` — focus lands on the inner input. */}
+              <SmoothInput
+                type="text"
                 placeholder={t('askYourQuestion')}
-                className="flex-1 glass rounded-xl px-4 py-3 border-primary/20 focus:border-primary/40 outline-none"
+                aria-label={t('askYourQuestion')}
+                wrapperClassName="flex-1 glass rounded-xl px-4 py-3 border-primary/20 focus-within:border-primary/40"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}

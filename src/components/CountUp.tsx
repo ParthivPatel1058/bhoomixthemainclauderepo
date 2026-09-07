@@ -1,4 +1,8 @@
-import { useInView, useMotionValue, useSpring } from 'motion/react';
+// `framer-motion`, not `motion/react`. Both packages are installed and they are
+// the same library under two names — importing from each shipped two copies of
+// the whole animation runtime in the main chunk. Every other component here
+// uses `framer-motion`, so this file was the only thing dragging in the second.
+import { useInView, useMotionValue, useSpring } from 'framer-motion';
 import { useCallback, useEffect, useRef } from 'react';
 
 interface CountUpProps {

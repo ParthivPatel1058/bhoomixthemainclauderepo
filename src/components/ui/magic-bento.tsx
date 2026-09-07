@@ -144,30 +144,85 @@ export default function MagicBento({
   const navigate = useNavigate();
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const onPointer = useCallback(
-    (e: PointerEvent) => {
-      const grid = gridRef.current;
-      if (!grid) return;
-      for (const el of Array.from(grid.children) as HTMLElement[]) {
-        const r = el.getBoundingClientRect();
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
-        const dx = Math.max(Math.abs(e.clientX - cx) - r.width / 2, 0);
-        const dy = Math.max(Math.abs(e.clientY - cy) - r.height / 2, 0);
-        const dist = Math.hypot(dx, dy);
-        const intensity = Math.max(0, 1 - dist / proximity);
-        el.style.setProperty('--glow', intensity.toFixed(3));
-        el.style.setProperty('--gx', `${e.clientX - r.left}px`);
-        el.style.setProperty('--gy', `${e.clientY - r.top}px`);
-      }
-    },
-    [proximity],
-  );
+  // Proximity glow, without thrashing layout.
+  //
+  // The first version measured every card with getBoundingClientRect on every
+  // pointermove. That is a forced synchronous layout per card per event, and
+  // pointermove fires faster than the display refreshes — nine reflows a frame,
+  // several times a frame, purely to move a glow. It janked the whole page.
+  //
+  // Now the pointer handler only records coordinates. Measuring and writing
+  // happen once per animation frame, and the rects stay cached until something
+  // that could actually move them fires.
+  const pointer = useRef({ x: 0, y: 0 });
+  const rects = useRef<{ el: HTMLElement; r: DOMRect }[]>([]);
+  const rectsDirty = useRef(true);
+  const frame = useRef<number | null>(null);
 
   useEffect(() => {
+    // The glow is decoration, so it is the first thing to go when someone has
+    // asked for less motion — and this removes the listener entirely rather
+    // than running it and discarding the result.
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const tick = () => {
+      frame.current = null;
+
+      if (rectsDirty.current) {
+        rects.current = (Array.from(grid.children) as HTMLElement[]).map((el) => ({
+          el,
+          r: el.getBoundingClientRect(),
+        }));
+        rectsDirty.current = false;
+      }
+
+      const { x, y } = pointer.current;
+      for (const { el, r } of rects.current) {
+        const dx = Math.max(Math.abs(x - (r.left + r.width / 2)) - r.width / 2, 0);
+        const dy = Math.max(Math.abs(y - (r.top + r.height / 2)) - r.height / 2, 0);
+        const intensity = Math.max(0, 1 - Math.hypot(dx, dy) / proximity);
+        el.style.setProperty('--glow', intensity.toFixed(3));
+        el.style.setProperty('--gx', `${x - r.left}px`);
+        el.style.setProperty('--gy', `${y - r.top}px`);
+      }
+    };
+
+    const schedule = () => {
+      if (frame.current === null) frame.current = requestAnimationFrame(tick);
+    };
+
+    const onPointer = (e: PointerEvent) => {
+      pointer.current.x = e.clientX;
+      pointer.current.y = e.clientY;
+      schedule();
+    };
+
+    // Cached rects are viewport-relative, so anything that moves the grid
+    // invalidates them. Marking them dirty is cheap; the re-measure waits for
+    // the next frame that actually needs the numbers.
+    const invalidate = () => {
+      rectsDirty.current = true;
+      schedule();
+    };
+
     window.addEventListener('pointermove', onPointer, { passive: true });
-    return () => window.removeEventListener('pointermove', onPointer);
-  }, [onPointer]);
+    window.addEventListener('scroll', invalidate, { passive: true });
+    window.addEventListener('resize', invalidate, { passive: true });
+
+    const resizeObserver = new ResizeObserver(invalidate);
+    resizeObserver.observe(grid);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointer);
+      window.removeEventListener('scroll', invalidate);
+      window.removeEventListener('resize', invalidate);
+      resizeObserver.disconnect();
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    };
+  }, [proximity]);
 
   return (
     <div

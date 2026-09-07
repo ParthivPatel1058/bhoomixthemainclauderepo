@@ -1432,16 +1432,24 @@ All colors MUST be HSL.
      on navy, which made the two themes look like two different products.
      Same two hues here, on a ground that is ink rather than midnight blue. */
   .dark {
-    --background: 160 24% 6%;
-    --background-start: 158 22% 9%;
-    --background-end: 164 28% 4%;
-    --foreground: 150 20% 97%;
+    /* Pure black ground. The previous values carried a green cast (hue 160),
+       which read as "very dark green" rather than as dark. Neutral black lets
+       the primary green be the only colour on the screen, which is what makes
+       it feel expensive.
 
-    --card: 160 20% 9%;
-    --card-foreground: 150 20% 97%;
+       Surfaces step up in pure greys so panels still separate from the page:
+       ground 0% -> card 5% -> popover 8%. Without that step everything merges
+       into one black rectangle. */
+    --background: 0 0% 0%;
+    --background-start: 0 0% 0%;
+    --background-end: 0 0% 0%;
+    --foreground: 0 0% 97%;
 
-    --popover: 160 20% 11%;
-    --popover-foreground: 150 20% 97%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 97%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 97%;
 
     /* Lifted off the light value so it holds contrast against ink. */
     --primary: 164 62% 46%;
@@ -1450,8 +1458,8 @@ All colors MUST be HSL.
     --secondary: 38 72% 56%;
     --secondary-foreground: 160 30% 6%;
 
-    --muted: 160 14% 16%;
-    --muted-foreground: 150 10% 72%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 72%;
 
     --accent: 38 72% 56%;
     --accent-foreground: 160 30% 6%;
@@ -1469,17 +1477,19 @@ All colors MUST be HSL.
     --destructive: 0 68% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 20% 97% / 0.14;
-    --input: 150 20% 97% / 0.12;
+    --border: 0 0% 100% / 0.14;
+    --input: 0 0% 100% / 0.12;
     --ring: 164 62% 46%;
 
+    /* Shadows go fully black. A tinted shadow on a black ground shows up as a
+       faint coloured halo rather than as depth. */
     --e-raised:
-      0 1px 2px hsl(160 40% 2% / 0.5),
-      0 4px 16px -6px hsl(160 40% 2% / 0.6);
+      0 1px 2px hsl(0 0% 0% / 0.6),
+      0 4px 16px -6px hsl(0 0% 0% / 0.7);
     --e-floating:
-      0 1px 0 hsl(150 20% 97% / 0.10) inset,
-      0 2px 6px hsl(160 40% 2% / 0.4),
-      0 24px 60px -18px hsl(160 40% 2% / 0.7);
+      0 1px 0 hsl(0 0% 100% / 0.10) inset,
+      0 2px 6px hsl(0 0% 0% / 0.5),
+      0 24px 60px -18px hsl(0 0% 0% / 0.8);
 
     --glass-bg: 0 0% 100% / 0.13;
     --glass-border: 0 0% 100% / 0.26;

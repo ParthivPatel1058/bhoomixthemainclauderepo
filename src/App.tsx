@@ -8,7 +8,14 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import SceneParallax from "@/components/SceneParallax";
 import SmoothScroll from "@/components/SmoothScroll";
-import DesignPreview, { DesignPreviewIndex } from "@/pages/DesignPreview";
+// Lazy, not static. These render only under `import.meta.env.DEV`, but a static
+// import still pulls the module — and the lazy() calls it makes at module scope
+// — into the production graph. Deferring it keeps the dev-only preview harness
+// out of the chunk every real visitor downloads.
+const DesignPreview = React.lazy(() => import("@/pages/DesignPreview"));
+const DesignPreviewIndex = React.lazy(() =>
+  import("@/pages/DesignPreview").then((m) => ({ default: m.DesignPreviewIndex })),
+);
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import AppShell from "@/components/AppShell";

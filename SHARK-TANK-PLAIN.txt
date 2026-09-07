@@ -1,0 +1,307 @@
+BHOOMIX - SHARK TANK APPLICATION (PLAIN TEXT)
+
+Plain ASCII only. No curly quotes, no em dashes, no rupee symbol, no
+backslashes, no special characters. Safe to paste into a form that rejects
+them. Anything in [SQUARE BRACKETS] is for you to fill in.
+
+
+===================================================================
+1. BRAND NAME
+===================================================================
+
+BhoomiX
+
+
+===================================================================
+2. ONE LINE PITCH
+===================================================================
+
+An all in one app that tells an Indian farmer what is wrong with his crop,
+what price to sell it at, and how to claim his insurance before the deadline
+runs out.
+
+
+===================================================================
+3. CATEGORY
+===================================================================
+
+Agriculture / AgriTech / Rural Technology / Marketplace
+
+
+===================================================================
+4. WEBSITE
+===================================================================
+
+bhoomix.vercel.app - the farmer app (live)
+bhoomix-partner.vercel.app - the partner and organisation platform
+
+
+===================================================================
+5. THE PROBLEM
+===================================================================
+
+A farmer loses money in three places, and almost never finds out.
+
+He sells at the wrong mandi. On a single day we checked live government
+market data, wheat sold for Rs. 2000 per quintal in Raisen and Rs. 2826 in
+Ratlam. Same crop, same day, same state. A gap of Rs. 826 per quintal. On ten
+quintals that is Rs. 8000 a farmer never sees. Not because of a bad harvest,
+but because nobody told him.
+
+He reads a crop problem too late. By the time damage is obvious to the eye,
+the field is usually past saving. Expert advice exists, but it is a bus ride
+and a working day away.
+
+He misses the insurance window. Under the national crop insurance scheme, a
+localised loss must be reported within 72 hours. Miss it and the claim can be
+rejected outright, no matter how real the loss was.
+
+Existing apps solve exactly one of these. A farmer standing in a struggling
+field still has to open three different apps, or make three phone calls, or
+give up.
+
+
+===================================================================
+6. THE SOLUTION
+===================================================================
+
+BhoomiX puts all three answers on one screen, in the language the farmer
+actually speaks.
+
+It is not a prototype or a mock up. It is a working product with fifteen live
+pages, running today, that anyone can open in a browser without installing
+anything.
+
+
+===================================================================
+7. WHAT IS ACTUALLY BUILT
+===================================================================
+
+CROP INTELLIGENCE
+Photograph a leaf. The app identifies the crop and its growth stage, names
+the likely problem, gives a confidence score, and suggests a remedy the
+farmer can actually buy. Includes a reference library of common crop problems
+with symptoms and immediate actions.
+
+MANDI PRICES
+Daily rates pulled from the Government of India open data platform, covering
+thousands of regulated markets. Filter by crop and by state, see the modal
+price plus the full low to high band. This is the feature that closes the
+Rs. 826 gap.
+
+CROP LOSS REPORTS
+Photographs are stamped with GPS coordinates and the exact time of capture,
+paired with recorded rainfall for those coordinates, inside a visible 72 hour
+countdown. Exports one printable evidence pack formatted for the insurer.
+
+GOVERNMENT SCHEMES
+Ten central and state schemes explained in plain language: who can apply,
+what you actually get, and a direct link to the official application page.
+Most farmers miss schemes because nobody explains them simply.
+
+CROP ADVISORY
+An assistant that answers farming questions in the farmer language, by text
+or by photo, at any hour.
+
+AGRI MARKET
+Seeds, fertiliser, tools and equipment, linked directly from the diagnosis
+that recommended them.
+
+AGRINOVA MART
+Everyday groceries and household supplies with a 10 to 15 minute delivery
+promise, because a farming household buys more than seed.
+
+NEARBY SHOPS AND ORDERS
+Find local agri dealers on a map, place an order, and track it to the door.
+
+FARMING GUIDES
+Organic, vegetable and modern farm technology, explained without a sales
+pitch.
+
+BUILT FOR WHO ACTUALLY FARMS
+23 Indian languages, not just English and Hindi. Sign in by mobile number for
+farmers with no email address at all. Separate views for farmers, delivery
+partners and administrators.
+
+
+===================================================================
+8. WHAT MAKES US DIFFERENT
+===================================================================
+
+We answer what do I do next, not just what is wrong.
+
+Other crop apps in India are good at identifying a problem. Open one and
+check: no mandi rate, no insurance help, no way to buy the remedy it just
+recommended. They are built for the whole country rather than for one
+district reality.
+
+COMPARISON
+
+Problem identification:   Others: Yes    BhoomiX: Yes
+Live mandi prices:        Others: No     BhoomiX: Yes
+Insurance claim help:     Others: No     BhoomiX: Yes
+Buy the remedy:           Others: No     BhoomiX: Yes
+Indian languages:         Others: Some   BhoomiX: 23
+
+OUR REAL MOAT: THE OUTCOME LOOP
+
+Every crop app in India has millions of photographs of unhealthy plants. Not
+one knows what actually fixed them.
+
+Seven days after a diagnosis, BhoomiX asks the farmer one question: did it
+work? Cured, better, no change, or worse. One tap. Every answer makes the
+next farmer advice sharper.
+
+That is a dataset that compounds and cannot be copied by launching a similar
+app. A competitor with more funding can clone our screens in a month. They
+cannot clone three seasons of outcomes. You earn that one harvest at a time.
+
+
+===================================================================
+9. BUSINESS MODEL
+===================================================================
+
+BhoomiX is free for the farmer. That is deliberate. A farmer who is unsure
+whether he can afford advice will not ask for it, and we need him to ask.
+
+Revenue comes from the commerce the advice creates:
+
+1. Commission on marketplace orders - inputs through Agri Market, essentials
+   through AgriNova Mart.
+2. Partner and dealer subscriptions - local agri shops and nurseries pay to
+   be listed, stocked and routed orders through the partner platform.
+3. Delivery margin on fulfilled orders through our registered partner
+   network.
+4. Future: aggregated and anonymised crop outcome insight for input companies
+   and insurers. Only with farmer consent, and never personal data.
+
+[FILL IN: which of these are live today, which are planned, and any pricing
+you have decided]
+
+
+===================================================================
+10. MARKET
+===================================================================
+
+India has roughly 146 million agricultural holdings, over 85 percent of them
+small and marginal farmers. [VERIFY this figure before you submit]
+
+The specific wedge we start from is Madhya Pradesh, where our team is based
+and where we can physically reach farmers.
+
+[FILL IN: your target district and the number of farmers in it. A small real
+number you can defend beats a large one you cannot.]
+
+
+===================================================================
+11. TRACTION
+===================================================================
+
+[FILL IN HONESTLY. Do not inflate this. Sharks check.]
+
+Users registered to date:
+Crop scans completed:
+Orders fulfilled:
+Partner shops onboarded:
+Revenue to date:
+Anything a farmer has said to you, in their words:
+
+Be straight if the numbers are early. We are pre revenue with a fully working
+product and are starting our first district pilot is a respectable answer. An
+inflated number that unravels on stage is not.
+
+
+===================================================================
+12. TEAM
+===================================================================
+
+[FILL IN: names, ages, roles, what each person actually built or does, where
+you study or work, and why this problem matters to you personally]
+
+We are based in Indore, Madhya Pradesh.
+
+The personal connection matters more than the CV here. If anyone on the team
+has family who farms, lead with that.
+
+
+===================================================================
+13. THE ASK
+===================================================================
+
+[FILL IN: Rs. ___ lakh for ___ percent equity]
+
+USE OF FUNDS
+[FILL IN. Be specific and small. A concrete plan for a modest amount beats a
+vague plan for a large one.]
+
+Suggested structure:
+District pilot and farmer onboarding: Rs. ___
+Partner and dealer network build out: Rs. ___
+Product and infrastructure: Rs. ___
+Working capital for marketplace inventory: Rs. ___
+
+
+===================================================================
+14. VISION
+===================================================================
+
+Every farmer in India, in his own language, knowing the right price before he
+sells, catching a crop problem before the field is lost, and never missing an
+insurance deadline again.
+
+Accessible. Transparent. Together.
+
+
+===================================================================
+15. SOCIAL IMPACT - UN SUSTAINABLE DEVELOPMENT GOALS
+===================================================================
+
+BhoomiX contributes to six goals, each tied to a feature that exists today.
+
+SDG 1 - No Poverty
+Closing the mandi price gap and speeding claims protects income the farmer
+has already earned.
+
+SDG 2 - Zero Hunger
+Early identification protects yield before a field is lost.
+
+SDG 8 - Decent Work and Economic Growth
+Fair price discovery for farmers, plus delivery partner livelihoods.
+
+SDG 9 - Industry, Innovation and Infrastructure
+AI and government open data in a smallholder pocket.
+
+SDG 10 - Reduced Inequalities
+23 languages removes the literacy barrier that locks farmers out of digital
+tools.
+
+SDG 13 - Climate Action
+Rainfall recorded with every crop loss report, building a real climate risk
+record.
+
+
+===================================================================
+BEFORE YOU SUBMIT
+===================================================================
+
+THREE THINGS THAT WILL HELP YOU
+
+1. Refresh the wheat numbers. Mandi rates change daily. Open the app, check
+   today spread, and use the current figure. The point survives whatever the
+   numbers are. The gap is always there.
+
+2. Have the app open on your phone. Your single biggest advantage is that
+   this is real. A Shark who opens it and sees live government mandi data
+   loading is worth more than any slide.
+
+3. Know your unit economics. The first hard question will be how do you make
+   money and what does it cost you to get one farmer. Have a number, even a
+   rough one, and say how you got it.
+
+ONE THING TO BE CAREFUL ABOUT
+
+The app currently displays a Trusted by 25000+ farmers line in its interface.
+That is placeholder design copy, not a real figure. Either remove it before
+anyone sees the app, or make it accurate. A Shark who finds an unverifiable
+number on your home screen will doubt every other number you gave them, and
+that is a very hard hole to climb out of.
