@@ -18,7 +18,6 @@ import {
   WobloCropAiIcon,
   WobloAdvisoryIcon,
   WobloMarketIcon,
-  WobloMartIcon,
   WobloSproutIcon,
   WobloLeafIcon,
   WobloBotIcon,
@@ -26,8 +25,6 @@ import {
   WobloShieldIcon,
   WobloSchemesIcon,
   WobloPackageIcon,
-  WobloTruckIcon,
-  WobloSyncIcon,
   WobloShopLocatorIcon,
   WobloSupportIcon,
 } from "@/components/ui/WobloIcon";
@@ -52,7 +49,6 @@ const NAV: Item[] = [
   { path: "/crop-disease", icon: WobloCropAiIcon, label: { en: "Crop Intelligence", hi: "फसल इंटेलिजेंस" } },
   { path: "/kisan-help", icon: WobloAdvisoryIcon, label: { en: "Crop Advisory", hi: "फसल सलाह" } },
   { path: "/agri-market", icon: WobloMarketIcon, label: { en: "Agri Market", hi: "कृषि बाज़ार" } },
-  { path: "/kisan-mart", icon: WobloMartIcon, label: { en: "AgriNova Mart", hi: "एग्रीनोवा मार्ट" } },
   {
     path: "#farming",
     icon: WobloSproutIcon,
@@ -68,15 +64,6 @@ const NAV: Item[] = [
   { path: "/gov-schemes", icon: WobloSchemesIcon, label: { en: "Schemes", hi: "योजनाएं" } },
   { path: "/orders", icon: WobloPackageIcon, label: { en: "Orders", hi: "ऑर्डर" }, badgeKey: "orders" },
   { path: "/addresses", icon: MapPin, label: { en: "Addresses", hi: "पते" } },
-  {
-    path: "#delivery",
-    icon: WobloTruckIcon,
-    label: { en: "Delivery", hi: "डिलीवरी" },
-    children: [
-      { path: "/partner-registration", icon: WobloTruckIcon, label: { en: "Become a Partner", hi: "पार्टनर बनें" } },
-      { path: "/partner-orders", icon: WobloSyncIcon, label: { en: "Partner Orders", hi: "पार्टनर ऑर्डर" } },
-    ],
-  },
   { path: "/shop-locator", icon: WobloShopLocatorIcon, label: { en: "Nearby Shops", hi: "नज़दीकी दुकानें" } },
   { path: "/support", icon: WobloSupportIcon, label: { en: "Support", hi: "सहायता" } },
 ];

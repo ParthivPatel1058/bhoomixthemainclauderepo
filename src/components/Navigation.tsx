@@ -25,7 +25,6 @@ import { useAddresses, formatAddress } from '@/hooks/useAddresses';
 import { WeatherIcon } from './WeatherWidget';
 import GradientText from '@/components/ui/gradient-text';
 import GlareHover from '@/components/ui/glare-hover';
-import StarBorder from '@/components/ui/star-border';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -36,7 +35,6 @@ import {
   WobloOverviewIcon,
   WobloMarketIcon,
   WobloAdvisoryIcon,
-  WobloMartIcon,
   WobloPackageIcon,
 } from '@/components/ui/WobloIcon';
 
@@ -101,14 +99,13 @@ const Navigation = () => {
     { path: '/', icon: WobloOverviewIcon, label: t('home') || 'Home' },
     { path: '/agri-market', icon: WobloMarketIcon, label: t('agriMarket') || 'Agri Market' },
     { path: '/kisan-help', icon: WobloAdvisoryIcon, label: t('kisanHelp') || 'Crop Advisory' },
-    { path: '/kisan-mart', icon: WobloMartIcon, label: t('kisanMart') || 'AgriNova Mart' },
     { path: '/orders', icon: WobloPackageIcon, label: t('myOrders') || 'Orders' },
   ];
 
   return (
     <>
     <SpotlightSearch open={spotlight} onClose={() => setSpotlight(false)} />
-    <nav className="sticky top-3 z-50 mx-3 lg:mx-5 xl:mx-6 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
+    <nav className="sticky top-2 z-50 mx-3 lg:mx-5 xl:mx-6 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300">
       <div
         /* One treatment for both themes: a deep ink-green glass bar.
            The light theme used to paint this white, which put a white pill on
@@ -120,12 +117,12 @@ const Navigation = () => {
 
            The border is warm rather than neutral so the edge picks up the
            ochre rather than reading as a grey outline. */
-        className="relative flex h-[68px] items-center justify-between gap-3 overflow-hidden rounded-full border px-3 sm:px-4 border-[hsl(38_40%_70%_/_0.18)] bg-[hsl(162_26%_9%_/_0.78)] backdrop-blur-2xl backdrop-saturate-150 shadow-[0_1px_0_hsl(0_0%_100%_/_0.10)_inset,0_2px_10px_hsl(160_40%_3%_/_0.28),0_20px_50px_-16px_hsl(160_40%_3%_/_0.55)]"
+        className="relative flex h-[52px] items-center justify-between gap-3 overflow-hidden rounded-full border px-2.5 sm:px-3.5 border-[hsl(38_40%_70%_/_0.16)] bg-[hsl(162_26%_9%_/_0.82)] backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_hsl(0_0%_100%_/_0.09)_inset,0_14px_38px_-14px_hsl(160_40%_3%_/_0.60)]"
       >
         {/* Specular top highlight line for physical depth */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-8 -top-px h-[1.5px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+          className="pointer-events-none absolute inset-x-10 -top-px h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent"
         />
 
         {/* LEFT SECTION: Brand, Weather Pill, and Delivery Address */}
@@ -139,26 +136,26 @@ const Navigation = () => {
               <img
                 src={logo}
                 alt="BhoomiX"
-                className="h-9 w-9 rounded-full object-cover"
+                className="h-8 w-8 rounded-full object-cover"
               />
             </div>
-            <span className="font-display text-[17px] font-bold tracking-[-0.03em] text-white sm:inline">
+            <span className="font-display text-[15px] font-bold tracking-[-0.03em] text-white sm:inline">
               Bhoomi<span className="text-[hsl(38_82%_64%)]">X</span>
             </span>
           </Link>
 
           {/* Weather Capsule */}
           <div
-            className="hidden items-center gap-2 rounded-full border py-1.5 pl-3 pr-3.5 transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09]"
+            className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09]"
           >
             <span className="flex items-center gap-1.5 font-medium text-white/90">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
+              {/* A lit dot, not a pulsing one. The ping this replaced ran on
+                  every route for the life of the session; the glow reads as
+                  "live" without keeping a compositor layer awake. */}
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_2.5px_hsl(152_60%_45%_/_0.22)]" />
               {weather.city}
             </span>
-            <span className="h-3.5 w-px bg-white/15" />
+            <span className="h-3 w-px bg-white/15" />
             <span className="flex items-center gap-1.5 font-semibold text-white">
               <WeatherIcon icon={weather.conditionIcon} className="h-3.5 w-3.5 text-primary" />
               <span>{weather.temperature}°</span>
@@ -172,20 +169,20 @@ const Navigation = () => {
           <Link
             to="/addresses"
             title={deliverTo ?? undefined}
-            className="hidden items-center gap-2 rounded-full border py-1.5 pl-3 pr-3.5 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] md:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.1] hover:border-primary/40 min-w-0 max-w-[210px] lg:max-w-[240px]"
+            className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] md:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.1] hover:border-primary/40 min-w-0 max-w-[200px] lg:max-w-[230px]"
           >
-            <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
             <div className="min-w-0 flex-1">
-              <span className="block font-medium uppercase tracking-wider text-white/60 leading-tight">
+              <span className="block text-[9px] font-medium uppercase tracking-wider text-white/60 leading-[1.2]">
                 {defaultAddress
                   ? tx('Deliver to', 'यहाँ डिलीवरी')
                   : tx('Set location', 'स्थान चुनें')}
               </span>
-              <span className="block truncate font-bold text-white leading-tight">
+              <span className="block truncate text-[11px] font-bold text-white leading-[1.25]">
                 {deliverTo ?? tx('Add address', 'पता जोड़ें')}
               </span>
             </div>
-            <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-white/45" />
+            <ChevronDown className="h-3 w-3 flex-shrink-0 text-white/45" />
           </Link>
         </div>
 
@@ -197,7 +194,7 @@ const Navigation = () => {
           >
             <Search
               strokeWidth={2}
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors group-focus-within:text-primary text-white/45"
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 transition-colors group-focus-within:text-primary text-white/45"
             />
             <input
               ref={searchRef}
@@ -207,7 +204,7 @@ const Navigation = () => {
               onClick={() => setSpotlight(true)}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tx('Search crops, products, advisory…', 'फसल, उत्पाद, सलाह खोजें…')}
-              className="h-10 w-full rounded-full border pl-10 pr-14 font-medium outline-none transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 border-white/[0.12] bg-white/[0.06] text-white placeholder:text-white/45 focus:border-primary/60 focus:bg-black/60 focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.25)]"
+              className="h-8 w-full rounded-full border pl-9 pr-14 text-[13px] font-medium outline-none transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-300 border-white/[0.12] bg-white/[0.06] text-white placeholder:text-white/45 focus:border-primary/60 focus:bg-black/60 focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.25)]"
             />
             <kbd
               className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-full border px-1.5 py-0.5 font-semibold sm:flex border-white/15 bg-white/10 text-white/40"
@@ -228,7 +225,7 @@ const Navigation = () => {
                 })
               }
               aria-label="Notifications"
-              className={`${CTRL_BTN} relative h-9 w-9 sm:h-10 sm:w-10`}
+              className={`${CTRL_BTN} relative h-8 w-8 sm:h-9 sm:w-9`}
             >
               <Bell strokeWidth={2} className="h-4 w-4" />
               <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary ring-black" />
@@ -245,7 +242,7 @@ const Navigation = () => {
             <button
               onClick={() => setSettingsOpen(true)}
               aria-label="Settings"
-              className={`${CTRL_BTN} h-9 w-9 sm:h-10 sm:w-10`}
+              className={`${CTRL_BTN} h-8 w-8 sm:h-9 sm:w-9`}
             >
               <SettingsIcon strokeWidth={2} className="h-4 w-4 transition-transform duration-500 hover:rotate-90" />
             </button>
@@ -256,31 +253,34 @@ const Navigation = () => {
             <button
               onClick={signOut}
               aria-label="Sign out"
-              className={`${CTRL_BTN} h-9 w-9 sm:h-10 sm:w-10`}
+              className={`${CTRL_BTN} h-8 w-8 sm:h-9 sm:w-9`}
             >
               <LogOut strokeWidth={2} className="h-4 w-4" />
             </button>
           </GlareHover>
 
-          {/* User Profile Avatar with Glow / StarBorder */}
-          <StarBorder
-            as="button"
+          {/* User profile.
+              This used to be wrapped in StarBorder, which kept two orbiting
+              radial gradients animating for the life of the session on every
+              route. A warm hairline that lifts on hover carries the same
+              "this is you" weight for none of the frame budget. */}
+          <button
             onClick={() => navigate('/settings')}
             title={user?.email ?? undefined}
-            speed="4s"
-            className="transition-transform duration-300 hover:scale-105"
+            aria-label="Profile and settings"
+            className="group/av rounded-full outline-none ring-offset-0 transition-transform duration-300 hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary/70"
           >
-            <span className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white text-xs font-bold shadow-md">
+            <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-[11px] font-bold text-white ring-1 ring-[hsl(38_60%_72%_/_0.35)] transition-[box-shadow] duration-300 group-hover/av:ring-[hsl(38_82%_64%_/_0.7)]">
               {initials}
             </span>
-          </StarBorder>
+          </button>
 
           {/* Mobile Sheet Menu Trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button
                 aria-label="Menu"
-                className={`${CTRL_BTN} h-9 w-9 sm:h-10 sm:w-10 md:hidden`}
+                className={`${CTRL_BTN} h-8 w-8 sm:h-9 sm:w-9 md:hidden`}
               >
                 <Menu strokeWidth={2} className="h-4 w-4" />
               </button>

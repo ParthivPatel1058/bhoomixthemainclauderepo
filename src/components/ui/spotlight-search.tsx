@@ -11,12 +11,9 @@ import {
   Search,
   ShieldAlert,
   ShoppingBag,
-  Store,
-  Truck,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AGRI_PRODUCTS } from '@/data/agriProducts';
-import { MART_PRODUCTS } from '@/data/martProducts';
 import { cn } from '@/lib/utils';
 
 /**
@@ -70,12 +67,10 @@ const DESTINATIONS: Destination[] = [
   { label: 'Crop Intelligence', labelHi: 'फसल इंटेलिजेंस', hint: 'Scan a leaf, name the disease', hintHi: 'पत्ती स्कैन करें, रोग जानें', to: '/crop-disease', icon: ScanSearch },
   { label: 'Mandi Prices', labelHi: 'मंडी भाव', hint: "Today's government rates", hintHi: 'आज के सरकारी भाव', to: '/mandi-prices', icon: IndianRupee },
   { label: 'Agri Market', labelHi: 'कृषि बाज़ार', hint: 'Seeds, fertiliser, tools', hintHi: 'बीज, उर्वरक, उपकरण', to: '/agri-market', icon: ShoppingBag },
-  { label: 'AgriNova Mart', labelHi: 'एग्रीनोवा मार्ट', hint: 'Groceries and household', hintHi: 'किराना और घरेलू सामान', to: '/kisan-mart', icon: Store },
   { label: 'Damage Claim', labelHi: 'नुकसान दावा', hint: 'Report inside the 72-hour window', hintHi: '72 घंटे के भीतर रिपोर्ट करें', to: '/damage-report', icon: ShieldAlert },
   { label: 'Schemes', labelHi: 'योजनाएं', hint: 'Central and state benefits', hintHi: 'केंद्र और राज्य की योजनाएं', to: '/gov-schemes', icon: Landmark },
   { label: 'Orders', labelHi: 'ऑर्डर', hint: 'Track and reorder', hintHi: 'ट्रैक करें और दोबारा ऑर्डर करें', to: '/orders', icon: Package },
   { label: 'Organic Farming', labelHi: 'जैविक खेती', hint: 'Certified seed and natural inputs', hintHi: 'प्रमाणित बीज और प्राकृतिक सामग्री', to: '/organic-farming', icon: Leaf },
-  { label: 'Become a Partner', labelHi: 'पार्टनर बनें', hint: 'Deliver for BhoomiX', hintHi: 'BhoomiX के लिए डिलीवरी करें', to: '/partner-registration', icon: Truck },
 ];
 
 interface Hit {
@@ -127,17 +122,9 @@ export default function SpotlightSearch({ open, onClose }: SpotlightSearchProps)
       icon: ShoppingBag,
     }));
 
-    const mart: Hit[] = MART_PRODUCTS.filter((p) => has(p.name, p.nameHi, p.category)).map((p) => ({
-      key: `m:${p.id}`,
-      label: tx(p.name, p.nameHi),
-      hint: tx('AgriNova Mart', 'एग्रीनोवा मार्ट'),
-      to: `/search?q=${encodeURIComponent(value.trim())}`,
-      icon: Store,
-    }));
-
     // Destinations first: someone typing "mandi" wants the page, not a sack of
     // seed whose description happens to contain the word.
-    return [...pages, ...agri, ...mart].slice(0, MAX_HITS);
+    return [...pages, ...agri].slice(0, MAX_HITS);
   }, [value, tx]);
 
   useEffect(() => setActive(0), [value]);

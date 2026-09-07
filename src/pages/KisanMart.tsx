@@ -91,7 +91,7 @@ const KisanMart = () => {
       </div>
       
       {/* Sticky header — stays in flow so it respects the sidebar offset */}
-      <div className="sticky top-[76px] z-40 mx-3 lg:mx-4 xl:mx-6 mt-4 glass-strong !rounded-2xl">
+      <div className="sticky top-[64px] z-40 mx-3 lg:mx-4 xl:mx-6 mt-4 glass-strong !rounded-2xl">
         <div className="px-4 py-4">
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-4">

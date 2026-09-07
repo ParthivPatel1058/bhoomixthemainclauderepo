@@ -20,7 +20,6 @@ export default function Footer() {
       heading: tx('Buy & Sell', 'खरीदें और बेचें'),
       links: [
         { label: tx('Agri Market', 'कृषि बाज़ार'), href: '/agri-market' },
-        { label: tx('AgriNova Mart', 'एग्रीनोवा मार्ट'), href: '/kisan-mart' },
         { label: tx('Shop Locator', 'दुकान खोजें'), href: '/shop-locator' },
         { label: tx('My Orders', 'मेरे ऑर्डर'), href: '/orders' },
       ],
@@ -31,7 +30,6 @@ export default function Footer() {
         { label: tx('Government Schemes', 'सरकारी योजनाएं'), href: '/gov-schemes' },
         { label: tx('Support', 'सहायता'), href: '/support' },
         { label: tx('Settings', 'सेटिंग्स'), href: '/settings' },
-        { label: tx('Become a partner', 'पार्टनर बनें'), href: '/partner-registration' },
       ],
     },
   ];

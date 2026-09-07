@@ -2,12 +2,10 @@ import React from 'react';
 import {
   WobloCropAiIcon,
   WobloMarketIcon,
-  WobloMartIcon,
   WobloAdvisoryIcon,
   WobloSchemesIcon,
   WobloBotIcon,
   WobloLeafIcon,
-  WobloTruckIcon,
 } from '@/components/ui/WobloIcon';
 import { Carrot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +19,7 @@ import GalleryHoverGrid from '@/components/ui/gallery-hover-carousel';
 import { cn } from '@/lib/utils';
 import CountUp from '@/components/CountUp';
 import ParallaxHero, { ParallaxLayer } from '@/components/ui/parallax-hero';
-import HillDivider from '@/components/ui/hill-divider';
+import HeroImage from '@/components/ui/hero-image';
 import TubelightNavBar from '@/components/ui/tubelight-navbar';
 import Reveal, { RevealWords } from '@/components/Reveal';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
@@ -31,13 +29,11 @@ import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
 const W = (id: string) => `https://images.unsplash.com/photo-${id}?w=900&q=80&auto=format&fit=crop`;
 const imgDisease = W('1416879595882-3373a0480b5b');   // greenhouse, warm light
 const imgMarket = W('1523348837708-15d4a09cfac2');    // fresh vegetables
-const imgMart = W('1488459716781-31db52582fe9');      // produce market
 const imgAdvisory = W('1625246333195-78d9c38ad449');  // Indian farmer
 const imgSchemes = W('1500382017468-9049fed747ef');   // wheat field
 const imgRobotic = W('1595246140625-573b715d11dc');   // agri drone / tech
 const imgOrganic = W('1592982537447-7440770cbfc9');   // hands in soil, warm
 const imgVegetable = W('1464226184884-fa280b87c399'); // field at golden hour
-const imgDelivery = W('1530267981375-f0de937f5f13');  // logistics / cargo
 
 interface Feature {
   title: string;
@@ -58,13 +54,11 @@ interface Feature {
 const FEATURES: Feature[] = [
   { title: 'Crop Intelligence', titleHi: 'फसल इंटेलिजेंस', description: 'Scan crop photos to identify diseases, browse the disease library, and get treatment advice', descriptionHi: 'फसल की फोटो स्कैन करके रोग पहचानें और उपचार की सलाह पाएं', icon: WobloCropAiIcon, emoji: '🔬', img: imgDisease, href: '/crop-disease', cta: 'Scan Now', ctaHi: 'स्कैन करें', gradient: 'primary', badge: 'New', badgeHi: 'नया' },
   { title: 'Agri Market', titleHi: 'कृषि बाज़ार', description: 'Seeds, fertilizers, tools, and crop protection', descriptionHi: 'बीज, उर्वरक, उपकरण और फसल सुरक्षा', icon: WobloMarketIcon, emoji: '🛒', img: imgMarket, href: '/agri-market', cta: 'Browse Products', ctaHi: 'उत्पाद देखें', gradient: 'secondary' },
-  { title: 'AgriNova Mart', titleHi: 'एग्रीनोवा मार्ट', description: 'Everyday groceries and farm household supplies', descriptionHi: 'रोज़मर्रा का किराना और घरेलू सामान', icon: WobloMartIcon, emoji: '🏪', img: imgMart, href: '/kisan-mart', cta: 'Browse Store', ctaHi: 'स्टोर देखें', gradient: 'primary' },
   { title: 'Crop Advisory', titleHi: 'फसल सलाह', description: 'Ask a question or identify crop disease from a photo', descriptionHi: 'प्रश्न पूछें या फोटो से फसल रोग पहचानें', icon: WobloAdvisoryIcon, emoji: '👨‍🌾', img: imgAdvisory, href: '/kisan-help', cta: 'Get Advice', ctaHi: 'सलाह लें', gradient: 'secondary' },
   { title: 'Government Schemes', titleHi: 'सरकारी योजनाएं', description: 'Explore latest government benefits and schemes for farmers', descriptionHi: 'किसानों के लिए नवीनतम सरकारी लाभ और योजनाओं का अन्वेषण करें', icon: WobloSchemesIcon, emoji: '🏛️', img: imgSchemes, href: '/gov-schemes', cta: 'View Schemes', ctaHi: 'योजनाएं देखें', gradient: 'primary' },
   { title: 'Robotic Farming', titleHi: 'रोबोटिक कृषि', description: 'Discover modern farming robots and automation technology', descriptionHi: 'आधुनिक कृषि रोबोट और स्वचालन प्रौद्योगिकी की खोज करें', icon: WobloBotIcon, emoji: '🤖', img: imgRobotic, href: '/robotic-farming', cta: 'Explore Tech', ctaHi: 'तकनीक जानें', gradient: 'secondary' },
   { title: 'Organic Farming', titleHi: 'जैविक खेती', description: 'Complete guide to organic farming with certified seeds and natural fertilizers', descriptionHi: 'प्रमाणित बीजों और प्राकृतिक उर्वरकों के साथ जैविक खेती की संपूर्ण मार्गदर्शिका', icon: WobloLeafIcon, emoji: '🌱', img: imgOrganic, href: '/organic-farming', cta: 'Explore Organic', ctaHi: 'जैविक खेती देखें', gradient: 'primary' },
   { title: 'Vegetable Farming', titleHi: 'सब्जी की खेती', description: 'Comprehensive guide to all vegetables, farming methods, and tools', descriptionHi: 'सभी सब्जियों, खेती के तरीकों और उपकरणों की व्यापक मार्गदर्शिका', icon: Carrot, emoji: '🥕', img: imgVegetable, href: '/vegetable-farming', cta: 'View Guide', ctaHi: 'मार्गदर्शिका देखें', gradient: 'secondary' },
-  { title: 'Delivery Partner', titleHi: 'डिलीवरी पार्टनर', description: 'Join as a delivery partner and start earning with flexible hours', descriptionHi: 'डिलीवरी पार्टनर के रूप में शामिल हों और लचीले घंटों में कमाई शुरू करें', icon: WobloTruckIcon, emoji: '🚚', img: imgDelivery, href: '/partner-registration', cta: 'Join Now', ctaHi: 'अभी जुड़ें', gradient: 'primary' },
 ];
 
 const Index = () => {
@@ -82,8 +76,12 @@ const Index = () => {
             leads, and the figures travel between them. The headline moving
             fastest is what makes the field behind it read as distance rather
             than as wallpaper. */}
-        <ParallaxHero className="relative flex min-h-[86vh] flex-col justify-center px-6 pb-16 pt-10 lg:px-14">
-          <ParallaxLayer speed={-60} className="max-w-3xl">
+        <ParallaxHero className="relative flex min-h-[86vh] flex-col justify-center overflow-hidden px-6 pb-16 pt-10 lg:px-14">
+          {/* Still photograph behind the hero. Carries its own scrim, and is the
+              LCP element - see hero-image.tsx. */}
+          <HeroImage />
+
+          <ParallaxLayer speed={-60} className="relative z-10 max-w-3xl">
             <Reveal immediate delay={0.05} distance={16}>
               <span className="eyebrow text-white/70">
                 {tx('Tools & advisory for every farming decision', 'हर कृषि निर्णय के लिए उपकरण और सलाह')}
@@ -142,7 +140,7 @@ Smarter`, `स्मार्ट
               Set in tabular figures on purpose. This is a product for people
               who read numbers off a board at the mandi gate, and a column of
               figures that lines up is the whole reason those boards work. */}
-          <ParallaxLayer speed={-170} className="absolute bottom-20 right-14 hidden lg:block">
+          <ParallaxLayer speed={-170} className="absolute bottom-20 right-14 z-10 hidden lg:block">
           <Reveal immediate delay={1} from="right" className="w-[19rem]">
             <dl className="glass overflow-hidden rounded-lg">
               {([
@@ -188,10 +186,15 @@ Smarter`, `स्मार्ट
             never caught it because it skips elements whose background is an
             image — there is no colour behind them to measure against. */}
         <div className="relative bg-background">
-          {/* A ridge, not a fade. A landscape does not end in a horizontal
-              line, and the straight gradient that was here read as the photo
-              simply running out. */}
-          <HillDivider height={190} className="-top-[120px]" />
+          {/* A long, soft handover from the photograph to the page ground.
+              The ridge silhouette that used to sit here drew attention to the
+              seam instead of hiding it; a tall gradient in the page's own
+              background colour ends the image without announcing that it has
+              ended. Pointer-events off so it never eats a click. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 -top-40 h-40 bg-gradient-to-b from-transparent to-background"
+          />
         <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           {/* Mobile search */}
           <div className="mt-6 md:hidden">
@@ -204,7 +207,6 @@ Smarter`, `स्मार्ट
               items={[
                 { name: tx('Crop AI', 'फसल एआई'), url: '/crop-disease', icon: WobloCropAiIcon },
                 { name: tx('Market', 'बाज़ार'), url: '/agri-market', icon: WobloMarketIcon },
-                { name: tx('Mart', 'मार्ट'), url: '/kisan-mart', icon: WobloMartIcon },
                 { name: tx('Advisory', 'सलाह'), url: '/kisan-help', icon: WobloAdvisoryIcon },
                 { name: tx('Schemes', 'योजनाएं'), url: '/gov-schemes', icon: WobloSchemesIcon },
               ]}
