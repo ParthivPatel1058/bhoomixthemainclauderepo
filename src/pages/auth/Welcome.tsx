@@ -67,7 +67,7 @@ export default function Welcome() {
             <span className="relative flex items-center gap-2.5 rounded-full bg-white/80 px-4 py-2.5 ring-1 ring-white/70 backdrop-blur-md shadow-[0_10px_28px_-8px_rgba(20,45,20,0.55),inset_0_1px_0_rgba(255,255,255,1)]">
               <BhoomixMark size={22} className="text-emerald-600" />
               <span className="font-display text-[15px] font-bold tracking-tight text-stone-800">
-                BhoomiX
+                bhoomix
               </span>
             </span>
           </div>

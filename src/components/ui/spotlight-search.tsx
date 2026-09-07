@@ -188,7 +188,7 @@ export default function SpotlightSearch({ open, onClose }: SpotlightSearchProps)
           transition={{ duration: 0.18 }}
           role="dialog"
           aria-modal="true"
-          aria-label={tx('Search BhoomiX', 'BhoomiX में खोजें')}
+          aria-label={tx('Search bhoomix', 'bhoomix में खोजें')}
           onClick={onClose}
           className="fixed inset-0 z-[100] flex items-start justify-center bg-black/45 px-4 pt-[14vh] backdrop-blur-md"
         >

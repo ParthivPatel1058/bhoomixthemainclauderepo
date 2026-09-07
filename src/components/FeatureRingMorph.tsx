@@ -222,7 +222,7 @@ export default function FeatureRingMorph({ items, en }: FeatureRingMorphProps) {
             transition={{ duration: 1 }}
             className="font-display text-2xl md:text-4xl font-bold tracking-tight text-white"
           >
-            {tx("Explore BhoomiX", "BhoomiX एक्सप्लोर करें")}
+            {tx("Explore bhoomix", "bhoomix एक्सप्लोर करें")}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}

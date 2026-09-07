@@ -1412,7 +1412,10 @@ All colors MUST be HSL.
     /* Fixed cinematic backdrop. Swap this URL to change the scene.
        Aerial crop rows: reads as precision agriculture and scale rather than
        retail, and the calm palette keeps foreground UI legible over it. */
-    --scene-image: url("https://images.unsplash.com/photo-1560493676-04071c5f467b?w=2400&q=80&auto=format&fit=crop");
+    /* Served from public/, not Unsplash. The backdrop is on every screen now,
+       so a remote image would mean a third-party request in front of the first
+       paint of every route — and a blank ground whenever their CDN is slow. */
+    --scene-image: url("/media/hero-mountains.jpg");
 
     /* Brand accent: warm beige into aqua (replaces the rose/indigo pair) */
     --beige: 40 44% 78%;
@@ -1536,7 +1539,7 @@ All colors MUST be HSL.
     text-wrap: balance;
   }
 
-  /* BhoomiX is a numbers product — mandi rates, quantities, confidence scores,
+  /* bhoomix is a numbers product — mandi rates, quantities, confidence scores,
      the 72-hour insurance countdown. Proportional digits make a column of
      prices ripple as it updates; tabular ones let a farmer compare figures by
      eye down a column, which is the entire point of a rate board. */
@@ -1633,23 +1636,34 @@ All colors MUST be HSL.
     background: hsl(var(--primary) / 0.25);
   }
 
-  /* Elegant thin scrollbar */
+  /* Thin overlay scrollbar.
+     Narrower and lighter than it was: the page is a photograph now, and a
+     10px green bar down the edge of a landscape reads as a browser artefact.
+     A pale translucent thumb sits on the image the way the macOS overlay
+     scrollbar does, and only asserts itself when the pointer is on it. */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 7px;
+    height: 7px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.35);
+    background: hsl(0 0% 100% / 0.22);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: content-box;
+    transition: background 200ms var(--ease-editorial, ease);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.55);
+    background: hsl(0 0% 100% / 0.42);
     background-clip: content-box;
+  }
+  /* Firefox has no pseudo-elements for this; these two properties are the
+     whole API, and without them Firefox keeps its default grey gutter. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(0 0% 100% / 0.22) transparent;
   }
 }
 

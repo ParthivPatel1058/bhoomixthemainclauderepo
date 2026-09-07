@@ -329,7 +329,7 @@ export default function Login() {
           <div className="mb-8 flex items-center justify-between">
             <span className="flex items-center gap-2 rounded-full border border-stone-300/80 bg-white/60 px-4 py-2 font-display text-lg font-semibold text-stone-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
               <BhoomixMark size={20} className="text-emerald-600" />
-              BhoomiX
+              bhoomix
             </span>
             <button
               onClick={() => navigate("/auth/welcome")}
@@ -346,8 +346,8 @@ export default function Login() {
             </h1>
             <p className="mt-1 text-sm text-stone-500">
               {tx(
-                "Sign in to continue to BhoomiX",
-                "BhoomiX में जारी रखने के लिए साइन इन करें",
+                "Sign in to continue to bhoomix",
+                "bhoomix में जारी रखने के लिए साइन इन करें",
               )}
             </p>
           </div>
@@ -626,7 +626,7 @@ export default function Login() {
         <div className="relative m-3 h-48 overflow-hidden rounded-[2rem] shadow-[0_20px_45px_-15px_rgba(30,40,25,0.5)] md:h-auto">
           <BrandRipple />
 
-          {/* Floating cards: real BhoomiX moments, not filler. */}
+          {/* Floating cards: real bhoomix moments, not filler. */}
           <div className="absolute left-4 top-4 hidden rounded-2xl bg-emerald-500/95 px-4 py-3 shadow-[0_10px_25px_-8px_rgba(6,78,59,0.7),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm md:block">
             <p className="flex items-center gap-2 text-[13px] font-semibold text-white">
               <ScanLine className="h-4 w-4" />

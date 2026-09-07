@@ -96,7 +96,7 @@ const Settings = () => {
                     <Palette className="h-6 w-6 text-primary" />
                     {t('appearance')}
                   </CardTitle>
-                  <CardDescription>{tx('Customize how BhoomiX looks and feels', 'BhoomiX का रूप और अनुभव अनुकूलित करें')}</CardDescription>
+                  <CardDescription>{tx('Customize how bhoomix looks and feels', 'bhoomix का रूप और अनुभव अनुकूलित करें')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Theme Toggle */}

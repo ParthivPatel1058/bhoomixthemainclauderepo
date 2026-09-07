@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
  *
  * ## Lines and words only — never characters
  *
- * This is the important constraint. BhoomiX runs twenty-three languages
+ * This is the important constraint. bhoomix runs twenty-three languages
  * across eleven scripts, and the Indic ones build syllables from a base
  * consonant plus combining marks: `स्मार्ट` is not seven independent letters.
  * Splitting that into characters puts each combining mark in its own element,

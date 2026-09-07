@@ -38,7 +38,6 @@ const PAGES = {
   addresses: lazy(() => import('@/pages/Addresses')),
   settings: lazy(() => import('@/pages/Settings')),
   support: lazy(() => import('@/pages/Support')),
-  'partner-registration': lazy(() => import('@/pages/PartnerRegistration')),
   'partner-orders': lazy(() => import('@/pages/PartnerOrders')),
   search: lazy(() => import('@/pages/SearchResults')),
 } as const;

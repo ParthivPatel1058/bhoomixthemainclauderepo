@@ -149,7 +149,7 @@ export default function Signup() {
               {tx("Create an account", "खाता बनाएं")}
             </h1>
             <p className="mt-1.5 text-muted-foreground">
-              {tx("Join BhoomiX today", "आज ही BhoomiX से जुड़ें")}
+              {tx("Join bhoomix today", "आज ही bhoomix से जुड़ें")}
             </p>
           </div>
 

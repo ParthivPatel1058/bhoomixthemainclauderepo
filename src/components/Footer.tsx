@@ -34,15 +34,16 @@ export default function Footer() {
     },
   ];
 
-  // `bg-background` matters here: the page sits on a fixed photographic
-  // backdrop, and without an opaque surface the sky shows through the footer
-  // and the links become unreadable.
+  // Deliberately not opaque. The footer used to paint `bg-background` to stop
+  // the sky showing through and washing out the links; now the whole page
+  // carries the ink scrim, so the links already have a dark ground and an
+  // opaque panel here would just cut a rectangle out of the photograph.
   return (
-    <footer className="relative mt-24 border-t border-border/60 bg-background">
+    <footer className="relative mt-24 border-t border-white/10">
       <div className="container mx-auto px-4 py-14 lg:px-6">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:pr-8">
-            <p className="font-display text-lg font-bold text-foreground">BhoomiX</p>
+            <p className="font-display text-lg font-bold text-foreground">bhoomix</p>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {tx(
                 'Tools and advisory for every farming decision — in your own language.',
@@ -71,7 +72,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} BhoomiX</p>
+          <p>© {new Date().getFullYear()} bhoomix</p>
           <p>{tx('Made for India’s farmers', 'भारत के किसानों के लिए बनाया गया')}</p>
         </div>
       </div>

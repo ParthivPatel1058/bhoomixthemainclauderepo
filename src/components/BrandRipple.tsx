@@ -3,7 +3,7 @@ import brandMark from '@/assets/bhoomix-logo-main.jpg';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
- * The BhoomiX mark as a water surface the pointer disturbs.
+ * The bhoomix mark as a water surface the pointer disturbs.
  *
  * The tuning lives here rather than in each auth screen: three pages showing
  * the same panel with three separately-pasted prop lists is three chances for
@@ -46,7 +46,7 @@ export default function BrandRipple({ className }: { className?: string }) {
       {/* The canvas is decorative and announces nothing, so the panel's
           meaning is given to screen readers here instead. */}
       <span className="sr-only">
-        {tx('BhoomiX logo on water', 'पानी पर BhoomiX लोगो')}
+        {tx('bhoomix logo on water', 'पानी पर bhoomix लोगो')}
       </span>
     </>
   );

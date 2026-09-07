@@ -38,6 +38,72 @@ interface Category {
   items: Item[];
 }
 
+/* Field troubleshooting. Ordered by how often it is the answer, not by how
+   interesting it is — nitrogen hunger and bad drainage between them explain
+   most of what looks like a failing organic plot in the first two seasons. */
+const PROBLEMS = [
+  {
+    symptomEn: 'Leaves yellowing from the bottom up',
+    symptomHi: 'नीचे की पत्तियाँ पहले पीली पड़ रही हैं',
+    causeEn: 'Nitrogen hunger. The plant is pulling nitrogen out of its old leaves to feed the new ones, so the oldest go first. Common in the first two organic seasons, when compost has not yet built a supply the soil can release on its own.',
+    causeHi: 'नाइट्रोजन की कमी। पौधा पुरानी पत्तियों से नाइट्रोजन खींचकर नई पत्तियों को दे रहा है, इसलिए सबसे पुरानी पहले पीली होती हैं। पहले दो जैविक सीज़न में आम है, जब कम्पोस्ट ने अभी मिट्टी में भंडार नहीं बनाया।',
+    doEn: 'Spray 3% jeevamrut or diluted cow-urine solution on the leaves in the evening, and repeat after ten days. A foliar feed acts in days; anything worked into the soil will take weeks.',
+    doHi: 'शाम को पत्तियों पर 3% जीवामृत या पतला गोमूत्र घोल छिड़कें, दस दिन बाद दोहराएँ। पत्तियों पर छिड़काव कुछ ही दिनों में असर करता है; मिट्टी में डाली गई चीज़ हफ्तों लेती है।',
+    preventEn: 'Sow a legume — dhaincha, sunhemp or cowpea — before the main crop and turn it in at flowering. It fixes nitrogen in place, which is cheaper than buying it every season.',
+    preventHi: 'मुख्य फसल से पहले ढैंचा, सनई या लोबिया जैसी दलहन बोएँ और फूल आने पर मिट्टी में मिला दें। यह खेत में ही नाइट्रोजन बनाती है, जो हर सीज़न खरीदने से सस्ता है।',
+  },
+  {
+    symptomEn: 'Plants stunted and pale, whole field looks even',
+    symptomHi: 'पौधे बौने और फीके, पूरा खेत एक जैसा दिख रहा है',
+    causeEn: 'Compacted soil. Roots cannot get down, so the plant lives off the top few inches. Evenness is the clue — a pest or disease would arrive in patches.',
+    causeHi: 'मिट्टी दब गई है। जड़ें नीचे नहीं जा पातीं, पौधा ऊपर की कुछ इंच मिट्टी पर ही जीता है। एकरूपता ही संकेत है — कीट या रोग होता तो धब्बों में दिखता।',
+    doEn: 'Dig a pit a foot and a half deep and look. A hard grey pan you can rap with a knuckle confirms it. Break it where you can with a chisel plough, and mulch heavily so the surface stops crusting.',
+    doHi: 'डेढ़ फुट गहरा गड्ढा खोदकर देखें। सख्त भूरी परत, जिस पर उँगली ठोकने से आवाज़ आए, इसकी पुष्टि है। जहाँ संभव हो चिसल हल से तोड़ें और गाढ़ी मल्चिंग करें ताकि सतह पर पपड़ी न जमे।',
+    preventEn: 'Keep heavy machinery off wet ground, and grow a deep-rooted crop such as pigeon pea or radish in the rotation to open the layer from below.',
+    preventHi: 'गीली ज़मीन पर भारी मशीन न चलाएँ, और फसल चक्र में अरहर या मूली जैसी गहरी जड़ वाली फसल रखें जो परत को नीचे से खोल दे।',
+  },
+  {
+    symptomEn: 'Wilting even though the soil is wet',
+    symptomHi: 'मिट्टी गीली होने पर भी पौधे मुरझा रहे हैं',
+    causeEn: 'Waterlogged roots, or a root rot that followed the water. Roots need air; standing water suffocates them and the plant wilts exactly as if it were dry.',
+    causeHi: 'जड़ों में पानी भर गया है, या पानी के बाद जड़ सड़न लग गई है। जड़ों को हवा चाहिए; खड़ा पानी उन्हें दबा देता है और पौधा वैसे ही मुरझाता है जैसे सूखे में।',
+    doEn: 'Cut a drainage channel to the lowest corner today. Pull one plant: healthy roots are white and firm, rotting roots are brown and slide apart between your fingers.',
+    doHi: 'आज ही सबसे नीचे वाले कोने तक नाली काटें। एक पौधा उखाड़कर देखें: स्वस्थ जड़ें सफेद और मज़बूत होती हैं, सड़ी जड़ें भूरी होती हैं और उँगलियों में टूट जाती हैं।',
+    preventEn: 'Plant on raised beds or ridges where water sits, and work compost in — it opens heavy soil so water drains instead of standing.',
+    preventHi: 'जहाँ पानी रुकता हो वहाँ ऊँची क्यारी या मेड़ पर बुवाई करें, और कम्पोस्ट मिलाएँ — यह भारी मिट्टी को खोलकर पानी निकलने देता है।',
+  },
+  {
+    symptomEn: 'Good leaves, but hardly any flowers or fruit',
+    symptomHi: 'पत्तियाँ अच्छी, पर फूल या फल बहुत कम',
+    causeEn: 'Too much nitrogen and not enough phosphorus and potash — the plant is spending everything on leaf. Undressed raw manure does this. A shortage of pollinators produces the same empty result.',
+    causeHi: 'नाइट्रोजन ज़्यादा और फॉस्फोरस-पोटाश कम — पौधा सारी ताक़त पत्ती में लगा रहा है। बिना सड़ी कच्ची गोबर खाद से ऐसा होता है। परागण करने वाले कीटों की कमी से भी यही नतीजा मिलता है।',
+    doEn: 'Stop all nitrogen feeds now. Give bone meal or rock phosphate, and wood ash for potash. Sow a strip of marigold or coriander along the edge to bring pollinators back.',
+    doHi: 'नाइट्रोजन देना तुरंत बंद करें। हड्डी चूर्ण या रॉक फॉस्फेट दें, और पोटाश के लिए लकड़ी की राख। किनारे पर गेंदा या धनिया की पट्टी बोएँ ताकि परागण करने वाले कीट लौटें।',
+    preventEn: 'Compost manure fully before it goes on the field, and get a soil test each year so you are feeding what is short rather than what is easy to buy.',
+    preventHi: 'गोबर खाद को खेत में डालने से पहले पूरी तरह सड़ाएँ, और हर साल मिट्टी जाँच कराएँ ताकि जो कमी है वही दें, न कि जो आसानी से मिल जाए।',
+  },
+  {
+    symptomEn: 'Holes in the leaves, insects visible',
+    symptomHi: 'पत्तियों में छेद, कीट दिख रहे हैं',
+    causeEn: 'A pest population with nothing eating it. It usually builds up where the same crop returns to the same field year after year and its predators have nowhere to live.',
+    causeHi: 'कीटों की आबादी बढ़ गई है और उन्हें खाने वाला कोई नहीं। यह वहाँ होता है जहाँ हर साल एक ही खेत में एक ही फसल आती है और शिकारी कीटों के रहने की जगह नहीं बचती।',
+    doEn: 'Spray 5% neem seed kernel extract at dusk — sunlight destroys it. Add sticky traps, and hand-pick the large caterpillars, which is faster than any spray at small scale.',
+    doHi: 'शाम को 5% नीम बीज गिरी अर्क का छिड़काव करें — धूप में यह नष्ट हो जाता है। चिपचिपे ट्रैप लगाएँ और बड़ी इल्लियाँ हाथ से चुनें, छोटे खेत में यह किसी भी छिड़काव से तेज़ है।',
+    preventEn: 'Rotate the crop family every season and keep a flowering border. Ladybirds and wasps live in that border and do the work for free all year.',
+    preventHi: 'हर सीज़न फसल परिवार बदलें और खेत के किनारे फूलों की पट्टी रखें। लेडीबर्ड और ततैया वहीं रहते हैं और साल भर मुफ़्त में यह काम करते हैं।',
+  },
+  {
+    symptomEn: 'Seed came up thin and patchy',
+    symptomHi: 'बीज कम और छितराया हुआ उगा',
+    causeEn: 'Old seed, sowing too deep, or a crusted surface the seedling could not push through. Cold or dry soil at sowing gives the same patchy stand.',
+    causeHi: 'पुराना बीज, ज़्यादा गहरी बुवाई, या सतह पर जमी पपड़ी जिसे अंकुर तोड़ नहीं पाया। बुवाई के समय ठंडी या सूखी मिट्टी से भी ऐसा ही छितराव होता है।',
+    doEn: 'Gap-fill now if the crop is still young enough to catch up. Test what is left of the seed: a hundred seeds on a damp cloth for a week tells you the germination rate before you sow it again.',
+    doHi: 'फसल अभी छोटी है तो खाली जगह में दोबारा बुवाई करें। बचे बीज की जाँच करें: गीले कपड़े पर सौ बीज एक हफ्ते रखने से अंकुरण दर पता चल जाती है, दोबारा बोने से पहले।',
+    preventEn: 'Sow no deeper than twice the seed’s width, treat with beejamrut before sowing, and irrigate lightly so the surface never sets hard.',
+    preventHi: 'बीज की चौड़ाई से दोगुनी से ज़्यादा गहराई में न बोएँ, बुवाई से पहले बीजामृत से उपचार करें, और हल्की सिंचाई करें ताकि सतह सख़्त न हो।',
+  },
+];
+
 const CATEGORIES: Category[] = [
   {
     category: 'Organic Seeds',
@@ -133,6 +199,70 @@ const OrganicFarming = () => {
                   <Leaf className="h-6 w-6 flex-shrink-0 text-primary" />
                   <p className="text-foreground">{tx(b.en, b.hi)}</p>
                 </div>
+              ))}
+            </div>
+          </section>
+        </Reveal>
+
+        {/* Why it is not growing.
+            The rest of this page sells inputs. This section is the part a
+            farmer standing in a struggling field actually needs: start from
+            what you can see, not from what you should have bought. Each entry
+            names the symptom, the usual cause behind it, what to do this week,
+            and what stops it happening again next season — organic answers
+            throughout, since a chemical fix would cost the plot its
+            certification. */}
+        <Reveal distance={30}>
+          <section className="mb-12">
+            <h2
+              className="mb-2 text-2xl font-semibold text-foreground md:text-3xl"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
+              {tx('Why is it not growing?', 'फसल क्यों नहीं बढ़ रही?')}
+            </h2>
+            <p className="mb-6 max-w-2xl text-muted-foreground">
+              {tx(
+                'Find what your field looks like, then read across. Organic answers only — a chemical fix would cost you the certification.',
+                'अपने खेत जैसी हालत ढूँढें, फिर आगे पढ़ें। सभी उपाय जैविक हैं — रासायनिक इलाज से प्रमाणन चला जाएगा।',
+              )}
+            </p>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {PROBLEMS.map((p, i) => (
+                <Reveal key={p.symptomEn} delay={(i % 2) * 0.07} distance={24}>
+                  <article className="glass h-full rounded-2xl p-6">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {tx(p.symptomEn, p.symptomHi)}
+                    </h3>
+
+                    <dl className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <dt className="font-semibold text-secondary-foreground">
+                          {tx('Why it happens', 'ऐसा क्यों होता है')}
+                        </dt>
+                        <dd className="mt-0.5 leading-relaxed text-muted-foreground">
+                          {tx(p.causeEn, p.causeHi)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-primary">
+                          {tx('Do this week', 'इस हफ्ते यह करें')}
+                        </dt>
+                        <dd className="mt-0.5 leading-relaxed text-muted-foreground">
+                          {tx(p.doEn, p.doHi)}
+                        </dd>
+                      </div>
+                      <div className="border-t border-border/60 pt-3">
+                        <dt className="font-semibold text-foreground">
+                          {tx('So it does not return', 'ताकि दोबारा न हो')}
+                        </dt>
+                        <dd className="mt-0.5 leading-relaxed text-muted-foreground">
+                          {tx(p.preventEn, p.preventHi)}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                </Reveal>
               ))}
             </div>
           </section>

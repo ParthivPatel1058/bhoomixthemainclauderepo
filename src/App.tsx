@@ -54,7 +54,6 @@ const ShopLocator = React.lazy(() => import("./pages/ShopLocator"));
 const Orders = React.lazy(() => import("./pages/Orders"));
 const Addresses = React.lazy(() => import("./pages/Addresses"));
 const PartnerOrders = React.lazy(() => import("./pages/PartnerOrders"));
-const PartnerRegistration = React.lazy(() => import("./pages/PartnerRegistration"));
 const Support = React.lazy(() => import("./pages/Support"));
 const OrganicFarming = React.lazy(() => import("./pages/OrganicFarming"));
 const VegetableFarming = React.lazy(() => import("./pages/VegetableFarming"));
@@ -134,7 +133,6 @@ const App = () => {
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/addresses" element={<Addresses />} />
                   <Route path="/partner-orders" element={<PartnerOrders />} />
-                  <Route path="/partner-registration" element={<PartnerRegistration />} />
                   <Route path="/support" element={<Support />} />
                   <Route path="/organic-farming" element={<OrganicFarming />} />
                   <Route path="/vegetable-farming" element={<VegetableFarming />} />

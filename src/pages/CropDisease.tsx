@@ -28,7 +28,6 @@ import { useDiagnoses } from '@/hooks/useDiagnoses';
 import FollowUpPrompt from '@/components/FollowUpPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { PLANTS, PLANT_CATEGORIES, type Plant, type PlantCategory } from '@/data/plants';
 import { analyzeCropImage, isGeminiConfigured } from '@/lib/geminiApi';
 
 /* ------------------------------------------------------------------ */
@@ -440,28 +439,8 @@ const CropDisease = () => {
 
   const [tab, setTab] = useState('crop');
   const [scanMode, setScanMode] = useState<'crop' | 'disease'>('crop');
-  const [plantQuery, setPlantQuery] = useState('');
-  const [plantCat, setPlantCat] = useState<PlantCategory | 'all'>('all');
 
-  const filteredPlants = PLANTS.filter((p) => {
-    if (plantCat !== 'all' && p.category !== plantCat) return false;
-    const q = plantQuery.trim().toLowerCase();
-    if (!q) return true;
-    return p.name.toLowerCase().includes(q) || p.hindiName.includes(q);
-  });
 
-  const orderPlant = (plant: Plant) => {
-    toast.success(
-      en
-        ? `Order request for ${plant.name} sent to ${plant.partner}`
-        : `${plant.hindiName} का ऑर्डर ${plant.partner} को भेजा गया`,
-      {
-        description: en
-          ? `₹${plant.price}/${plant.unit} · ${plant.distanceKm} km away — the partner will confirm shortly.`
-          : `₹${plant.price}/${plant.unit} · ${plant.distanceKm} किमी दूर — पार्टनर जल्द पुष्टि करेगा।`,
-      },
-    );
-  };
 
   return (
     <div className="min-h-screen">
@@ -491,16 +470,11 @@ const CropDisease = () => {
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-8 h-11">
+          <TabsList className="grid w-full grid-cols-2 mb-8 h-11">
             <TabsTrigger value="crop" className="gap-2">
               <Sprout className="h-4 w-4" />
               <span className="hidden sm:inline">{tx('Scan a Photo', 'फोटो स्कैन करें')}</span>
               <span className="sm:hidden">{tx('Scan', 'स्कैन')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="buyer" className="gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline">{tx('Plant Buyer', 'पौधा खरीदें')}</span>
-              <span className="sm:hidden">{tx('Buy', 'खरीदें')}</span>
             </TabsTrigger>
             <TabsTrigger value="disease" className="gap-2">
               <Stethoscope className="h-4 w-4" />
@@ -558,95 +532,6 @@ const CropDisease = () => {
             />
           </TabsContent>
 
-          {/* ---- Part 2: Plant Buyer ---- */}
-          <TabsContent value="buyer">
-            <div className="mb-5 relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                value={plantQuery}
-                onChange={(e) => setPlantQuery(e.target.value)}
-                placeholder={tx('Search plants — mint, tulsi, aloe vera…', 'पौधे खोजें — पुदीना, तुलसी…')}
-                className="pl-9"
-              />
-            </div>
-
-            {/* The catalogue now spans indoor decor through kitchen herbs, so a
-                flat list is hard to scan — category first, search second. */}
-            <div className="mb-5 flex flex-wrap gap-2">
-              {PLANT_CATEGORIES.map((c) => (
-                <button
-                  key={c.key}
-                  onClick={() => setPlantCat(c.key)}
-                  className={cn(
-                    'rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors',
-                    plantCat === c.key
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {tx(c.en, c.hi)}
-                </button>
-              ))}
-            </div>
-
-            {filteredPlants.length === 0 ? (
-              <div className="glass p-10 text-center text-muted-foreground">
-                {tx('No plants found for "{q}"', '"{q}" के लिए कोई पौधा नहीं मिला').replace('{q}', plantQuery)}
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPlants.map((plant) => (
-                  <div
-                    key={plant.id}
-                    className="glass flex flex-col overflow-hidden transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-200 hover:border-primary/40 hover:shadow-md"
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      <img
-                        src={plant.image}
-                        alt={tx(plant.name, plant.hindiName)}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                      />
-                      <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium backdrop-blur">
-                        <Star className="h-3 w-3 fill-current text-secondary-foreground" />
-                        {plant.rating}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-1 flex-col p-4">
-                      <h3 className="font-display font-semibold leading-tight text-foreground">
-                        {tx(plant.name, plant.hindiName)}
-                      </h3>
-                      <p className="mb-1.5 text-xs text-muted-foreground">
-                        {tx(plant.hindiName, plant.name)}
-                      </p>
-                      <p className="mb-2 text-xs leading-snug text-muted-foreground">
-                        {tx(plant.blurb, plant.blurbHi)}
-                      </p>
-                      <p className="mb-1 text-lg font-bold text-foreground">
-                        ₹{plant.price}
-                        <span className="text-xs font-medium text-muted-foreground"> / {plant.unit}</span>
-                      </p>
-                      <p className="mb-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 text-primary" />
-                        {plant.partner} · {plant.distanceKm} km
-                      </p>
-                      <Button size="sm" className="mt-auto" onClick={() => orderPlant(plant)}>
-                        <ShoppingCart className="h-4 w-4" />
-                        {tx('Order from Partner', 'पार्टनर से ऑर्डर करें')}
-                      </Button>
-                      {/* The CC-BY family requires the photographer be credited. */}
-                      <p className="mt-2 text-[10px] leading-tight text-muted-foreground/70">
-                        {plant.credit}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ---- Part 3: Disease ---- */}
           <TabsContent value="disease" className="space-y-10">
             {/* The upload panel that used to sit here was the same PhotoScan
                 component as the Crop Detection tab, so the two tabs opened

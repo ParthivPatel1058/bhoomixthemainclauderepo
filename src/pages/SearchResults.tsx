@@ -56,7 +56,7 @@ export default function SearchResults() {
             {tx('Search results', 'खोज परिणाम')}
           </p>
           <h1 className="page-title text-foreground">
-            {query ? `"${query}"` : tx('Search BhoomiX', 'BhoomiX में खोजें')}
+            {query ? `"${query}"` : tx('Search bhoomix', 'bhoomix में खोजें')}
           </h1>
           {query && (
             <p className="mt-2 text-muted-foreground">

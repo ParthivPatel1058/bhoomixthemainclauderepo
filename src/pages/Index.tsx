@@ -105,7 +105,7 @@ Smarter`, `स्मार्ट
                 className="text-gold italic mb-9"
                 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.4rem,3vw,2.4rem)', lineHeight: 1.1 }}
               >
-                {tx('with BhoomiX', 'BhoomiX के साथ')}
+                {tx('with bhoomix', 'bhoomix के साथ')}
               </p>
             </Reveal>
 
@@ -185,15 +185,21 @@ Smarter`, `स्मार्ट
             a bright sky and simply disappeared. The automated contrast sweep
             never caught it because it skips elements whose background is an
             image — there is no colour behind them to measure against. */}
-        <div className="relative bg-background">
-          {/* A long, soft handover from the photograph to the page ground.
-              The ridge silhouette that used to sit here drew attention to the
-              seam instead of hiding it; a tall gradient in the page's own
-              background colour ends the image without announcing that it has
-              ended. Pointer-events off so it never eats a click. */}
+        <div className="relative">
+          {/* The photograph runs the whole page now, so this no longer ends it
+              — it only darkens it enough to read against. The old version
+              faded to the opaque page ground, which is what put a slab of
+              white under the hero and stopped the picture dead. This is the
+              same ink the inner pages use, ramped in over 20rem so the
+              landscape carries on and simply gets quieter.
+              Pointer-events off so it never eats a click. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 -top-40 h-40 bg-gradient-to-b from-transparent to-background"
+            className="pointer-events-none absolute inset-x-0 -top-80 h-80 bg-gradient-to-b from-transparent to-[hsl(162_28%_7%_/_0.88)]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 bg-[hsl(162_28%_7%_/_0.88)]"
           />
         <div className="container mx-auto px-4 pb-20 pt-8 sm:px-6 lg:px-8">
           {/* Mobile search */}

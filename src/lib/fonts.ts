@@ -1,7 +1,7 @@
 /**
  * On-demand webfont loading for the non-Latin scripts.
  *
- * BhoomiX speaks the 22 Eighth Schedule languages plus English, across eleven
+ * bhoomix speaks the 22 Eighth Schedule languages plus English, across eleven
  * scripts. Before this existed, every Indic language fell out of the design
  * system entirely: the loaded faces were Latin-only, so Tamil, Bengali, Odia
  * and the rest rendered in whatever the operating system happened to pick.

@@ -1,5 +1,5 @@
 /**
- * The BhoomiX mark.
+ * The bhoomix mark.
  *
  * A rosette of overlapping rings turning around a still centre point. Drawn as
  * thin strokes rather than a filled plate so it can sit over imagery without

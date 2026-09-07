@@ -1,5 +1,5 @@
 /**
- * AI client for BhoomiX crop vision and Kisan advisory chat.
+ * AI client for bhoomix crop vision and Kisan advisory chat.
  *
  * Calls the Supabase Edge Functions rather than a model provider directly, so
  * no provider key is ever shipped to the browser. A Vite `VITE_*` variable is

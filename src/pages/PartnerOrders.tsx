@@ -187,15 +187,14 @@ const PartnerOrders = () => {
             <h3 className="mb-2 text-xl font-semibold">
               {tx('You are not registered as a partner', 'आप पार्टनर के रूप में पंजीकृत नहीं हैं')}
             </h3>
-            <p className="mb-6 text-muted-foreground">
+            {/* Self sign-up is closed, so this no longer offers a button that
+                goes nowhere. Partners are onboarded by the team instead. */}
+            <p className="text-muted-foreground">
               {tx(
-                'Register as a delivery partner to start receiving orders.',
-                'ऑर्डर पाने के लिए डिलीवरी पार्टनर के रूप में पंजीकरण करें।',
+                'Partner accounts are set up by the bhoomix team. Get in touch through Support and we will add you.',
+                'पार्टनर खाते bhoomix टीम द्वारा बनाए जाते हैं। सहायता के ज़रिए संपर्क करें, हम आपको जोड़ देंगे।',
               )}
             </p>
-            <Button onClick={() => navigate('/partner-registration')}>
-              {tx('Register as a partner', 'पार्टनर के रूप में पंजीकरण करें')}
-            </Button>
           </Card>
         ) : orders.length === 0 ? (
           <Card className="p-12 text-center">

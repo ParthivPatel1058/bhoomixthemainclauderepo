@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
  * landing page and they measure poorly for contrast, since the light end of
  * the gradient is doing the same job as the dark end.
  *
- * The `stats` strip is the piece worth keeping an eye on. BhoomiX is a numbers
+ * The `stats` strip is the piece worth keeping an eye on. bhoomix is a numbers
  * product for people who read numbers off boards for a living, so a page that
  * has figures worth quoting states them in the header, in tabular figures,
  * aligned. It carries information; it is not a decorative flourish, and a page

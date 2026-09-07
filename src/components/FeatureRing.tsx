@@ -30,7 +30,7 @@ export default function FeatureRing({ items, en }: FeatureRingProps) {
 
   const centreTitle = active !== null
     ? tx(items[active].title, items[active].titleHi)
-    : (tx('Explore BhoomiX', 'BhoomiX एक्सप्लोर करें'));
+    : (tx('Explore bhoomix', 'bhoomix एक्सप्लोर करें'));
   const centreSub = active !== null
     ? tx(items[active].cta, items[active].ctaHi)
     : (tx('Everything you need — from seed to sale', 'बीज से बिक्री तक — सब कुछ यहाँ'));

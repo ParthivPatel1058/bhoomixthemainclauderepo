@@ -23,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useWeather } from '@/hooks/useWeather';
 import { useAddresses, formatAddress } from '@/hooks/useAddresses';
 import { WeatherIcon } from './WeatherWidget';
+import WeatherPopover from './WeatherPopover';
 import GradientText from '@/components/ui/gradient-text';
 import GlareHover from '@/components/ui/glare-hover';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -135,18 +136,21 @@ const Navigation = () => {
             <div className="relative overflow-hidden rounded-full ring-white/10 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] group-hover:ring-primary/40">
               <img
                 src={logo}
-                alt="BhoomiX"
+                alt="bhoomix"
                 className="h-8 w-8 rounded-full object-cover"
               />
             </div>
             <span className="font-display text-[15px] font-bold tracking-[-0.03em] text-white sm:inline">
-              Bhoomi<span className="text-[hsl(38_82%_64%)]">X</span>
+              bhoomi<span className="text-[hsl(38_82%_64%)]">x</span>
             </span>
           </Link>
 
-          {/* Weather Capsule */}
-          <div
-            className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09]"
+          {/* Weather capsule — opens the macOS-style panel */}
+          <WeatherPopover>
+          <button
+            type="button"
+            aria-label="Weather forecast"
+            className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
           >
             <span className="flex items-center gap-1.5 font-medium text-white/90">
               {/* A lit dot, not a pulsing one. The ping this replaced ran on
@@ -163,7 +167,8 @@ const Navigation = () => {
                 {weather.condition}
               </span>
             </span>
-          </div>
+          </button>
+          </WeatherPopover>
 
           {/* Delivery Address Capsule (Left side) */}
           <Link
