@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Gives the fixed scene backdrop depth by drifting it against the pointer.
@@ -22,13 +22,16 @@ const RANGE = 18;
 const EASE = 0.075;
 
 export default function SceneParallax() {
+  const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     // Coarse pointers have no hover to track, and the listener would only
     // fire on drag — which fights scrolling on a phone.
     if (!window.matchMedia?.('(pointer: fine)').matches) return;
 
-    const root = document.documentElement;
+    const el = ref.current;
+    if (!el) return;
     let targetX = 0;
     let targetY = 0;
     let currentX = 0;
@@ -45,8 +48,12 @@ export default function SceneParallax() {
     const loop = () => {
       currentX += (targetX - currentX) * EASE;
       currentY += (targetY - currentY) * EASE;
-      root.style.setProperty('--scene-x', `${currentX.toFixed(2)}px`);
-      root.style.setProperty('--scene-y', `${currentY.toFixed(2)}px`);
+      // Written straight onto the backdrop element. This used to set two
+      // custom properties on :root, which invalidated style for every node in
+      // the document once per frame; transform on a leaf element is a
+      // compositor-only change that reaches nothing else.
+      el.style.transform =
+        `scale(1.04) translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`;
 
       // Stop once it has effectively arrived, rather than burning a frame
       // loop forever while the pointer sits still.
@@ -61,10 +68,8 @@ export default function SceneParallax() {
     return () => {
       window.removeEventListener('pointermove', onMove);
       if (frame) cancelAnimationFrame(frame);
-      root.style.removeProperty('--scene-x');
-      root.style.removeProperty('--scene-y');
     };
   }, []);
 
-  return null;
+  return <div ref={ref} id="scene-backdrop" aria-hidden="true" />;
 }

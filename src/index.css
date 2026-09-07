@@ -1548,10 +1548,19 @@ All colors MUST be HSL.
     font-feature-settings: "tnum" 1;
   }
 
-  /* Cinematic backdrop pinned to the viewport. A fixed pseudo-element is used
-     instead of background-attachment:fixed, which iOS Safari ignores. */
-  body::before {
-    content: '';
+  /* Cinematic backdrop pinned to the viewport. Fixed positioning rather than
+     background-attachment:fixed, which iOS Safari ignores.
+
+     This is a real element (rendered once by SceneBackdrop) and not the
+     `body::before` it used to be. The pseudo-element could only be moved by
+     writing `--scene-x/y` on :root, and a custom property on the root is
+     inherited by every node — so Chrome had to invalidate and recompute style
+     for the whole document on every animation frame of the parallax. A trace
+     caught 35 consecutive style recalcs, each touching all 596 elements at
+     120–495 ms apiece. A real element takes `transform` directly: one leaf
+     node, a compositor-only property, and style recalc that reaches nothing
+     else on the page. */
+  #scene-backdrop {
     position: fixed;
     /* Overscanned so the drift never exposes an edge. The inset has to be at
        least the parallax range, or the corners show through at full travel. */
@@ -1572,24 +1581,24 @@ All colors MUST be HSL.
     background-position: center, center, center;
     background-repeat: no-repeat;
     pointer-events: none;
-    /* Driven by SceneParallax, which writes the two variables on :root. The
-       scale gives the drift somewhere to go; translate3d keeps it on the
+    /* SceneParallax writes `transform` straight onto this element. The scale
+       gives the drift somewhere to go; translate3d keeps the work on the
        compositor rather than repainting the image every frame. */
-    transform: scale(1.04)
-      translate3d(var(--scene-x, 0px), var(--scene-y, 0px), 0);
+    transform: scale(1.04) translate3d(0, 0, 0);
     will-change: transform;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    body::before {
+    #scene-backdrop {
       transform: none;
       inset: 0;
+      will-change: auto;
     }
   }
 
   /* Premium mesh-gradient backdrop — teal/violet/blue blooms on near-black.
      No image; calm, luxurious, always fills the viewport. */
-  .dark body::before {
+  .dark #scene-backdrop {
     background:
       linear-gradient(180deg, hsl(210 45% 6% / 0.7) 0%, hsl(205 40% 8% / 0.45) 45%, hsl(210 50% 4% / 0.85) 100%),
       var(--scene-image);
@@ -1679,12 +1688,32 @@ All colors MUST be HSL.
      card is the kind of mismatch you feel without being able to name; and
      the shadow got longer and softer. A tight dark shadow reads as a border
      with ambitions — distance is what makes a surface look lifted. */
+  /* Below the desktop breakpoint the backdrop blur comes off entirely.
+     This is the budget-Android fix: a phone GPU resampling and blurring
+     thirty-odd stacked regions per frame is the difference between a page
+     that scrolls and one that stutters, and the panels still read as panels
+     on their own translucent fill. Same for anyone who has asked the OS to
+     reduce transparency — that preference exists for this exact effect. */
+  @media (max-width: 1023px), (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-strong,
+    .glass-dock {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
   .glass {
     background:
       linear-gradient(160deg, hsl(0 0% 100% / 0.10), hsl(0 0% 100% / 0) 42%),
       hsl(var(--glass-bg));
-    backdrop-filter: blur(28px) saturate(1.6);
-    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    /* 14px, not the 28px this used to run. Backdrop blur is resampled from
+       whatever is behind the panel, and the cost climbs with the radius, so
+       halving it is most of the saving. A trace of one inner page found 35
+       elements blurring simultaneously — and since they all sit on the 0.88
+       ink scrim now, the wider radius was buying almost nothing to look at. */
+    backdrop-filter: blur(14px) saturate(1.5);
+    -webkit-backdrop-filter: blur(14px) saturate(1.5);
     border: 1px solid hsl(var(--glass-border));
     border-radius: var(--r-lg);
     box-shadow:
