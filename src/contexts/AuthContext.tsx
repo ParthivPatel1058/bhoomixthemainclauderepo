@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, [applyUser]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     // Navigate regardless of the network result: if the call fails the local
     // session is still cleared, and stranding the user on a protected page
     // is worse than a stale server-side session.
@@ -77,11 +77,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       navigate('/auth/welcome', { replace: true });
     }
-  };
+  }, [navigate]);
 
-  return (
-    <AuthContext.Provider value={{ user, session, signOut, loading }}>
-      {children}
-    </AuthContext.Provider>
+  // AuthProvider sits above almost every route, so a new object here on every
+  // render would re-render every useAuth() consumer in the tree even when
+  // nothing auth-related changed. Memoizing keeps identity stable across
+  // unrelated re-renders (e.g. a route change bubbling through providers).
+  const value = useMemo(
+    () => ({ user, session, signOut, loading }),
+    [user, session, signOut, loading],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

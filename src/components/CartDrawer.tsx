@@ -190,6 +190,7 @@ export default function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                   <img
                     src={imageForKey(l.key, l.image)}
                     alt={tx(l.name, l.nameHi)}
+                    loading="lazy"
                     className="h-16 w-16 flex-shrink-0 rounded-xl object-cover"
                   />
                   <div className="min-w-0 flex-1">
