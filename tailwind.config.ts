@@ -89,21 +89,6 @@ export default {
         full: "var(--r-pill)",
       },
       keyframes: {
-        /* Two squares chasing each other round the corners of a box. The
-           source snippet shipped these in a Next.js `<style jsx>` block,
-           which does nothing under Vite — they belong here so Tailwind
-           emits them once rather than per mounted instance. */
-        "luma-spin": {
-          "0%": { inset: "0 35px 35px 0" },
-          "12.5%": { inset: "0 35px 0 0" },
-          "25%": { inset: "35px 35px 0 0" },
-          "37.5%": { inset: "35px 0 0 0" },
-          "50%": { inset: "35px 0 0 35px" },
-          "62.5%": { inset: "0 0 0 35px" },
-          "75%": { inset: "0 0 35px 35px" },
-          "87.5%": { inset: "0 0 35px 0" },
-          "100%": { inset: "0 35px 35px 0" },
-        },
         "accordion-down": {
           from: {
             height: "0",
@@ -139,7 +124,6 @@ export default {
         "fade-in": "fade-in 0.5s ease-out both",
         "float": "float 4s ease-in-out infinite",
         "slide-in": "slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
-        "luma-spin": "luma-spin 2.5s infinite",
       },
     },
   },

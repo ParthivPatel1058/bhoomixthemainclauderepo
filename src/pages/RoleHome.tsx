@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { BounceLoader } from '@/components/ui/bounce-loader';
 import { useAccount } from '@/hooks/useAccount';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Index from '@/pages/Index';
@@ -24,8 +24,8 @@ export default function RoleHome() {
   // screen at exactly the moment the app is being demonstrated.
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-3">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
+        <BounceLoader label={tx('Loading', 'लोड हो रहा है')} />
         <span className="text-muted-foreground">{tx('Loading…', 'लोड हो रहा है…')}</span>
       </div>
     );

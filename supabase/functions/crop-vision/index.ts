@@ -7,10 +7,7 @@
  * POST { image: dataUrl, mode: 'crop' | 'disease', language: 'en' | 'hi' }
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders } from '../_shared/http.ts';
 
 // Pinned deliberately. The `-latest` aliases move under you, and gemini-2.5-*
 // is closed to new API keys ("no longer available to new users").
@@ -25,13 +22,6 @@ interface Parsed {
   data: string;
   mode: Mode;
   language: Lang;
-}
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
 }
 
 function validate(raw: unknown): { error: string } | { parsed: Parsed } {
@@ -143,6 +133,17 @@ ${langLine}`;
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable: concurrent requests on one isolate would
+  // otherwise be able to overwrite each other's Origin before either finishes.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 

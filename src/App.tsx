@@ -50,6 +50,7 @@ const MandiPrices = React.lazy(() => import("./pages/MandiPrices"));
 const DamageReport = React.lazy(() => import("./pages/DamageReport"));
 const GovSchemes = React.lazy(() => import("./pages/GovSchemes"));
 const RoboticFarming = React.lazy(() => import("./pages/RoboticFarming"));
+const RobotDetail = React.lazy(() => import("./pages/RobotDetail"));
 const ShopLocator = React.lazy(() => import("./pages/ShopLocator"));
 const Orders = React.lazy(() => import("./pages/Orders"));
 const Addresses = React.lazy(() => import("./pages/Addresses"));
@@ -107,6 +108,9 @@ const App = () => {
                   <Route element={<AppShell />}>
                     <Route path="/preview" element={<DesignPreviewIndex />} />
                     <Route path="/preview/:page" element={<DesignPreview />} />
+                    {/* Product detail needs a route param, so it gets its own
+                        preview entry rather than a slot in the page map. */}
+                    <Route path="/preview/robotic-farming/:id" element={<RobotDetail />} />
                   </Route>
                 )}
 
@@ -129,6 +133,7 @@ const App = () => {
                   <Route path="/damage-report" element={<DamageReport />} />
                   <Route path="/gov-schemes" element={<GovSchemes />} />
                   <Route path="/robotic-farming" element={<RoboticFarming />} />
+                  <Route path="/robotic-farming/:id" element={<RobotDetail />} />
                   <Route path="/shop-locator" element={<ShopLocator />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/addresses" element={<Addresses />} />

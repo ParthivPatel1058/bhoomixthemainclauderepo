@@ -1949,3 +1949,274 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* ------------------------------------------------------------------
+   Day / night switch (sidebar)
+   ------------------------------------------------------------------
+   Ported from the styled-components original in the sidebar design
+   package, the same way `.theme-switch` above was: this project is
+   Tailwind + plain CSS and has no CSS-in-JS runtime.
+
+   Scale and label visibility arrive as custom properties (`--dn-scale`,
+   `--dn-pad`, `--dn-label`) so one stylesheet serves both the expanded
+   footer switch and the smaller one in the collapsed rail.
+
+   The 1400ms cubic-bezier is shared with the sidebar's skin peel, so the
+   handle lands at the same instant the skin finishes turning over.
+   ------------------------------------------------------------------ */
+.dn-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.dn-switch__wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--dn-pad, 44px);
+  color: #fff;
+  transform: scale(var(--dn-scale, 1));
+  transform-origin: center center;
+}
+
+.dn-switch__input {
+  position: absolute;
+  left: -99em;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dn-switch__toggle {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  width: 90px;
+  height: 50px;
+  background-color: #83d8ff;
+  border-radius: 84px;
+  transition: background-color 1400ms cubic-bezier(0.76, 0, 0.24, 1);
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.15);
+}
+
+/* Keyboard focus has to be visible on the label, since the real control is
+   an off-screen checkbox. */
+.dn-switch__input:focus-visible + .dn-switch__toggle {
+  outline: 2px solid #8ac637;
+  outline-offset: 3px;
+}
+
+.dn-switch__toggle::before,
+.dn-switch__toggle::after {
+  position: absolute;
+  top: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #749ed7;
+  display: var(--dn-label, block);
+  transition: color 1400ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.dn-switch__toggle::before {
+  content: "AM";
+  left: -40px;
+}
+
+.dn-switch__toggle::after {
+  content: "PM";
+  right: -40px;
+}
+
+.dn-switch__handler {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  top: 3px;
+  left: 3px;
+  width: 44px;
+  height: 44px;
+  background-color: #ffcf96;
+  border-radius: 50px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  transition: all 1400ms cubic-bezier(0.76, 0, 0.24, 1);
+  transform: rotate(-45deg);
+}
+
+.dn-switch__crater {
+  position: absolute;
+  background-color: #e8cda5;
+  opacity: 0;
+  transition: opacity 1400ms ease-in-out;
+  border-radius: 100%;
+}
+
+.dn-switch__crater--1 { top: 18px; left: 10px; width: 4px; height: 4px; }
+.dn-switch__crater--2 { top: 28px; left: 22px; width: 6px; height: 6px; }
+.dn-switch__crater--3 { top: 10px; left: 25px; width: 8px; height: 8px; }
+
+.dn-switch__star {
+  position: absolute;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: all 1400ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.dn-switch__star--1 { top: 10px; left: 35px; z-index: 0; width: 30px; height: 3px; }
+.dn-switch__star--2 { top: 18px; left: 28px; z-index: 1; width: 30px; height: 3px; }
+.dn-switch__star--3 { top: 27px; left: 40px; z-index: 0; width: 30px; height: 3px; }
+
+.dn-switch__star--4,
+.dn-switch__star--5,
+.dn-switch__star--6 { opacity: 0; }
+
+.dn-switch__star--4 { top: 16px; left: 11px; z-index: 0; width: 2px; height: 2px; transform: translate3d(3px, 0, 0); }
+.dn-switch__star--5 { top: 32px; left: 17px; z-index: 0; width: 3px; height: 3px; transform: translate3d(3px, 0, 0); }
+.dn-switch__star--6 { top: 36px; left: 28px; z-index: 0; width: 2px; height: 2px; transform: translate3d(3px, 0, 0); }
+
+/* Checked = night. */
+.dn-switch__input:checked + .dn-switch__toggle { background-color: #749dd6; }
+.dn-switch__input:checked + .dn-switch__toggle::after { color: #fff; }
+
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__handler {
+  background-color: #ffe5b5;
+  transform: translate3d(40px, 0, 0) rotate(0);
+}
+
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__crater { opacity: 1; }
+
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--1 { width: 2px; height: 2px; }
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--2 { width: 4px; height: 4px; transform: translate3d(-5px, 0, 0); }
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--3 { width: 2px; height: 2px; transform: translate3d(-7px, 0, 0); }
+
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--4,
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--5,
+.dn-switch__input:checked + .dn-switch__toggle .dn-switch__star--6 {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* The app's reduced-motion preference already zeroes every transition via
+   `.prefs-no-motion`, but a visitor whose OS asks for it should get the same
+   treatment without opting in. */
+@media (prefers-reduced-motion: reduce) {
+  .dn-switch__toggle,
+  .dn-switch__handler,
+  .dn-switch__star,
+  .dn-switch__crater,
+  .dn-switch__toggle::before,
+  .dn-switch__toggle::after {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Bounce loader
+   ------------------------------------------------------------------
+   Three balls bouncing in sequence with shadows that flatten and fade
+   as each ball rises. Ported from a styled-components original; the
+   keyframes live here so they are emitted once rather than re-injected
+   per mounted spinner.
+
+   `nth-of-type` rather than `nth-child`: the component also renders an
+   `.sr-only` label inside the wrapper, which would otherwise shift the
+   child indices and leave the third ball and shadow unstyled.
+   ------------------------------------------------------------------ */
+.bounce-loader {
+  position: relative;
+  z-index: 1;
+  width: 200px;
+  height: 60px;
+}
+
+.bounce-loader__ball {
+  position: absolute;
+  left: 15%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  transform-origin: 50%;
+  animation: bounce-loader-ball 0.5s alternate infinite ease;
+}
+
+.bounce-loader__ball:nth-of-type(2) {
+  left: 45%;
+  animation-delay: 0.2s;
+}
+
+.bounce-loader__ball:nth-of-type(3) {
+  left: auto;
+  right: 15%;
+  animation-delay: 0.3s;
+}
+
+.bounce-loader__shadow {
+  position: absolute;
+  top: 62px;
+  left: 15%;
+  z-index: -1;
+  width: 20px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgb(0 0 0 / 0.9);
+  filter: blur(1px);
+  transform-origin: 50%;
+  animation: bounce-loader-shadow 0.5s alternate infinite ease;
+}
+
+.bounce-loader__shadow:nth-of-type(5) {
+  left: 45%;
+  animation-delay: 0.2s;
+}
+
+.bounce-loader__shadow:nth-of-type(6) {
+  left: auto;
+  right: 15%;
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce-loader-ball {
+  0% {
+    top: 60px;
+    height: 5px;
+    border-radius: 50px 50px 25px 25px;
+    transform: scaleX(1.7);
+  }
+  40% {
+    height: 20px;
+    border-radius: 50%;
+    transform: scaleX(1);
+  }
+  100% {
+    top: 0%;
+  }
+}
+
+@keyframes bounce-loader-shadow {
+  0% {
+    transform: scaleX(1.5);
+  }
+  40% {
+    transform: scaleX(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scaleX(0.2);
+    opacity: 0.4;
+  }
+}
+
+/* A spinner that never stops moving is the clearest thing a reduced-motion
+   request is asking us to calm down. The balls hold their mid-bounce pose so
+   the control still reads as a loading indicator. */
+@media (prefers-reduced-motion: reduce) {
+  .bounce-loader__ball,
+  .bounce-loader__shadow {
+    animation: none;
+  }
+  .bounce-loader__ball { top: 20px; }
+  .bounce-loader__shadow { opacity: 0.7; }
+}

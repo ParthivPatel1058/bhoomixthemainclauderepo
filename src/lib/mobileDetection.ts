@@ -4,7 +4,8 @@ export const isMobileApp = (): boolean => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   const isApplix = window.location.hostname.includes('applix') || 
                    document.referrer.includes('applix');
-  const isCapacitor = !!(window as any).Capacitor;
+  // Injected by the native shell when the app runs inside Capacitor.
+  const isCapacitor = 'Capacitor' in window;
   
   return isStandalone || isApplix || isCapacitor;
 };

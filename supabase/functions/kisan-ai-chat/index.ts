@@ -23,10 +23,13 @@
  * ->   { reply: string }  |  { error: string }
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders, rateLimited, tooManyRequests } from '../_shared/http.ts';
+
+/* This function runs with `verify_jwt = false` and spends NVIDIA quota on
+   every call, so an open URL is an open budget. Twelve a minute is far more
+   than a farmer typing questions will ever need and far less than a script
+   costs us. */
+const RATE = { limit: 12, windowMs: 60_000 };
 
 const NVIDIA_BASE = 'https://integrate.api.nvidia.com/v1';
 const NVIDIA_MODEL = 'meta/llama-3.2-11b-vision-instruct';
@@ -88,13 +91,6 @@ type Parsed = {
   type?: 'text' | 'image';
   language: 'en' | 'hi';
 };
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 function validate(raw: unknown): { error: string } | { parsed: Parsed } {
   if (!raw || typeof raw !== 'object') return { error: 'Invalid request body' };
@@ -199,8 +195,19 @@ function userContentFor(parsed: Parsed) {
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  if (rateLimited(req, RATE)) return tooManyRequests(corsHeaders, 60);
 
   const provider = resolveProvider();
   if (!provider) {
