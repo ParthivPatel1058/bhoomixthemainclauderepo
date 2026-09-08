@@ -9,14 +9,21 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders, rateLimited, tooManyRequests } from '../_shared/http.ts';
 
 const MODEL = 'gemini-3.5-flash';
 const MAX_TEXTS = 100;
+/* These are UI strings — a label, a sentence of help text. Anything longer is
+   not something this endpoint is for, and without a cap `MAX_TEXTS` alone
+   permits a multi-megabyte body straight into a paid model. */
+const MAX_TEXT_CHARS = 600;
+const MAX_TOTAL_CHARS = 20_000;
+
+/* Runs before sign-in (the welcome screen is localised), so a JWT cannot be
+   required. The window is generous for a real page load — a fresh language
+   fetches its strings in a couple of batched calls — and tight enough that a
+   script cannot sit on the endpoint burning Gemini quota. */
+const RATE = { limit: 30, windowMs: 60_000 };
 
 const LANGUAGE_NAMES: Record<string, string> = {
   as: 'Assamese', bn: 'Bengali', brx: 'Bodo', doi: 'Dogri', gu: 'Gujarati',
@@ -25,13 +32,6 @@ const LANGUAGE_NAMES: Record<string, string> = {
   or: 'Odia', pa: 'Punjabi', sa: 'Sanskrit', sat: 'Santali', sd: 'Sindhi',
   ta: 'Tamil', te: 'Telugu', ur: 'Urdu',
 };
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 /** Must match the client's hash exactly or the cache never hits. */
 async function hash(text: string): Promise<string> {
@@ -43,8 +43,19 @@ async function hash(text: string): Promise<string> {
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  if (rateLimited(req, RATE)) return tooManyRequests(corsHeaders, 60);
 
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -67,6 +78,15 @@ Deno.serve(async (req) => {
   if (!LANGUAGE_NAMES[lang]) return json({ error: 'Unsupported language' }, 400);
   if (texts.length === 0) return json({ translations: {} });
   if (texts.length > MAX_TEXTS) return json({ error: `At most ${MAX_TEXTS} strings per call` }, 400);
+
+  const oversize = (texts as string[]).find((t) => t.length > MAX_TEXT_CHARS);
+  if (oversize !== undefined) {
+    return json({ error: `Each string must be ${MAX_TEXT_CHARS} characters or less` }, 400);
+  }
+  const totalChars = (texts as string[]).reduce((n, t) => n + t.length, 0);
+  if (totalChars > MAX_TOTAL_CHARS) {
+    return json({ error: `At most ${MAX_TOTAL_CHARS} characters per call` }, 400);
+  }
 
   const db = createClient(supabaseUrl, serviceKey);
   const unique = [...new Set(texts as string[])];

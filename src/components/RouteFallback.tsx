@@ -1,4 +1,4 @@
-import { LumaSpin } from '@/components/ui/luma-spin';
+import { BounceLoader } from '@/components/ui/bounce-loader';
 
 /**
  * Shown while a lazily-loaded route chunk downloads.
@@ -14,7 +14,7 @@ export default function RouteFallback() {
       role="status"
       aria-live="polite"
     >
-      <LumaSpin label="Loading" className="text-primary" />
+      <BounceLoader label="Loading" />
       <span className="text-sm text-muted-foreground">Loading… / लोड हो रहा है…</span>
     </div>
   );

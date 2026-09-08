@@ -9,10 +9,7 @@
  * POST { state?, commodity?, district?, limit? }
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders } from '../_shared/http.ts';
 
 const RESOURCE_ID = '9ef84268-d588-465a-a308-a864a43d0070';
 const BASE = `https://api.data.gov.in/resource/${RESOURCE_ID}`;
@@ -136,13 +133,6 @@ async function writeCache(db: DbConfig, snap: Snapshot): Promise<void> {
   }
 }
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
 /** Fold away the differences that are noise: case, padding, doubled spaces. */
 function norm(value: string): string {
   return value.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -246,6 +236,16 @@ async function getSnapshot(key: string, db: DbConfig | null): Promise<Snapshot> 
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 

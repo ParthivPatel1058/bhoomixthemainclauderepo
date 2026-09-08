@@ -17,24 +17,13 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders } from '../_shared/http.ts';
 
 /** Who may create which roles. The only place this is decided. */
 const MAY_CREATE: Record<string, string[]> = {
   admin: ['manager', 'partner'],
   manager: ['partner'],
 };
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 function badPassword(pw: string): string | null {
   if (pw.length < 10) return 'Password must be at least 10 characters';
@@ -44,6 +33,20 @@ function badPassword(pw: string): string | null {
 }
 
 Deno.serve(async (req) => {
+  // Declared fresh per invocation and closed over by `json()` below, rather
+  // than held in a module-level variable: `Deno.serve` interleaves concurrent
+  // requests on one isolate, awaits included, so a shared mutable binding
+  // reassigned at the top of the handler can be overwritten by a second
+  // request before the first one finishes and reads it back — one caller's
+  // response headers leaking another caller's Origin.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 

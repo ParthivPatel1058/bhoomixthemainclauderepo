@@ -27,8 +27,15 @@ export function LiquidMetalButton({
   const [isPressed, setIsPressed] = useState(false);
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; id: number }>>([]);
   const shaderRef = useRef<HTMLDivElement>(null);
-  // biome-ignore lint/suspicious/noExplicitAny: External library without types
-  const shaderMount = useRef<any>(null);
+  // The shader library ships no types. Rather than `any`, describe the two
+  // methods this file actually calls — a wrong name is then a compile error
+  // instead of a runtime one.
+  /* Typed against the library's own class rather than `any`. That change is
+     what surfaced the leak below: the cleanup used to call `destroy?.()`,
+     which does not exist on ShaderMount — the optional call swallowed it, so
+     the WebGL context was never released and every mount/unmount of this
+     button burned one. The method is `dispose()`. */
+  const shaderMount = useRef<ShaderMount | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rippleId = useRef(0);
 
@@ -65,7 +72,7 @@ export function LiquidMetalButton({
 
     try {
       if (shaderRef.current) {
-        shaderMount.current?.destroy?.();
+        shaderMount.current?.dispose();
         shaderMount.current = new ShaderMount(
           shaderRef.current,
           liquidMetalFragmentShader,
@@ -91,7 +98,7 @@ export function LiquidMetalButton({
     }
 
     return () => {
-      shaderMount.current?.destroy?.();
+      shaderMount.current?.dispose();
       shaderMount.current = null;
     };
   }, []);

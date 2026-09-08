@@ -619,6 +619,102 @@ export const STATE_SCHEMES: Scheme[] = [
     link: 'https://www.tnagrisnet.tn.gov.in/',
     category: 'machinery',
   },
+
+  // ── Added from "India's Decentralized Welfare Architectures" (state
+  //    schemes directory, compiled September 2026, source-grounded in
+  //    myScheme and official state portals). That document catalogues 46
+  //    schemes across nine states, but it is a general welfare directory —
+  //    most of its entries are marriage grants, laptop distribution,
+  //    disability certificates, scholarships and pensions with nothing to do
+  //    with farming. Only the farmer/agriculture-relevant subset is added
+  //    here, to match what every other row in this file already is. Links
+  //    are the document's own hyperlink targets (extracted from its PDF link
+  //    annotations, not the visible "Official Portal >" label), each checked
+  //    live before adding.
+  {
+    id: 'mp-nalkoop-khanan',
+    state: 'Madhya Pradesh',
+    name: 'Nalkoop Khanan Yojana',
+    nameHi: 'नलकूप खनन योजना',
+    description: 'Tube-well and submersible pump subsidy for SC/ST farmers on unirrigated land',
+    descriptionHi: 'असिंचित भूमि वाले अनुसूचित जाति/जनजाति किसानों हेतु नलकूप खनन और सबमर्सिबल पंप सब्सिडी',
+    eligibility: 'SC and ST farmers with non-irrigated arable land in Madhya Pradesh, excluding Indore and Shajapur districts',
+    eligibilityHi: 'इंदौर और शाजापुर जिलों को छोड़कर मध्य प्रदेश में असिंचित कृषि भूमि वाले अनुसूचित जाति/जनजाति किसान',
+    benefits: '75% subsidy up to ₹25,000 for tube-well drilling, successful or not, plus 75% up to ₹15,000 for a submersible pump',
+    benefitsHi: 'नलकूप खनन (सफल हो या न हो) पर ₹25,000 तक 75% सब्सिडी, साथ ही सबमर्सिबल पंप पर ₹15,000 तक 75% सब्सिडी',
+    link: 'https://en.vikaspedia.in/viewcontent/schemesall/state-specific-schemes/welfare-schemes-of-madhya-pradesh?lgn=en',
+    category: 'irrigation',
+  },
+  {
+    id: 'tn-solar-pumpset',
+    state: 'Tamil Nadu',
+    name: 'CM Solar Powered Pumpset Scheme',
+    nameHi: 'मुख्यमंत्री सौर ऊर्जा चालित पंपसेट योजना',
+    description: 'Capital subsidy to switch irrigation pumps to off-grid solar power',
+    descriptionHi: 'सिंचाई पंपों को ग्रिड की जगह सौर ऊर्जा पर लाने हेतु पूंजीगत सब्सिडी',
+    eligibility: 'Tamil Nadu farmers installing 3HP, 5HP or 7.5HP solar pumps',
+    eligibilityHi: '3, 5 या 7.5 एचपी सौर पंप लगाने वाले तमिलनाडु के किसान',
+    benefits: '80% to 90% capital subsidy on solar pump installation, cutting dependence on grid power for irrigation',
+    benefitsHi: 'सौर पंप स्थापना पर 80% से 90% तक पूंजीगत सब्सिडी, जिससे सिंचाई हेतु बिजली ग्रिड पर निर्भरता घटती है',
+    link: 'https://www.tnesevai.tn.gov.in',
+    category: 'irrigation',
+  },
+  {
+    id: 'tn-free-power-farmers',
+    state: 'Tamil Nadu',
+    name: 'Free Power for Farmers',
+    nameHi: 'किसानों के लिए मुफ्त बिजली',
+    description: 'Free daily electricity for agricultural pumpsets used to irrigate field crops',
+    descriptionHi: 'खेत की सिंचाई में प्रयुक्त कृषि पंपसेट हेतु दैनिक मुफ्त बिजली',
+    eligibility: 'Tamil Nadu farmers with electric pumpsets up to 10HP',
+    eligibilityHi: '10 एचपी तक के बिजली पंपसेट वाले तमिलनाडु के किसान',
+    benefits: '9 hours of uninterrupted free electricity every day, reducing the running cost of irrigation',
+    benefitsHi: 'हर दिन 9 घंटे निर्बाध मुफ्त बिजली, जिससे सिंचाई की लागत घटती है',
+    link: 'https://www.tnesevai.tn.gov.in',
+    category: 'irrigation',
+  },
+  {
+    id: 'tn-karnataka-research-visit',
+    state: 'Tamil Nadu',
+    name: 'Visit of Farmers to Karnataka Research Stations',
+    nameHi: 'कर्नाटक अनुसंधान केंद्रों की किसान भ्रमण योजना',
+    description: 'Fully sponsored study tours to agricultural research stations for hands-on exposure to advanced techniques',
+    descriptionHi: 'उन्नत तकनीकों का प्रत्यक्ष अनुभव देने हेतु कृषि अनुसंधान केंद्रों की पूर्ण प्रायोजित अध्ययन यात्रा',
+    eligibility: 'Registered contract farmers residing in Tamil Nadu',
+    eligibilityHi: 'तमिलनाडु में रहने वाले पंजीकृत अनुबंध किसान',
+    benefits: 'A 3-day sponsored educational tour to advanced research stations in Karnataka to learn new farming skills',
+    benefitsHi: 'नई कृषि तकनीक सीखने हेतु कर्नाटक के उन्नत अनुसंधान केंद्रों की 3-दिवसीय प्रायोजित शैक्षणिक यात्रा',
+    link: 'https://www.myscheme.gov.in/schemes/vcfrsk',
+    category: 'inputs',
+  },
+  {
+    id: 'rj-short-term-crop-loan',
+    state: 'Rajasthan',
+    name: 'Short Term Crop Loan Scheme',
+    nameHi: 'अल्पकालीन फसल ऋण योजना',
+    description: 'Interest-free seasonal cultivation credit through cooperative agricultural banks',
+    descriptionHi: 'सहकारी कृषि बैंकों के माध्यम से ब्याज-मुक्त मौसमी खेती ऋण',
+    eligibility: 'Rajasthan farmers registered with a cooperative agricultural bank and holding a valid crop card',
+    eligibilityHi: 'सहकारी कृषि बैंक में पंजीकृत और वैध फसल कार्ड रखने वाले राजस्थान के किसान',
+    benefits: 'Interest-free crop loan, with real-time online tracking of loan status and any crop-loan waiver',
+    benefitsHi: 'ब्याज-मुक्त फसल ऋण, साथ ही ऋण की स्थिति और किसी भी फसल ऋण माफी का रीयल-टाइम ऑनलाइन ट्रैकिंग',
+    link: 'https://jansoochna.rajasthan.gov.in/Services',
+    category: 'credit',
+  },
+  {
+    id: 'od-seeds-portal',
+    state: 'Odisha',
+    name: 'Odisha Seeds Portal',
+    nameHi: 'ओडिशा बीज पोर्टल',
+    description: 'Digital portal for certified seed tracking, subsidy transfer and vendor verification',
+    descriptionHi: 'प्रमाणित बीज ट्रैकिंग, सब्सिडी हस्तांतरण और विक्रेता सत्यापन हेतु डिजिटल पोर्टल',
+    eligibility: 'Odisha farmers requiring certified seeds for cropping',
+    eligibilityHi: 'खेती हेतु प्रमाणित बीज चाहने वाले ओडिशा के किसान',
+    benefits: 'Direct seed subsidy transfer and verification of which local seed vendors are authorised',
+    benefitsHi: 'सीधा बीज सब्सिडी हस्तांतरण और यह सत्यापन कि कौन-से स्थानीय बीज विक्रेता अधिकृत हैं',
+    link: 'https://odishaseedsportal.nic.in/',
+    category: 'inputs',
+  },
 ];
 
 export const ALL_SCHEMES: Scheme[] = [...CENTRAL_SCHEMES, ...STATE_SCHEMES];

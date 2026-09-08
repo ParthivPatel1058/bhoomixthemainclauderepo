@@ -349,24 +349,37 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-corrected against supabase/migrations/20260808000100_schema.sql
+      // and 20260808000000_schema_enums.sql (2026-09-08): the generator's
+      // output predated that migration and disagreed with it in three ways
+      // that all surfaced as real `tsc` errors in useDiagnoses.ts —
+      //   - the column is `treatment`, not `treatment_text`
+      //   - severity_level is 'none'|'low'|'medium'|'high'|'critical'
+      //     ('none' is the column's own DEFAULT, and was missing here)
+      //   - treatment_outcome includes 'not_treated', which was missing here
+      // `plot_id`/`cycle_id` were absent from the generated type entirely.
+      // No project has run `supabase gen types` since; regenerate for real
+      // once there is a live database to point it at.
       crop_diagnoses: {
         Row: {
           id: string
           user_id: string
+          plot_id: string | null
+          cycle_id: string | null
           crop_name: string | null
           image_url: string | null
           disease_name: string | null
           disease_name_hi: string | null
           confidence: number | null
-          severity: 'low' | 'medium' | 'high' | 'critical' | null
-          treatment_text: string | null
+          severity: 'none' | 'low' | 'medium' | 'high' | 'critical'
+          treatment: string | null
           treatment_hi: string | null
           is_healthy: boolean
           lat: number | null
           lng: number | null
           state: string | null
           district: string | null
-          outcome: 'cured' | 'improved' | 'no_change' | 'worsened' | null
+          outcome: 'cured' | 'improved' | 'no_change' | 'worsened' | 'not_treated' | null
           outcome_notes: string | null
           outcome_at: string | null
           created_at: string
@@ -375,20 +388,22 @@ export type Database = {
         Insert: {
           id?: string
           user_id: string
+          plot_id?: string | null
+          cycle_id?: string | null
           crop_name?: string | null
           image_url?: string | null
           disease_name?: string | null
           disease_name_hi?: string | null
           confidence?: number | null
-          severity?: 'low' | 'medium' | 'high' | 'critical' | null
-          treatment_text?: string | null
+          severity?: 'none' | 'low' | 'medium' | 'high' | 'critical'
+          treatment?: string | null
           treatment_hi?: string | null
           is_healthy?: boolean
           lat?: number | null
           lng?: number | null
           state?: string | null
           district?: string | null
-          outcome?: 'cured' | 'improved' | 'no_change' | 'worsened' | null
+          outcome?: 'cured' | 'improved' | 'no_change' | 'worsened' | 'not_treated' | null
           outcome_notes?: string | null
           outcome_at?: string | null
           created_at?: string
@@ -397,20 +412,22 @@ export type Database = {
         Update: {
           id?: string
           user_id?: string
+          plot_id?: string | null
+          cycle_id?: string | null
           crop_name?: string | null
           image_url?: string | null
           disease_name?: string | null
           disease_name_hi?: string | null
           confidence?: number | null
-          severity?: 'low' | 'medium' | 'high' | 'critical' | null
-          treatment_text?: string | null
+          severity?: 'none' | 'low' | 'medium' | 'high' | 'critical'
+          treatment?: string | null
           treatment_hi?: string | null
           is_healthy?: boolean
           lat?: number | null
           lng?: number | null
           state?: string | null
           district?: string | null
-          outcome?: 'cured' | 'improved' | 'no_change' | 'worsened' | null
+          outcome?: 'cured' | 'improved' | 'no_change' | 'worsened' | 'not_treated' | null
           outcome_notes?: string | null
           outcome_at?: string | null
           created_at?: string
@@ -949,7 +966,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      // Was missing the two roles added by
+      // 20260808000000_schema_enums.sql (`ALTER TYPE ... ADD VALUE`).
+      app_role: ["admin", "moderator", "user", "manager", "partner"],
     },
   },
 } as const

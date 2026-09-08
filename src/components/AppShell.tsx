@@ -46,7 +46,8 @@ export default function AppShell() {
       <div
         className={cn(
           'transition-[padding] duration-300',
-          collapsed ? 'lg:pl-[100px]' : 'lg:pl-[288px]',
+          // 12px gutter + panel width + 12px breathing room.
+          collapsed ? 'lg:pl-[100px]' : 'lg:pl-[296px]',
           !isHero && 'min-h-screen',
         )}
       >

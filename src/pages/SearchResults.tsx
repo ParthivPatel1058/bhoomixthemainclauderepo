@@ -115,7 +115,11 @@ export default function SearchResults() {
                       {tx(p.name, p.nameHi)}
                     </h3>
                     <p className="mb-2 text-xs text-muted-foreground">{p.unit}</p>
-                    <div className="mb-3 text-lg font-bold text-primary">₹{p.price}</div>
+                    {/* Agri Market prices are stored with the ₹ already in the
+                        string (agriProducts.ts: price: '₹450'), unlike Mart's
+                        plain number below — prefixing another one here printed
+                        "₹₹450". Same fix `AgriMarket.tsx` already uses. */}
+                    <div className="mb-3 text-lg font-bold text-primary">{p.price}</div>
                     <QuantityStepper
                       className="w-full"
                       store="agri"

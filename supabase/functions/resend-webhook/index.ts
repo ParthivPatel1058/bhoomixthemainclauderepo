@@ -13,11 +13,14 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
+import { corsHeaders as buildCorsHeaders, timingSafeEqual } from '../_shared/http.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, svix-id, svix-timestamp, svix-signature',
-};
+// Resend's servers call this directly — not a browser, so CORS (which only a
+// browser enforces) has no real effect on who can reach it; the actual guard
+// is the Svix signature check below. Kept for consistency with the other
+// functions, and in case anyone ever calls this from a browser-based
+// admin tool.
+const SVIX_HEADERS = 'svix-id, svix-timestamp, svix-signature';
 
 /** Resend signs with Svix: HMAC-SHA256 over "id.timestamp.body". */
 async function signatureValid(
@@ -44,13 +47,24 @@ async function signatureValid(
   const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
 
   // The header carries one or more space-separated "v1,<sig>" pairs.
-  return header
-    .split(' ')
-    .map((p) => p.split(',')[1])
-    .some((sig) => sig === expected);
+  //
+  // Compared in constant time: `===` short-circuits on the first differing
+  // byte, which turns the response latency into an oracle an attacker can walk
+  // to forge a signature one byte at a time.
+  const offered = header.split(' ').map((p) => p.split(',')[1] ?? '');
+  let matched = false;
+  for (const sig of offered) {
+    // No early break — the loop must cost the same whichever entry matches.
+    matched = timingSafeEqual(sig, expected) || matched;
+  }
+  return matched;
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable.
+  const corsHeaders = buildCorsHeaders(req, SVIX_HEADERS);
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: corsHeaders });
 

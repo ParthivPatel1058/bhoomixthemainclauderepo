@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LumaSpin } from '@/components/ui/luma-spin';
+import { BounceLoader } from '@/components/ui/bounce-loader';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LumaSpin label="Checking your session" className="text-primary" />
+        <BounceLoader label="Checking your session" />
       </div>
     );
   }

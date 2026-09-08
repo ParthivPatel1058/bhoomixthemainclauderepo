@@ -11,6 +11,16 @@ export default defineConfig({
   plugins: [
     react(),
   ],
+  /* `vaul` reaches the graph only through the robotics filter sheet, which is
+     lazy-loaded, so Vite discovers it mid-session rather than at server start.
+     That triggers a re-optimisation while the page is already mounted, and the
+     reload it forces can leave the drawer holding a stale React copy — which
+     surfaces as "Invalid hook call ... more than one copy of React". Naming it
+     here gets it pre-bundled with everything else and the discovery never
+     happens. Dev-only; the production build bundles it either way. */
+  optimizeDeps: {
+    include: ["vaul"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

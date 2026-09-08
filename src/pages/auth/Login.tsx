@@ -196,7 +196,10 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let validated: { email: string; password: string };
+    // Derived from the schema rather than restated by hand: the literal
+    // version drifted from what `parse` actually returns and the two stopped
+    // type-checking against each other.
+    let validated: z.infer<typeof loginSchema>;
     try {
       validated = loginSchema.parse(formData);
     } catch (error) {

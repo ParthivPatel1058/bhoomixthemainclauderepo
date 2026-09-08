@@ -10,10 +10,7 @@
  * POST { mode: 'search',  query }
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { corsHeaders as buildCorsHeaders } from '../_shared/http.ts';
 
 // Nominatim asks for a contactable UA. Anonymous traffic gets blocked.
 const UA = 'BhoomiX/1.0 (https://bhoomix.vercel.app)';
@@ -30,15 +27,36 @@ interface Address {
   label: string;
 }
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
+/** The subset of Nominatim's `address` object this function actually reads. */
+interface NominatimAddress {
+  house_number?: string;
+  building?: string;
+  house_name?: string;
+  road?: string;
+  neighbourhood?: string;
+  suburb?: string;
+  village?: string;
+  hamlet?: string;
+  city?: string;
+  town?: string;
+  municipality?: string;
+  city_district?: string;
+  county?: string;
+  state?: string;
+  postcode?: string;
+}
+
+interface NominatimResult {
+  address?: NominatimAddress;
+  lat?: string | number;
+  lon?: string | number;
+  display_name?: string;
+  /** Present instead of the fields above when the coordinate resolves to nothing. */
+  error?: string;
 }
 
 /** Flatten Nominatim's address parts into the fields our form actually has. */
-function toAddress(item: Record<string, any>): Address {
+function toAddress(item: NominatimResult): Address {
   const a = item.address ?? {};
   const house = [a.house_number, a.building, a.house_name].filter(Boolean).join(', ');
   const area = [a.road, a.neighbourhood, a.suburb, a.village, a.hamlet]
@@ -59,16 +77,34 @@ function toAddress(item: Record<string, any>): Address {
   };
 }
 
-async function nominatim(path: string) {
+/**
+ * Fetches and parses one Nominatim response.
+ *
+ * Generic rather than `any`: the two call sites below want different shapes
+ * back — one object for `/reverse`, an array for `/search` — and both already
+ * narrow the untyped JSON with a runtime check before using it, so the type
+ * parameter just names what each call site is asking for and expects to get.
+ */
+async function nominatim<T>(path: string): Promise<T | null> {
   const res = await fetch(BASE + path, { headers: { 'User-Agent': UA, 'Accept-Language': 'en' } });
   if (!res.ok) {
     console.error('Nominatim error', res.status, (await res.text()).slice(0, 300));
     return null;
   }
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 Deno.serve(async (req) => {
+  // Fresh per invocation — see create-staff-account/index.ts for why this is
+  // not a module-level variable.
+  const corsHeaders = buildCorsHeaders(req);
+  function json(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
@@ -86,7 +122,7 @@ Deno.serve(async (req) => {
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
         return json({ error: 'Valid lat and lng are required' }, 400);
       }
-      const data = await nominatim(
+      const data = await nominatim<NominatimResult>(
         `/reverse?format=jsonv2&lat=${lat}&lon=${lng}&addressdetails=1&zoom=18`,
       );
       if (!data || data.error) return json({ error: 'Could not find that location' }, 502);
@@ -100,7 +136,7 @@ Deno.serve(async (req) => {
 
       // countrycodes=in — this is an India-only product, and unfiltered results
       // surface same-named towns on other continents above the local one.
-      const data = await nominatim(
+      const data = await nominatim<NominatimResult[]>(
         `/search?format=jsonv2&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=in&limit=6`,
       );
       if (!Array.isArray(data)) return json({ error: 'Could not search right now' }, 502);

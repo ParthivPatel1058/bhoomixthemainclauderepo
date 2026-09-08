@@ -1,0 +1,6 @@
+{
+  "name": "BhoomiX Sidebar",
+  "description": "Interactive agricultural intelligence sidebar navigation for BhoomiX featuring light and dark modes, collapsible rail, multi-level guide accordions, and integrated search.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

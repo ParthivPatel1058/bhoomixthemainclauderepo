@@ -31,8 +31,23 @@ interface SaveInput {
   isHealthy: boolean;
 }
 
-/** App severity words to the database enum. */
-function toSeverity(s?: string): string {
+type Severity = 'none' | 'low' | 'medium' | 'high' | 'critical';
+
+/**
+ * App severity words to the database enum.
+ *
+ * `crop-vision`'s response schema constrains its own `severity` field to
+ * exactly High/Medium/Low/None (see supabase/functions/crop-vision/index.ts),
+ * so those four are the only inputs this ever actually receives — 'critical'
+ * is a real value in the database enum but not one the model can produce, so
+ * it is not mapped to here.
+ *
+ * Typed to return `Severity` rather than `string`: a `string` return was the
+ * reason `save()`'s `.insert()` call failed to typecheck against the
+ * (now-corrected) generated column type, since no width of `string` narrows
+ * to a literal union on its own.
+ */
+function toSeverity(s?: string): Severity {
   const v = (s ?? '').toLowerCase();
   if (v === 'high') return 'high';
   if (v === 'medium') return 'medium';

@@ -19,10 +19,22 @@ const STATUS_LABEL: Record<string, { en: string; hi: string }> = {
   delivered: { en: '📦 Delivered', hi: '📦 पहुँचा' },
 };
 
+/** One line as stored in `orders.items`. Written by CartDrawer at checkout. */
+interface OrderLine {
+  product_id?: number;
+  name: string;
+  name_hi?: string;
+  nameHi?: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
 interface Order {
   id: string;
   order_number: string;
-  items: any;
+  /** Historic rows predate the current line shape, hence the loose element. */
+  items: OrderLine[] | null;
   total_amount: number;
   status: string;
   delivery_address: string | null;
@@ -74,7 +86,16 @@ const PartnerOrders = () => {
         .rpc('get_partner_orders');
 
       if (error) throw error;
-      setOrders(data || []);
+      // `orders.items` is `Json` in the generated types — the database has no
+      // opinion on the shape of the array. Narrowing here, at the one boundary
+      // where the data arrives, is what lets the rest of the page work with a
+      // real `OrderLine` instead of `any` scattered through the JSX.
+      setOrders(
+        (data ?? []).map((row) => ({
+          ...row,
+          items: Array.isArray(row.items) ? (row.items as unknown as OrderLine[]) : null,
+        })),
+      );
       setNotPartner(false);
     } catch (error) {
       // The RPC raises this for anyone who has not registered as a partner.
@@ -243,9 +264,9 @@ const PartnerOrders = () => {
                     {tx('Order Items:', 'ऑर्डर आइटम:')}
                   </p>
                   <div className="space-y-1">
-                    {order.items?.map((item: any, idx: number) => (
+                    {order.items?.map((item, idx) => (
                       <div key={idx} className="flex justify-between text-sm">
-                        <span>{tx(item.name, item.nameHi)}</span>
+                        <span>{tx(item.name, item.nameHi ?? item.name_hi ?? item.name)}</span>
                         <span className="font-medium">x{item.quantity}</span>
                       </div>
                     ))}
