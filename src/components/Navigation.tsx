@@ -59,8 +59,33 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { t, tx } = useLanguage();
   const { signOut, user } = useAuth();
-  const { weather } = useWeather();
+  const { weather, locationKnown, requestLocation } = useWeather();
   const { defaultAddress } = useAddresses();
+  const [locating, setLocating] = useState(false);
+
+  /**
+   * Ask the device where we are. A browser that has hard-denied this origin
+   * will not re-prompt and resolves false immediately, so point at the address
+   * form instead — that is the only way left for the farmer to say where they
+   * are, and it is what the weather reads from first anyway.
+   */
+  const handleUseLocation = async () => {
+    setLocating(true);
+    try {
+      const ok = await requestLocation();
+      if (!ok) {
+        toast.error(
+          tx(
+            'Could not get your location. Allow location access, or add your address.',
+            'लोकेशन नहीं मिली। अनुमति दें, या अपना पता जोड़ें।',
+          ),
+        );
+        navigate('/addresses');
+      }
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const deliverTo = defaultAddress
     ? [defaultAddress.house, defaultAddress.area].filter(Boolean).join(', ') ||
@@ -145,30 +170,50 @@ const Navigation = () => {
             </span>
           </Link>
 
-          {/* Weather capsule — opens the macOS-style panel */}
-          <WeatherPopover>
-          <button
-            type="button"
-            aria-label="Weather forecast"
-            className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
-          >
-            <span className="flex items-center gap-1.5 font-medium text-white/90">
-              {/* A lit dot, not a pulsing one. The ping this replaced ran on
-                  every route for the life of the session; the glow reads as
-                  "live" without keeping a compositor layer awake. */}
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_2.5px_hsl(152_60%_45%_/_0.22)]" />
-              {weather.city}
-            </span>
-            <span className="h-3 w-px bg-white/15" />
-            <span className="flex items-center gap-1.5 font-semibold text-white">
-              <WeatherIcon icon={weather.conditionIcon} className="h-3.5 w-3.5 text-primary" />
-              <span>{weather.temperature}°</span>
-              <span className="hidden font-normal text-white/60 md:inline">
-                {weather.condition}
+          {/* Weather capsule — opens the macOS-style panel.
+              With no known location it becomes a prompt instead: showing a
+              temperature for a city the farmer is not in reads as fact, and
+              the spray and irrigation advice is derived from it. */}
+          {locationKnown ? (
+            <WeatherPopover>
+            <button
+              type="button"
+              aria-label="Weather forecast"
+              className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
+            >
+              <span className="flex items-center gap-1.5 font-medium text-white/90">
+                {/* A lit dot, not a pulsing one. The ping this replaced ran on
+                    every route for the life of the session; the glow reads as
+                    "live" without keeping a compositor layer awake. */}
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_2.5px_hsl(152_60%_45%_/_0.22)]" />
+                {weather.city || tx('Your area', 'आपका क्षेत्र')}
               </span>
-            </span>
-          </button>
-          </WeatherPopover>
+              <span className="h-3 w-px bg-white/15" />
+              <span className="flex items-center gap-1.5 font-semibold text-white">
+                <WeatherIcon icon={weather.conditionIcon} className="h-3.5 w-3.5 text-primary" />
+                <span>{weather.temperature}°</span>
+                <span className="hidden font-normal text-white/60 md:inline">
+                  {weather.condition}
+                </span>
+              </span>
+            </button>
+            </WeatherPopover>
+          ) : (
+            <button
+              type="button"
+              onClick={handleUseLocation}
+              disabled={locating}
+              aria-label={tx('Use my location for weather', 'मौसम के लिए मेरी लोकेशन इस्तेमाल करें')}
+              className="hidden items-center gap-1.5 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] text-white/80 hover:bg-white/[0.09] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
+            >
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+              <span className="font-medium">
+                {locating
+                  ? tx('Locating…', 'ढूँढ रहे हैं…')
+                  : tx('Set location', 'लोकेशन चुनें')}
+              </span>
+            </button>
+          )}
 
           {/* Delivery Address Capsule (Left side) */}
           <Link

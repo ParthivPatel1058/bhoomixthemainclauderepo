@@ -56,8 +56,10 @@ export const WEATHER_FALLBACK: WeatherData = {
   feelsLike: 30,
 };
 
-/** Indore, used when the browser will not share a position. */
-const FALLBACK_COORDS = { lat: 22.7196, lon: 75.8577 };
+/* There is deliberately no fallback coordinate here. Defaulting to a city the
+   farmer is not in produced a real, live-looking reading for the wrong place —
+   the capsule showed Indore with a green "live" dot to a user in Delhi. When
+   the position is unknown the UI now says so instead. */
 
 /**
  * WMO weather codes (Open-Meteo) mapped to OpenWeatherMap icon prefixes, so the
@@ -113,23 +115,25 @@ let inFlight: Promise<WeatherBundle | null> | null = null;
 const subscribers = new Set<() => void>();
 
 interface ResolvedLocation {
-  coords: { lat: number; lon: number };
+  /** Null when the device would not say and no address is saved. */
+  coords: { lat: number; lon: number } | null;
   /** Place name from the saved address; skips the reverse-geocode when set. */
   cityHint: string | null;
+  /** How the position was obtained. Null means we genuinely do not know. */
+  source: "address" | "gps" | null;
 }
 
 /** Cleared when the saved address changes, so the next read re-resolves. */
 let locationPromise: Promise<ResolvedLocation> | null = null;
 
-/** Device GPS, falling back to the default city when denied or unavailable. */
-function gpsCoords(): Promise<{ lat: number; lon: number }> {
+/** Device GPS. Null when unsupported, denied, or timed out — never a guess. */
+function gpsCoords(): Promise<{ lat: number; lon: number } | null> {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(FALLBACK_COORDS);
+    if (!navigator.geolocation) return resolve(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      // Denied or unavailable: still show real weather, just for the default city.
-      () => resolve(FALLBACK_COORDS),
-      { timeout: 8000 },
+      () => resolve(null),
+      { timeout: 8000, maximumAge: 300_000 },
     );
   });
 }
@@ -167,6 +171,7 @@ async function resolveLocation(): Promise<ResolvedLocation> {
           return {
             coords: { lat: Number(data.lat), lon: Number(data.lng) },
             cityHint: data.city,
+            source: "address",
           };
         }
         // Typed by hand with no pin: the city is still better than Indore.
@@ -180,6 +185,7 @@ async function resolveLocation(): Promise<ResolvedLocation> {
             return {
               coords: { lat: Number(hit.lat), lon: Number(hit.lng) },
               cityHint: data.city,
+              source: "address",
             };
           }
         }
@@ -188,7 +194,24 @@ async function resolveLocation(): Promise<ResolvedLocation> {
   } catch {
     /* Signed out, offline, or lookup failed — fall through to GPS. */
   }
-  return { coords: await gpsCoords(), cityHint: null };
+  const gps = await gpsCoords();
+  return { coords: gps, cityHint: null, source: gps ? "gps" : null };
+}
+
+/**
+ * Re-ask the device for a position, bypassing the cached resolution.
+ *
+ * Bound to the nav-bar capsule so a farmer who dismissed the permission prompt
+ * can grant it later without reloading. If the browser has hard-denied the
+ * origin it will not re-prompt, and the capsule keeps offering the address
+ * route instead, which is the only remaining way to say where they are.
+ */
+export async function requestLocation(): Promise<boolean> {
+  locationPromise = null;
+  cached = null;
+  const { source } = await (locationPromise = resolveLocation());
+  subscribers.forEach((fn) => fn());
+  return source !== null;
 }
 
 /**
@@ -208,12 +231,15 @@ async function resolveCity(lat: number, lon: number): Promise<string> {
       `${GEOCODE_URL}?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`,
       { headers: { Accept: "application/json" } },
     );
-    if (!res.ok) return WEATHER_FALLBACK.city;
+    // Empty, never a stand-in city name: the coordinates are the user's real
+    // position, so the reading is correct even when the name lookup fails.
+    // The capsule labels an unnamed place rather than inventing one.
+    if (!res.ok) return "";
     const data = await res.json();
     const a = data?.address ?? {};
-    return a.city || a.town || a.village || a.county || a.state_district || WEATHER_FALLBACK.city;
+    return a.city || a.town || a.village || a.county || a.state_district || "";
   } catch {
-    return WEATHER_FALLBACK.city;
+    return "";
   }
 }
 
@@ -225,6 +251,10 @@ async function loadWeather(): Promise<WeatherBundle | null> {
     try {
       locationPromise ??= resolveLocation();
       const { coords, cityHint } = await locationPromise;
+      // Location unknown: report nothing rather than a plausible-looking
+      // reading for a city the farmer is not standing in. The advisories are
+      // built on this data, so a confident wrong number is the worst outcome.
+      if (!coords) return null;
 
       const params = new URLSearchParams({
         latitude: String(coords.lat),
@@ -337,6 +367,13 @@ export function useWeather() {
     weather,
     loading,
     isLive: !!bundle,
+    /**
+     * False when neither a saved address nor the device could place the user.
+     * The capsule must not render a temperature in that state — see the note
+     * in loadWeather about confident wrong readings.
+     */
+    locationKnown: !!bundle,
+    requestLocation,
     hourly: bundle?.hourly ?? [],
     daily: bundle?.daily ?? [],
     coords: bundle?.coords ?? null,
