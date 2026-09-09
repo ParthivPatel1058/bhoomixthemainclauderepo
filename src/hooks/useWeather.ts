@@ -45,9 +45,13 @@ export interface ForecastDay {
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://nominatim.openstreetmap.org/reverse";
 
-/** Fallback shown when the API is unavailable or geolocation is denied. */
+/**
+ * Placeholder figures for the rare case where Open-Meteo answers 200 but omits
+ * a field. Not a location: the capsule only renders these once a real position
+ * has been resolved, so the city here is never shown as somebody's whereabouts.
+ */
 export const WEATHER_FALLBACK: WeatherData = {
-  city: "Indore",
+  city: "New Delhi",
   temperature: 28,
   humidity: 65,
   condition: "Partly Cloudy",
@@ -56,10 +60,15 @@ export const WEATHER_FALLBACK: WeatherData = {
   feelsLike: 30,
 };
 
-/* There is deliberately no fallback coordinate here. Defaulting to a city the
-   farmer is not in produced a real, live-looking reading for the wrong place —
-   the capsule showed Indore with a green "live" dot to a user in Delhi. When
-   the position is unknown the UI now says so instead. */
+/**
+ * Last-resort location when neither the device nor a saved address answers.
+ *
+ * This is a labelled default, not a guess passed off as a fix: the capsule
+ * marks it with an amber pin and offers to ask for real location, where the
+ * old hardcoded Indore wore the green "live" dot and read as fact. That
+ * distinction is the whole reason the previous bug went unnoticed.
+ */
+const DEFAULT_COORDS = { lat: 28.6139, lon: 77.209 };
 
 /**
  * WMO weather codes (Open-Meteo) mapped to OpenWeatherMap icon prefixes, so the
@@ -107,8 +116,8 @@ interface WeatherBundle {
   hourly: ForecastHour[];
   daily: ForecastDay[];
   coords: { lat: number; lon: number };
-  /** Whether this reading is the live device fix or the address on file. */
-  source: "address" | "gps";
+  /** Live device fix, the address on file, or the labelled default city. */
+  source: "address" | "gps" | "default";
 }
 
 /* -- Module-level cache so every consumer shares one network call -- */
@@ -121,8 +130,8 @@ interface ResolvedLocation {
   coords: { lat: number; lon: number } | null;
   /** Place name from the saved address; skips the reverse-geocode when set. */
   cityHint: string | null;
-  /** How the position was obtained. Null means we genuinely do not know. */
-  source: "address" | "gps" | null;
+  /** How the position was obtained. Null only if even the default failed. */
+  source: "address" | "gps" | "default" | null;
 }
 
 /** Cleared when the saved address changes, so the next read re-resolves. */
@@ -201,9 +210,9 @@ async function resolveLocation(): Promise<ResolvedLocation> {
       }
     }
   } catch {
-    /* Signed out, offline, or the lookup failed — report nothing. */
+    /* Signed out, offline, or the lookup failed — fall through to default. */
   }
-  return { coords: null, cityHint: null, source: null };
+  return { coords: DEFAULT_COORDS, cityHint: null, source: "default" };
 }
 
 /**

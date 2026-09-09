@@ -181,15 +181,22 @@ const Navigation = () => {
               aria-label={
                 locationSource === 'gps'
                   ? tx('Weather at your location', 'आपकी जगह का मौसम')
-                  : tx('Weather at your saved address', 'आपके सहेजे पते का मौसम')
+                  : locationSource === 'address'
+                    ? tx('Weather at your saved address', 'आपके सहेजे पते का मौसम')
+                    : tx('Weather at the default location', 'डिफ़ॉल्ट जगह का मौसम')
               }
               title={
                 locationSource === 'gps'
                   ? undefined
-                  : tx(
-                      'Showing your saved address — allow location access for where you are now',
-                      'सहेजा गया पता दिख रहा है — अभी की जगह के लिए लोकेशन की अनुमति दें',
-                    )
+                  : locationSource === 'address'
+                    ? tx(
+                        'Showing your saved address — allow location access for where you are now',
+                        'सहेजा गया पता दिख रहा है — अभी की जगह के लिए लोकेशन की अनुमति दें',
+                      )
+                    : tx(
+                        'Default location — allow location access to see weather where you are',
+                        'डिफ़ॉल्ट जगह — अपनी जगह का मौसम देखने के लिए लोकेशन की अनुमति दें',
+                      )
               }
               className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
             >
