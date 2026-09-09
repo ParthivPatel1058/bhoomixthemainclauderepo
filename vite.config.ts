@@ -34,10 +34,20 @@ export default defineConfig({
            client before it could paint anything. Splitting the vendors lets
            them download in parallel and stay cached across deploys — app code
            changes far more often than these do. */
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-motion": ["framer-motion", "gsap"],
-          "vendor-supabase": ["@supabase/supabase-js"],
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (/react|react-dom|react-router-dom/.test(id) && /node_modules\/(react|react-dom|react-router-dom)\//.test(id)) {
+            return "vendor-react";
+          }
+          if (id.includes("framer-motion") || id.includes("gsap")) return "vendor-motion";
+          if (id.includes("@supabase/supabase-js")) return "vendor-supabase";
+          /* The shadcn/ui component library sits on ~27 @radix-ui primitives
+             plus lucide-react, all imported eagerly by the app shell (sidebar,
+             toasts, tooltips) so they used to land in the main entry chunk.
+             They change far less often than app code, so their own chunk
+             stays cached across deploys instead of re-downloading every time. */
+          if (id.includes("@radix-ui") || id.includes("lucide-react")) return "vendor-ui";
+          return undefined;
         },
       },
     },
