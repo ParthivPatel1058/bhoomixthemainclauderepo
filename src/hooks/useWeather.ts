@@ -107,6 +107,8 @@ interface WeatherBundle {
   hourly: ForecastHour[];
   daily: ForecastDay[];
   coords: { lat: number; lon: number };
+  /** Whether this reading is the live device fix or the address on file. */
+  source: "address" | "gps";
 }
 
 /* -- Module-level cache so every consumer shares one network call -- */
@@ -141,18 +143,25 @@ function gpsCoords(): Promise<{ lat: number; lon: number } | null> {
 /**
  * Where to report weather for.
  *
- * The saved delivery address wins over GPS. A farmer who dismissed the browser
- * location prompt — most of them, on a first visit — was shown Indore's weather
- * regardless of where they actually farm, which makes the spray and irrigation
- * advice worse than useless. The address they already typed is a far better
- * answer than a hardcoded city, and it stays correct when they open the app
- * while away from the field.
+ * The live device position wins. The capsule answers "what is the weather
+ * where I am standing", so a farmer who has travelled to Delhi must not be
+ * shown their saved village's weather as though it were current — that reads
+ * as fact and feeds the spray and irrigation advisories.
  *
- * Queried directly here rather than through useAddresses(), which runs an
- * uncached request per mount: useWeather has six consumers, so routing it
+ * The saved address is the fallback, not the preference: it only applies when
+ * the device will not say, which is the common case on a first visit where the
+ * permission prompt gets dismissed. It is a real place the user told us about,
+ * so it beats reporting nothing, but it never overrides an actual fix.
+ *
+ * The address is queried directly here rather than through useAddresses(),
+ * which refetches per mount: useWeather has six consumers, so routing it
  * through that hook would fire six identical address queries on every page.
  */
 async function resolveLocation(): Promise<ResolvedLocation> {
+  const gps = await gpsCoords();
+  if (gps) return { coords: gps, cityHint: null, source: "gps" };
+
+  // Device declined or timed out — fall back to the address on file.
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
@@ -174,7 +183,7 @@ async function resolveLocation(): Promise<ResolvedLocation> {
             source: "address",
           };
         }
-        // Typed by hand with no pin: the city is still better than Indore.
+        // Typed by hand with no pin: geocode what they wrote.
         const query = [data.city, data.state, data.pincode].filter(Boolean).join(", ");
         if (query) {
           const { data: geo } = await supabase.functions.invoke("geocode", {
@@ -192,10 +201,9 @@ async function resolveLocation(): Promise<ResolvedLocation> {
       }
     }
   } catch {
-    /* Signed out, offline, or lookup failed — fall through to GPS. */
+    /* Signed out, offline, or the lookup failed — report nothing. */
   }
-  const gps = await gpsCoords();
-  return { coords: gps, cityHint: null, source: gps ? "gps" : null };
+  return { coords: null, cityHint: null, source: null };
 }
 
 /**
@@ -250,7 +258,7 @@ async function loadWeather(): Promise<WeatherBundle | null> {
   inFlight = (async () => {
     try {
       locationPromise ??= resolveLocation();
-      const { coords, cityHint } = await locationPromise;
+      const { coords, cityHint, source } = await locationPromise;
       // Location unknown: report nothing rather than a plausible-looking
       // reading for a city the farmer is not standing in. The advisories are
       // built on this data, so a confident wrong number is the worst outcome.
@@ -306,6 +314,9 @@ async function loadWeather(): Promise<WeatherBundle | null> {
         hourly,
         daily,
         coords,
+        // Non-null here: loadWeather returns early when coords is null, and
+        // coords is only set on the two branches that name a source.
+        source: source!,
       };
 
       subscribers.forEach((fn) => fn());
@@ -373,6 +384,13 @@ export function useWeather() {
      * in loadWeather about confident wrong readings.
      */
     locationKnown: !!bundle,
+    /**
+     * "gps" is the live device fix; "address" means the device declined and
+     * this is the address on file, which may be nowhere near where the user
+     * currently is. The UI has to distinguish them — an unlabelled address
+     * reading is the same silent lie the hardcoded city used to tell.
+     */
+    locationSource: bundle?.source ?? null,
     requestLocation,
     hourly: bundle?.hourly ?? [],
     daily: bundle?.daily ?? [],
