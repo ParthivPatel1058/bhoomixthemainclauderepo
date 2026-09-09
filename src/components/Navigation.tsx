@@ -59,7 +59,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { t, tx } = useLanguage();
   const { signOut, user } = useAuth();
-  const { weather, locationKnown, requestLocation } = useWeather();
+  const { weather, locationKnown, locationSource, requestLocation } = useWeather();
   const { defaultAddress } = useAddresses();
   const [locating, setLocating] = useState(false);
 
@@ -178,14 +178,33 @@ const Navigation = () => {
             <WeatherPopover>
             <button
               type="button"
-              aria-label="Weather forecast"
+              aria-label={
+                locationSource === 'gps'
+                  ? tx('Weather at your location', 'आपकी जगह का मौसम')
+                  : tx('Weather at your saved address', 'आपके सहेजे पते का मौसम')
+              }
+              title={
+                locationSource === 'gps'
+                  ? undefined
+                  : tx(
+                      'Showing your saved address — allow location access for where you are now',
+                      'सहेजा गया पता दिख रहा है — अभी की जगह के लिए लोकेशन की अनुमति दें',
+                    )
+              }
               className="hidden items-center gap-2 rounded-full border py-1 pl-2.5 pr-3 text-xs transition-colors sm:flex border-white/[0.12] bg-white/[0.06] hover:bg-white/[0.09] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
             >
               <span className="flex items-center gap-1.5 font-medium text-white/90">
                 {/* A lit dot, not a pulsing one. The ping this replaced ran on
                     every route for the life of the session; the glow reads as
-                    "live" without keeping a compositor layer awake. */}
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_2.5px_hsl(152_60%_45%_/_0.22)]" />
+                    "live" without keeping a compositor layer awake.
+                    Green only for an actual device fix — an address reading is
+                    a real place but not necessarily where the user is now, and
+                    marking it "live" is what made the old bug invisible. */}
+                {locationSource === 'gps' ? (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_2.5px_hsl(152_60%_45%_/_0.22)]" />
+                ) : (
+                  <MapPin className="h-3 w-3 text-amber-400" />
+                )}
                 {weather.city || tx('Your area', 'आपका क्षेत्र')}
               </span>
               <span className="h-3 w-px bg-white/15" />
