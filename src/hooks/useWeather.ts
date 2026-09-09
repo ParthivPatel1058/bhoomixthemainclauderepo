@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface WeatherData {
   city: string;
@@ -111,7 +112,17 @@ let cached: WeatherBundle | null = null;
 let inFlight: Promise<WeatherBundle | null> | null = null;
 const subscribers = new Set<() => void>();
 
-function getCoords(): Promise<{ lat: number; lon: number }> {
+interface ResolvedLocation {
+  coords: { lat: number; lon: number };
+  /** Place name from the saved address; skips the reverse-geocode when set. */
+  cityHint: string | null;
+}
+
+/** Cleared when the saved address changes, so the next read re-resolves. */
+let locationPromise: Promise<ResolvedLocation> | null = null;
+
+/** Device GPS, falling back to the default city when denied or unavailable. */
+function gpsCoords(): Promise<{ lat: number; lon: number }> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve(FALLBACK_COORDS);
     navigator.geolocation.getCurrentPosition(
@@ -121,6 +132,73 @@ function getCoords(): Promise<{ lat: number; lon: number }> {
       { timeout: 8000 },
     );
   });
+}
+
+/**
+ * Where to report weather for.
+ *
+ * The saved delivery address wins over GPS. A farmer who dismissed the browser
+ * location prompt — most of them, on a first visit — was shown Indore's weather
+ * regardless of where they actually farm, which makes the spray and irrigation
+ * advice worse than useless. The address they already typed is a far better
+ * answer than a hardcoded city, and it stays correct when they open the app
+ * while away from the field.
+ *
+ * Queried directly here rather than through useAddresses(), which runs an
+ * uncached request per mount: useWeather has six consumers, so routing it
+ * through that hook would fire six identical address queries on every page.
+ */
+async function resolveLocation(): Promise<ResolvedLocation> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data } = await supabase
+        .from("addresses")
+        .select("city, state, pincode, lat, lng")
+        .eq("user_id", session.user.id)
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        // Pinned from the device or picked from search — exact, use as-is.
+        if (data.lat != null && data.lng != null) {
+          return {
+            coords: { lat: Number(data.lat), lon: Number(data.lng) },
+            cityHint: data.city,
+          };
+        }
+        // Typed by hand with no pin: the city is still better than Indore.
+        const query = [data.city, data.state, data.pincode].filter(Boolean).join(", ");
+        if (query) {
+          const { data: geo } = await supabase.functions.invoke("geocode", {
+            body: { mode: "search", query },
+          });
+          const hit = geo?.results?.[0];
+          if (hit?.lat != null && hit?.lng != null) {
+            return {
+              coords: { lat: Number(hit.lat), lon: Number(hit.lng) },
+              cityHint: data.city,
+            };
+          }
+        }
+      }
+    }
+  } catch {
+    /* Signed out, offline, or lookup failed — fall through to GPS. */
+  }
+  return { coords: await gpsCoords(), cityHint: null };
+}
+
+/**
+ * Drop the resolved place and its weather so the next read starts over.
+ * Called when a saved address is added, edited, removed, or made default.
+ */
+export function resetWeatherLocation() {
+  cached = null;
+  locationPromise = null;
+  subscribers.forEach((fn) => fn());
 }
 
 /** Open-Meteo returns no place name, so resolve one separately. */
@@ -145,7 +223,8 @@ async function loadWeather(): Promise<WeatherBundle | null> {
 
   inFlight = (async () => {
     try {
-      const coords = await getCoords();
+      locationPromise ??= resolveLocation();
+      const { coords, cityHint } = await locationPromise;
 
       const params = new URLSearchParams({
         latitude: String(coords.lat),
@@ -162,7 +241,9 @@ async function loadWeather(): Promise<WeatherBundle | null> {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const d = await res.json();
 
-      const city = await resolveCity(coords.lat, coords.lon);
+      // The saved address already names the place; only fall back to the
+      // reverse-geocode when weather came from a raw GPS fix.
+      const city = cityHint ?? (await resolveCity(coords.lat, coords.lon));
 
       const hourly: ForecastHour[] = (d.hourly?.time ?? []).map((t: string, i: number) => ({
         time: t,
@@ -221,7 +302,13 @@ export function useWeather() {
 
   useEffect(() => {
     let active = true;
-    const sync = () => active && setBundle(cached);
+    const sync = () => {
+      if (!active) return;
+      if (cached) return setBundle(cached);
+      // resetWeatherLocation() cleared it: the address moved, so refetch for
+      // the new place rather than leaving every consumer on the fallback.
+      loadWeather().then(() => active && setBundle(cached));
+    };
     subscribers.add(sync);
     loadWeather().then(() => {
       if (!active) return;

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { resetWeatherLocation } from '@/hooks/useWeather';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 export type Address = Tables<'addresses'>;
@@ -62,6 +63,9 @@ export function useAddresses() {
         .single();
       if (error) throw error;
       await load();
+      // The nav-bar weather is reported for this address, so it has to
+      // re-resolve when the address is added, edited, removed or switched.
+      resetWeatherLocation();
       return data;
     },
     [user, load],
@@ -72,6 +76,9 @@ export function useAddresses() {
       const { error } = await supabase.from('addresses').update(patch).eq('id', id);
       if (error) throw error;
       await load();
+      // The nav-bar weather is reported for this address, so it has to
+      // re-resolve when the address is added, edited, removed or switched.
+      resetWeatherLocation();
     },
     [load],
   );
@@ -81,6 +88,9 @@ export function useAddresses() {
       const { error } = await supabase.from('addresses').delete().eq('id', id);
       if (error) throw error;
       await load();
+      // The nav-bar weather is reported for this address, so it has to
+      // re-resolve when the address is added, edited, removed or switched.
+      resetWeatherLocation();
     },
     [load],
   );
@@ -90,6 +100,9 @@ export function useAddresses() {
       const { error } = await supabase.from('addresses').update({ is_default: true }).eq('id', id);
       if (error) throw error;
       await load();
+      // The nav-bar weather is reported for this address, so it has to
+      // re-resolve when the address is added, edited, removed or switched.
+      resetWeatherLocation();
     },
     [load],
   );
