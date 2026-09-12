@@ -158,15 +158,6 @@ export const NAV: NavEntry[] = [
     action: { en: 'Manage addresses', hi: 'पते प्रबंधित करें' },
   },
   {
-    id: 'shops',
-    path: '/shop-locator',
-    icon: 'shops',
-    label: { en: 'Nearby Shops', hi: 'नज़दीकी दुकानें' },
-    tagline: { en: 'Input dealers and stores around you', hi: 'आपके आसपास के डीलर और दुकानें' },
-    category: { en: 'Nearby', hi: 'आसपास' },
-    action: { en: 'Find shops', hi: 'दुकानें खोजें' },
-  },
-  {
     id: 'support',
     path: '/support',
     icon: 'support',

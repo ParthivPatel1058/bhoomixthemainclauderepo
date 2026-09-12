@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bhoomi — Tools and Advisory for Farmers</title>
-    <meta name="description" content="Bhoomi: Agricultural marketplace, crop advisory, weather, and government schemes for Indian farmers." />
-    <meta name="author" content="Bhoomi" />
+    <title>BhoomiX — Tools and Advisory for Farmers</title>
+    <meta name="description" content="BhoomiX: Agricultural marketplace, crop advisory, weather, and government schemes for Indian farmers." />
+    <meta name="author" content="BhoomiX" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!--
@@ -23,17 +23,74 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700;800;900&family=Bodoni+Moda:opsz,wght@6..96,500..900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <meta property="og:description" content="Bhoomi — Tools and Advisory for Farmers" />
+    <meta property="og:description" content="BhoomiX — Tools and Advisory for Farmers" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Bhoomi — Tools and Advisory for Farmers" />
+    <meta property="og:title" content="BhoomiX — Tools and Advisory for Farmers" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bhoomi — Tools and Advisory for Farmers" />
-    <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/v2XWRM7uXZU7O7ORHuBbGMI2TXg1/uploads/1762074907312-a-sleek-modern-logo-design-featuring-the_2BTfMzh5QlGxRXKQAiQaqw_4YojHAeEQSyEcNf7eRicLw.jpeg">
+    <meta name="twitter:title" content="BhoomiX — Tools and Advisory for Farmers" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="canonical" href="https://bhoomix.vercel.app/" />
+    <meta property="og:url" content="https://bhoomix.vercel.app/" />
+    <meta property="og:site_name" content="BhoomiX" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://bhoomix.vercel.app/#organization",
+            "name": "BhoomiX",
+            "url": "https://bhoomix.vercel.app/",
+            "description": "BhoomiX is an agricultural marketplace and advisory platform for Indian farmers, covering mandi prices, crop disease diagnosis, government schemes and farm supplies.",
+            "areaServed": { "@type": "Country", "name": "India" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://bhoomix.vercel.app/#website",
+            "url": "https://bhoomix.vercel.app/",
+            "name": "BhoomiX",
+            "publisher": { "@id": "https://bhoomix.vercel.app/#organization" },
+            "inLanguage": "en-IN"
+          }
+        ]
+      }
+    </script>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Crawler fallback only. React's createRoot() replaces every child of
+        #root as soon as the bundle executes, so no visitor ever sees this.
+        It exists because Googlebot reads the HTML before running JavaScript,
+        and this body was otherwise completely empty - which is why the site
+        was not getting indexed.
+      -->
+      <main>
+        <h1>BhoomiX</h1>
+        <p>
+          BhoomiX is an agricultural marketplace and advisory platform for
+          Indian farmers. Check live mandi prices, diagnose crop disease,
+          browse government schemes, and buy seeds, tools and farm supplies.
+        </p>
+        <nav aria-label="BhoomiX sections">
+          <ul>
+          <li><a href="/agri-market">Agri Market - buy and sell farm produce</a></li>
+          <li><a href="/kisan-mart">Kisan Mart - seeds, tools and farm supplies</a></li>
+          <li><a href="/mandi-prices">Mandi Prices - live market rates across India</a></li>
+          <li><a href="/crop-disease">Crop Disease - identify and treat crop problems</a></li>
+          <li><a href="/gov-schemes">Government Schemes for farmers</a></li>
+          <li><a href="/kisan-help">Kisan Help - farming advisory and support</a></li>
+          <li><a href="/organic-farming">Organic Farming guidance</a></li>
+          <li><a href="/vegetable-farming">Vegetable Farming guidance</a></li>
+          <li><a href="/robotic-farming">Robotic Farming and modern equipment</a></li>
+          <li><a href="/shop-locator">Shop Locator - find nearby agri shops</a></li>
+          </ul>
+        </nav>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

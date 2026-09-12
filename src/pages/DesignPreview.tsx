@@ -33,7 +33,6 @@ const PAGES = {
   'organic-farming': lazy(() => import('@/pages/OrganicFarming')),
   'vegetable-farming': lazy(() => import('@/pages/VegetableFarming')),
   'robotic-farming': lazy(() => import('@/pages/RoboticFarming')),
-  'shop-locator': lazy(() => import('@/pages/ShopLocator')),
   orders: lazy(() => import('@/pages/Orders')),
   addresses: lazy(() => import('@/pages/Addresses')),
   settings: lazy(() => import('@/pages/Settings')),
