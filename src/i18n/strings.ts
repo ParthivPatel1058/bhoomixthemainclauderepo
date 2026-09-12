@@ -36,7 +36,6 @@ export const translations = {
     roboticFarming: 'Robotic Farming',
     organicFarming: 'Organic Farming',
     vegetableFarming: 'Vegetable Farming',
-    shopLocator: 'Shop Locator',
     deliveryPartner: 'Delivery Partner',
     partnerOrders: 'Partner Deliveries',
 
@@ -126,7 +125,6 @@ export const translations = {
     roboticFarming: 'रोबोटिक खेती',
     organicFarming: 'जैविक खेती',
     vegetableFarming: 'सब्जी खेती',
-    shopLocator: 'दुकान खोजें',
     deliveryPartner: 'डिलीवरी पार्टनर',
     partnerOrders: 'पार्टनर डिलीवरी',
 
