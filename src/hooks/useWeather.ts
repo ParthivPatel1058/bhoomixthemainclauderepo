@@ -72,9 +72,11 @@ const DEFAULT_COORDS = { lat: 28.6139, lon: 77.209 };
 
 /**
  * WMO weather codes (Open-Meteo) mapped to OpenWeatherMap icon prefixes, so the
- * existing WeatherIcon component keeps working unchanged.
+ * existing WeatherIcon component keeps working unchanged. Exported so the
+ * forecast strip uses this table too — it carried its own copy, which had
+ * drifted (no snow-shower codes) and would have kept drifting.
  */
-function wmoToIcon(code: number): string {
+export function wmoToIcon(code: number): string {
   if (code === 0) return "01d";
   if (code <= 2) return "02d";
   if (code === 3) return "04d";
