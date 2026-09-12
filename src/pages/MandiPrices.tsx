@@ -1,19 +1,67 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Navigation from '@/components/Navigation';
 import BackButton from '@/components/BackButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMandiPrices } from '@/hooks/useMandiPrices';
+import { useAddresses } from '@/hooks/useAddresses';
 import { IndianRupee, Search, TrendingUp, KeyRound, Loader2, ExternalLink } from 'lucide-react';
 
-/** Every state the dataset reports, so no farmer is left without their own. */
-const STATES = [
-  'Andhra Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chattisgarh', 'Gujarat',
-  'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-  'Nagaland', 'NCT of Delhi', 'Odisha', 'Pondicherry', 'Punjab', 'Rajasthan',
-  'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttrakhand',
-  'West Bengal',
+/**
+ * Every state the dataset reports. `value` is the feed's own spelling and is
+ * what gets sent as the filter, so it has to match exactly — "Kerala" and
+ * "Uttrakhand" were previously in this list and returned nothing, because
+ * the feed spells them "Keralam" and "Uttarakhand". `label` is what a farmer
+ * reads. Kept in step with FEED_STATES in supabase/functions/mandi-prices.
+ */
+const STATES: { value: string; label: string }[] = [
+  { value: 'Andhra Pradesh', label: 'Andhra Pradesh' },
+  { value: 'Assam', label: 'Assam' },
+  { value: 'Bihar', label: 'Bihar' },
+  { value: 'Chandigarh', label: 'Chandigarh' },
+  { value: 'Chattisgarh', label: 'Chhattisgarh' },
+  { value: 'Goa', label: 'Goa' },
+  { value: 'Gujarat', label: 'Gujarat' },
+  { value: 'Haryana', label: 'Haryana' },
+  { value: 'Himachal Pradesh', label: 'Himachal Pradesh' },
+  { value: 'Jammu and Kashmir', label: 'Jammu and Kashmir' },
+  { value: 'Jharkhand', label: 'Jharkhand' },
+  { value: 'Karnataka', label: 'Karnataka' },
+  { value: 'Keralam', label: 'Kerala' },
+  { value: 'Madhya Pradesh', label: 'Madhya Pradesh' },
+  { value: 'Maharashtra', label: 'Maharashtra' },
+  { value: 'Manipur', label: 'Manipur' },
+  { value: 'Meghalaya', label: 'Meghalaya' },
+  { value: 'Mizoram', label: 'Mizoram' },
+  { value: 'Nagaland', label: 'Nagaland' },
+  { value: 'NCT of Delhi', label: 'Delhi' },
+  { value: 'Odisha', label: 'Odisha' },
+  { value: 'Pondicherry', label: 'Puducherry' },
+  { value: 'Punjab', label: 'Punjab' },
+  { value: 'Rajasthan', label: 'Rajasthan' },
+  { value: 'Sikkim', label: 'Sikkim' },
+  { value: 'Tamil Nadu', label: 'Tamil Nadu' },
+  { value: 'Telangana', label: 'Telangana' },
+  { value: 'Tripura', label: 'Tripura' },
+  { value: 'Uttar Pradesh', label: 'Uttar Pradesh' },
+  { value: 'Uttarakhand', label: 'Uttarakhand' },
+  { value: 'West Bengal', label: 'West Bengal' },
 ];
+
+/**
+ * Map a state as a saved address names it (Nominatim's spelling — "Delhi",
+ * "Kerala", "Chhattisgarh") onto the feed's spelling. Null when it is not a
+ * state the feed covers, so the caller can fall back rather than query for
+ * something that will never match.
+ */
+function toFeedState(name: string | null | undefined): string | null {
+  if (!name) return null;
+  const n = name.trim().toLowerCase();
+  const hit = STATES.find((s) => s.value.toLowerCase() === n || s.label.toLowerCase() === n);
+  return hit?.value ?? null;
+}
+
+/** Where to start when the farmer has not told us where they are. */
+const DEFAULT_STATE = 'NCT of Delhi';
 
 /** The crops a farmer is most likely to be selling; the rest via search. */
 const COMMODITIES = [
@@ -27,7 +75,19 @@ const COMMODITIES = [
  */
 export default function MandiPrices() {
   const { tx } = useLanguage();
-  const [state, setState] = useState('Madhya Pradesh');
+  const { defaultAddress } = useAddresses();
+  // Start on the farmer's own state. This was hardcoded to Madhya Pradesh,
+  // so a farmer in Delhi opened the page to another state's rates — the same
+  // silent wrong-place failure the weather capsule had.
+  const [state, setState] = useState(() => toFeedState(defaultAddress?.state) ?? DEFAULT_STATE);
+  const [stateTouched, setStateTouched] = useState(false);
+  useEffect(() => {
+    // The address loads after first render; follow it unless the farmer has
+    // already picked a state by hand.
+    if (stateTouched) return;
+    const s = toFeedState(defaultAddress?.state);
+    if (s) setState(s);
+  }, [defaultAddress?.state, stateTouched]);
   const [commodity, setCommodity] = useState('');
   const [query, setQuery] = useState('');
   // Filtering by commodity server-side rather than client-side: the API caps a
@@ -110,13 +170,16 @@ export default function MandiPrices() {
               </div>
               <select
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(e) => {
+                  setStateTouched(true);
+                  setState(e.target.value);
+                }}
                 aria-label={tx('State', 'राज्य')}
                 className="glass min-h-11 rounded-2xl border-primary/20 px-4 py-3.5 text-foreground outline-none focus:border-primary/40"
               >
                 {STATES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
+                  <option key={s.value} value={s.value}>
+                    {s.label}
                   </option>
                 ))}
               </select>

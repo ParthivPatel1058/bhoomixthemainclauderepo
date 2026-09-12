@@ -7,6 +7,7 @@ import BhoomixMark from "@/components/BhoomixMark";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMandiPrices } from "@/hooks/useMandiPrices";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -88,6 +89,17 @@ const CLAY_BUTTON =
 export default function Login() {
   const navigate = useNavigate();
   const { tx } = useLanguage();
+
+  // The floating "mandi rate" card used to show a made-up ₹2,826 for wheat in
+  // Indore. On a page that promises real data that is the wrong first
+  // impression, so it now reads today's wheat rate from the Government of
+  // India open-data feed via the mandi-prices function (public; no session
+  // needed). One cached row, so it costs the login page almost nothing.
+  const { prices: wheatPrices, status: wheatStatus } = useMandiPrices({
+    commodity: "Wheat",
+    limit: 1,
+  });
+  const wheat = wheatStatus === "ok" ? wheatPrices[0] : null;
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get("next") ?? "";
   const nextPath =
@@ -640,20 +652,28 @@ export default function Login() {
             </p>
           </div>
 
-          <div
-            className={`absolute right-4 top-16 hidden px-4 py-3 md:block ${CLAY_CARD}`}
-          >
-            <p className="flex items-center gap-1.5 text-[11px] font-medium text-stone-500">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              {tx("Wheat · Indore", "गेहूं · इंदौर")}
-            </p>
-            <p className="font-display text-xl font-bold text-stone-800">
-              ₹2,826
-              <span className="ml-1 text-[11px] font-medium text-stone-500">
-                {tx("/ quintal", "/ क्विंटल")}
-              </span>
-            </p>
-          </div>
+          {/* Rendered only once a real row is in hand. An empty or errored
+              feed simply drops the card — better than a placeholder figure,
+              which is what it was before. */}
+          {wheat && (
+            <div
+              className={`absolute right-4 top-16 hidden px-4 py-3 md:block ${CLAY_CARD}`}
+            >
+              <p className="flex items-center gap-1.5 text-[11px] font-medium text-stone-500">
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                {tx("Wheat", "गेहूं")} · {wheat.district}
+              </p>
+              <p className="font-display text-xl font-bold text-stone-800">
+                ₹{wheat.modalPrice.toLocaleString("en-IN")}
+                <span className="ml-1 text-[11px] font-medium text-stone-500">
+                  {tx("/ quintal", "/ क्विंटल")}
+                </span>
+              </p>
+              <p className="mt-0.5 text-[10px] text-stone-400">
+                {tx("Govt. of India · today", "भारत सरकार · आज")}
+              </p>
+            </div>
+          )}
 
           <div
             className={`absolute bottom-5 left-4 right-4 hidden px-4 py-3.5 md:block ${CLAY_CARD}`}

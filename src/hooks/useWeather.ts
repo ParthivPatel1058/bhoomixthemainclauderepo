@@ -45,9 +45,13 @@ export interface ForecastDay {
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const GEOCODE_URL = "https://nominatim.openstreetmap.org/reverse";
 
-/** Fallback shown when the API is unavailable or geolocation is denied. */
+/**
+ * Placeholder figures for the rare case where Open-Meteo answers 200 but omits
+ * a field. Not a location: the capsule only renders these once a real position
+ * has been resolved, so the city here is never shown as somebody's whereabouts.
+ */
 export const WEATHER_FALLBACK: WeatherData = {
-  city: "Indore",
+  city: "New Delhi",
   temperature: 28,
   humidity: 65,
   condition: "Partly Cloudy",
@@ -56,14 +60,23 @@ export const WEATHER_FALLBACK: WeatherData = {
   feelsLike: 30,
 };
 
-/** Indore, used when the browser will not share a position. */
-const FALLBACK_COORDS = { lat: 22.7196, lon: 75.8577 };
+/**
+ * Last-resort location when neither the device nor a saved address answers.
+ *
+ * This is a labelled default, not a guess passed off as a fix: the capsule
+ * marks it with an amber pin and offers to ask for real location, where the
+ * old hardcoded Indore wore the green "live" dot and read as fact. That
+ * distinction is the whole reason the previous bug went unnoticed.
+ */
+const DEFAULT_COORDS = { lat: 28.6139, lon: 77.209 };
 
 /**
  * WMO weather codes (Open-Meteo) mapped to OpenWeatherMap icon prefixes, so the
- * existing WeatherIcon component keeps working unchanged.
+ * existing WeatherIcon component keeps working unchanged. Exported so the
+ * forecast strip uses this table too — it carried its own copy, which had
+ * drifted (no snow-shower codes) and would have kept drifting.
  */
-function wmoToIcon(code: number): string {
+export function wmoToIcon(code: number): string {
   if (code === 0) return "01d";
   if (code <= 2) return "02d";
   if (code === 3) return "04d";
@@ -105,6 +118,8 @@ interface WeatherBundle {
   hourly: ForecastHour[];
   daily: ForecastDay[];
   coords: { lat: number; lon: number };
+  /** Live device fix, the address on file, or the labelled default city. */
+  source: "address" | "gps" | "default";
 }
 
 /* -- Module-level cache so every consumer shares one network call -- */
@@ -113,23 +128,25 @@ let inFlight: Promise<WeatherBundle | null> | null = null;
 const subscribers = new Set<() => void>();
 
 interface ResolvedLocation {
-  coords: { lat: number; lon: number };
+  /** Null when the device would not say and no address is saved. */
+  coords: { lat: number; lon: number } | null;
   /** Place name from the saved address; skips the reverse-geocode when set. */
   cityHint: string | null;
+  /** How the position was obtained. Null only if even the default failed. */
+  source: "address" | "gps" | "default" | null;
 }
 
 /** Cleared when the saved address changes, so the next read re-resolves. */
 let locationPromise: Promise<ResolvedLocation> | null = null;
 
-/** Device GPS, falling back to the default city when denied or unavailable. */
-function gpsCoords(): Promise<{ lat: number; lon: number }> {
+/** Device GPS. Null when unsupported, denied, or timed out — never a guess. */
+function gpsCoords(): Promise<{ lat: number; lon: number } | null> {
   return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(FALLBACK_COORDS);
+    if (!navigator.geolocation) return resolve(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      // Denied or unavailable: still show real weather, just for the default city.
-      () => resolve(FALLBACK_COORDS),
-      { timeout: 8000 },
+      () => resolve(null),
+      { timeout: 8000, maximumAge: 300_000 },
     );
   });
 }
@@ -137,18 +154,25 @@ function gpsCoords(): Promise<{ lat: number; lon: number }> {
 /**
  * Where to report weather for.
  *
- * The saved delivery address wins over GPS. A farmer who dismissed the browser
- * location prompt — most of them, on a first visit — was shown Indore's weather
- * regardless of where they actually farm, which makes the spray and irrigation
- * advice worse than useless. The address they already typed is a far better
- * answer than a hardcoded city, and it stays correct when they open the app
- * while away from the field.
+ * The live device position wins. The capsule answers "what is the weather
+ * where I am standing", so a farmer who has travelled to Delhi must not be
+ * shown their saved village's weather as though it were current — that reads
+ * as fact and feeds the spray and irrigation advisories.
  *
- * Queried directly here rather than through useAddresses(), which runs an
- * uncached request per mount: useWeather has six consumers, so routing it
+ * The saved address is the fallback, not the preference: it only applies when
+ * the device will not say, which is the common case on a first visit where the
+ * permission prompt gets dismissed. It is a real place the user told us about,
+ * so it beats reporting nothing, but it never overrides an actual fix.
+ *
+ * The address is queried directly here rather than through useAddresses(),
+ * which refetches per mount: useWeather has six consumers, so routing it
  * through that hook would fire six identical address queries on every page.
  */
 async function resolveLocation(): Promise<ResolvedLocation> {
+  const gps = await gpsCoords();
+  if (gps) return { coords: gps, cityHint: null, source: "gps" };
+
+  // Device declined or timed out — fall back to the address on file.
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
@@ -167,9 +191,10 @@ async function resolveLocation(): Promise<ResolvedLocation> {
           return {
             coords: { lat: Number(data.lat), lon: Number(data.lng) },
             cityHint: data.city,
+            source: "address",
           };
         }
-        // Typed by hand with no pin: the city is still better than Indore.
+        // Typed by hand with no pin: geocode what they wrote.
         const query = [data.city, data.state, data.pincode].filter(Boolean).join(", ");
         if (query) {
           const { data: geo } = await supabase.functions.invoke("geocode", {
@@ -180,15 +205,32 @@ async function resolveLocation(): Promise<ResolvedLocation> {
             return {
               coords: { lat: Number(hit.lat), lon: Number(hit.lng) },
               cityHint: data.city,
+              source: "address",
             };
           }
         }
       }
     }
   } catch {
-    /* Signed out, offline, or lookup failed — fall through to GPS. */
+    /* Signed out, offline, or the lookup failed — fall through to default. */
   }
-  return { coords: await gpsCoords(), cityHint: null };
+  return { coords: DEFAULT_COORDS, cityHint: null, source: "default" };
+}
+
+/**
+ * Re-ask the device for a position, bypassing the cached resolution.
+ *
+ * Bound to the nav-bar capsule so a farmer who dismissed the permission prompt
+ * can grant it later without reloading. If the browser has hard-denied the
+ * origin it will not re-prompt, and the capsule keeps offering the address
+ * route instead, which is the only remaining way to say where they are.
+ */
+export async function requestLocation(): Promise<boolean> {
+  locationPromise = null;
+  cached = null;
+  const { source } = await (locationPromise = resolveLocation());
+  subscribers.forEach((fn) => fn());
+  return source !== null;
 }
 
 /**
@@ -208,12 +250,15 @@ async function resolveCity(lat: number, lon: number): Promise<string> {
       `${GEOCODE_URL}?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`,
       { headers: { Accept: "application/json" } },
     );
-    if (!res.ok) return WEATHER_FALLBACK.city;
+    // Empty, never a stand-in city name: the coordinates are the user's real
+    // position, so the reading is correct even when the name lookup fails.
+    // The capsule labels an unnamed place rather than inventing one.
+    if (!res.ok) return "";
     const data = await res.json();
     const a = data?.address ?? {};
-    return a.city || a.town || a.village || a.county || a.state_district || WEATHER_FALLBACK.city;
+    return a.city || a.town || a.village || a.county || a.state_district || "";
   } catch {
-    return WEATHER_FALLBACK.city;
+    return "";
   }
 }
 
@@ -224,7 +269,11 @@ async function loadWeather(): Promise<WeatherBundle | null> {
   inFlight = (async () => {
     try {
       locationPromise ??= resolveLocation();
-      const { coords, cityHint } = await locationPromise;
+      const { coords, cityHint, source } = await locationPromise;
+      // Location unknown: report nothing rather than a plausible-looking
+      // reading for a city the farmer is not standing in. The advisories are
+      // built on this data, so a confident wrong number is the worst outcome.
+      if (!coords) return null;
 
       const params = new URLSearchParams({
         latitude: String(coords.lat),
@@ -276,6 +325,9 @@ async function loadWeather(): Promise<WeatherBundle | null> {
         hourly,
         daily,
         coords,
+        // Non-null here: loadWeather returns early when coords is null, and
+        // coords is only set on the two branches that name a source.
+        source: source!,
       };
 
       subscribers.forEach((fn) => fn());
@@ -337,6 +389,20 @@ export function useWeather() {
     weather,
     loading,
     isLive: !!bundle,
+    /**
+     * False when neither a saved address nor the device could place the user.
+     * The capsule must not render a temperature in that state — see the note
+     * in loadWeather about confident wrong readings.
+     */
+    locationKnown: !!bundle,
+    /**
+     * "gps" is the live device fix; "address" means the device declined and
+     * this is the address on file, which may be nowhere near where the user
+     * currently is. The UI has to distinguish them — an unlabelled address
+     * reading is the same silent lie the hardcoded city used to tell.
+     */
+    locationSource: bundle?.source ?? null,
+    requestLocation,
     hourly: bundle?.hourly ?? [],
     daily: bundle?.daily ?? [],
     coords: bundle?.coords ?? null,
