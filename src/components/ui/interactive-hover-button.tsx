@@ -41,7 +41,7 @@ const InteractiveHoverButton = React.forwardRef<
       <span
         aria-hidden
         className={cn(
-          "pointer-events-none absolute left-0 top-1/2 z-0 h-8 w-8 -translate-y-1/2 scale-0 rounded-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[6]",
+          "pointer-events-none absolute left-0 top-1/2 z-0 h-8 w-8 -translate-y-1/2 scale-0 rounded-full transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[6]",
           solid ? "bg-neutral-900" : "bg-white",
         )}
       />

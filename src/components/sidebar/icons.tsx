@@ -7,7 +7,6 @@ import {
   LifeBuoy,
   MapPin,
   Settings,
-  Store,
 } from 'lucide-react';
 
 /**
@@ -215,8 +214,6 @@ export function NavIcon({ name, className = 'w-5 h-5' }: { name: string; classNa
       return <Landmark className={className} strokeWidth={1.8} />;
     case 'addresses':
       return <MapPin className={className} strokeWidth={1.8} />;
-    case 'shops':
-      return <Store className={className} strokeWidth={1.8} />;
     case 'support':
       return <LifeBuoy className={className} strokeWidth={1.8} />;
     case 'settings':

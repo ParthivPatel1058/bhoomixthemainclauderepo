@@ -9,7 +9,8 @@
  * attacker skips by calling the API directly.
  *
  * Two actions:
- *   start  { email, password }        -> { needsCode: true, challengeId } | { needsCode: false, tokenHash }
+ *   start  { email, password, captchaToken? }
+ *                                     -> { needsCode: true, challengeId } | { needsCode: false, tokenHash }
  *   verify { challengeId, code }      -> { tokenHash }
  *
  * `tokenHash` is exchanged by the client for a real session via
@@ -99,6 +100,14 @@ Deno.serve(async (req) => {
   if (action === 'start') {
     const email = String(body.email ?? '').trim().toLowerCase();
     const password = String(body.password ?? '');
+    // Cloudflare Turnstile token from the sign-in form. Supabase Auth verifies
+    // it against the Turnstile secret when "Bot and Abuse Protection" is on;
+    // when it is off the field is ignored. Passed through untouched — this
+    // function never needs to see the secret.
+    const captchaToken =
+      typeof body.captchaToken === 'string' && body.captchaToken.length <= 4096
+        ? body.captchaToken
+        : undefined;
 
     if (!email || !password) return json({ error: 'Email and password are required' }, 400);
 
@@ -125,6 +134,7 @@ Deno.serve(async (req) => {
     const { data: signIn, error: signInError } = await probe.auth.signInWithPassword({
       email,
       password,
+      options: { captchaToken },
     });
     if (signInError || !signIn.user) {
       // One message for both wrong-password and no-such-account: telling them

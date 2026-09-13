@@ -1,7 +1,7 @@
 import { useFarmAdvisory, type AdvisoryLevel } from '@/hooks/useFarmAdvisory';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WeatherIcon } from '@/components/WeatherWidget';
-import { conditionLabel } from '@/hooks/useWeather';
+import { conditionLabel, wmoToIcon } from '@/hooks/useWeather';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -113,21 +113,33 @@ export default function FarmAdvisory() {
                    clipped by an overflow ancestor that is its containing
                    block. Without a positioned tile the labels escaped the
                    scroller and stretched the page 279px sideways on a phone. */
-                className="relative flex min-w-[5.5rem] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl bg-muted/60 p-3"
+                className="relative flex min-w-[5.5rem] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl bg-muted/60 p-3 sm:flex-1"
               >
                 <span className="text-xs font-medium text-muted-foreground">
-                  {new Date(d.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : undefined, {
+                  {/* Open-Meteo dates are plain "YYYY-MM-DD". `new Date()` on
+                      that form parses as UTC midnight, and the weekday is then
+                      rendered in local time — west of UTC every tile shifts
+                      back a day. Parsing the parts pins it to the local day
+                      the API actually meant. */}
+                  {localDate(d.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : undefined, {
                     weekday: 'short',
                   })}
                 </span>
-                <WeatherIcon icon={wmoIcon(d.weatherCode)} className="h-6 w-6" />
+                <WeatherIcon icon={wmoToIcon(d.weatherCode)} className="h-6 w-6" />
                 <span className="text-sm font-bold text-foreground">{Math.round(d.tempMax)}°</span>
                 <span className="text-xs text-muted-foreground">{Math.round(d.tempMin)}°</span>
-                {d.precipitation > 0.2 && (
-                  <span className="text-[11px] font-medium text-sky-500">
-                    {Math.round(d.precipitation)}mm
-                  </span>
-                )}
+                {/* Always rendered, so a dry day reads "0mm" instead of a gap
+                    that made the row look truncated. Previously a 0.3mm day
+                    passed a >0.2 gate and printed "0mm" while a 0.0mm day
+                    printed nothing — two renderings of the same outcome.
+                    The chance is the figure that decides whether to spray:
+                    "1mm" alone hid that Thursday's rain was a 26% call. */}
+                <span className="text-[11px] font-medium text-sky-500">
+                  {formatRain(d.precipitation)}
+                  {d.precipitationProbability > 0 && (
+                    <span className="text-muted-foreground"> · {Math.round(d.precipitationProbability)}%</span>
+                  )}
+                </span>
                 <span className="sr-only">{conditionLabel(d.weatherCode, language)}</span>
               </div>
             ))}
@@ -138,16 +150,18 @@ export default function FarmAdvisory() {
   );
 }
 
-/** WMO code to the icon codes WeatherIcon already understands. */
-function wmoIcon(code: number): string {
-  if (code === 0) return '01d';
-  if (code <= 2) return '02d';
-  if (code === 3) return '04d';
-  if (code === 45 || code === 48) return '50d';
-  if (code >= 51 && code <= 57) return '09d';
-  if (code >= 61 && code <= 67) return '10d';
-  if (code >= 71 && code <= 77) return '13d';
-  if (code >= 80 && code <= 82) return '09d';
-  if (code >= 95) return '11d';
-  return '02d';
+/** "YYYY-MM-DD" as a local-time date, not the UTC midnight `new Date()` gives it. */
+function localDate(ymd: string): Date {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/**
+ * Whole millimetres, except that a trace is labelled as one rather than
+ * rounded to "0mm" — a value the farmer would read as dry.
+ */
+function formatRain(mm: number): string {
+  if (mm <= 0) return '0mm';
+  if (mm < 0.5) return '<1mm';
+  return `${Math.round(mm)}mm`;
 }

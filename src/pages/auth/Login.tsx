@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,9 @@ import BhoomixMark from "@/components/BhoomixMark";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMandiPrices } from "@/hooks/useMandiPrices";
+import Turnstile, { turnstileEnabled, type TurnstileHandle } from "@/components/auth/Turnstile";
+
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -55,19 +58,6 @@ async function readFunctionError(error: unknown): Promise<string | null> {
   return (error as Error)?.message ?? null;
 }
 
-/**
- * True only when the endpoint itself is absent — a network failure or a 404.
- * A deployed function answering 401 or 403 is a decision, not an outage, and
- * must never be treated as "fall back to the weaker path".
- */
-async function isFunctionMissing(error: unknown): Promise<boolean> {
-  const res = (error as { context?: Response })?.context;
-  if (res && typeof res.status === "number") return res.status === 404;
-  const name = (error as Error)?.name ?? "";
-  const message = (error as Error)?.message ?? "";
-  return /FunctionsFetchError/.test(name) || /Failed to (fetch|send)/i.test(message);
-}
-
 /* Clay surfaces, defined once so every control shares one light source.
    Claymorphism only reads as soft when the inner highlight and the outer
    drop shadow agree on where the light comes from — here, top-left. */
@@ -88,11 +78,27 @@ const CLAY_BUTTON =
 export default function Login() {
   const navigate = useNavigate();
   const { tx } = useLanguage();
+
+  // The floating "mandi rate" card used to show a made-up ₹2,826 for wheat in
+  // Indore. On a page that promises real data that is the wrong first
+  // impression, so it now reads today's wheat rate from the Government of
+  // India open-data feed via the mandi-prices function (public; no session
+  // needed). One cached row, so it costs the login page almost nothing.
+  const { prices: wheatPrices, status: wheatStatus } = useMandiPrices({
+    commodity: "Wheat",
+    limit: 1,
+  });
+  const wheat = wheatStatus === "ok" ? wheatPrices[0] : null;
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get("next") ?? "";
   const nextPath =
     rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const [loading, setLoading] = useState(false);
+  // Cloudflare Turnstile. `captcha` is null until the widget issues a token;
+  // when the widget is configured, submitting without one is refused here so
+  // the user gets a clear message instead of a server rejection.
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPw, setShowPw] = useState(false);
   /** Set once the server has emailed a code; drives the second step. */
@@ -207,6 +213,11 @@ export default function Login() {
       return;
     }
 
+    if (turnstileEnabled && !captcha) {
+      toast.error(tx("Please complete the security check", "कृपया सुरक्षा जाँच पूरी करें"));
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("login-2fa", {
@@ -214,36 +225,12 @@ export default function Login() {
           action: "start",
           email: validated.email,
           password: validated.password,
+          captchaToken: captcha,
         },
       });
-
-      // TEMPORARY. Until `login-2fa` is deployed the function is simply not
-      // there, and without this the sign-in page is dead for everyone. Only a
-      // missing endpoint falls through — a real 401 or 403 from a deployed
-      // function is an answer, not an outage, and must not be retried here.
-      //
-      // Delete this block the moment the function is live. While it exists,
-      // anyone who can stop that one request from completing gets password-only
-      // sign-in, which is the very bypass the function was written to close.
-      if (error && (await isFunctionMissing(error))) {
-        console.warn("login-2fa is not deployed; falling back to password sign-in");
-        const { error: pwError } = await supabase.auth.signInWithPassword({
-          email: validated.email,
-          password: validated.password,
-        });
-        if (pwError) {
-          toast.error(
-            /Invalid login credentials/.test(pwError.message)
-              ? tx("Invalid email or password", "ईमेल या पासवर्ड ग़लत है")
-              : pwError.message,
-          );
-          return;
-        }
-        toast.success(tx("Welcome back!", "वापसी पर स्वागत है!"));
-        if (nextPath === "/") navigate("/");
-        else window.location.href = nextPath;
-        return;
-      }
+      // Tokens are single-use. Whatever happened, the next attempt needs a
+      // fresh one, so reset now rather than on every error branch below.
+      turnstile.current?.reset();
 
       // A non-2xx from the function arrives as an error with the body attached.
       const message =
@@ -581,6 +568,7 @@ export default function Login() {
               </Link>
             </div>
 
+            <Turnstile ref={turnstile} onToken={setCaptcha} className="mt-4" />
             <button type="submit" disabled={loading} className={CLAY_BUTTON}>
               {loading
                 ? tx("Signing in…", "साइन इन हो रहा है…")
@@ -629,31 +617,42 @@ export default function Login() {
         <div className="relative m-3 h-48 overflow-hidden rounded-[2rem] shadow-[0_20px_45px_-15px_rgba(30,40,25,0.5)] md:h-auto">
           <BrandRipple />
 
-          {/* Floating cards: real bhoomix moments, not filler. */}
+          {/* Floating cards. Each states something the product actually does;
+              the earlier versions carried invented specifics ("4 seconds",
+              "48 hours left", a made-up wheat price) on a page whose whole
+              pitch is real data. */}
           <div className="absolute left-4 top-4 hidden rounded-2xl bg-emerald-500/95 px-4 py-3 shadow-[0_10px_25px_-8px_rgba(6,78,59,0.7),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm md:block">
             <p className="flex items-center gap-2 text-[13px] font-semibold text-white">
               <ScanLine className="h-4 w-4" />
               {tx("Leaf scanned", "पत्ती स्कैन हुई")}
             </p>
             <p className="mt-0.5 text-[11px] text-emerald-50">
-              {tx("Diagnosis in 4 seconds", "4 सेकंड में निदान")}
+              {tx("AI diagnosis from one photo", "एक फोटो से AI निदान")}
             </p>
           </div>
 
-          <div
-            className={`absolute right-4 top-16 hidden px-4 py-3 md:block ${CLAY_CARD}`}
-          >
-            <p className="flex items-center gap-1.5 text-[11px] font-medium text-stone-500">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-              {tx("Wheat · Indore", "गेहूं · इंदौर")}
-            </p>
-            <p className="font-display text-xl font-bold text-stone-800">
-              ₹2,826
-              <span className="ml-1 text-[11px] font-medium text-stone-500">
-                {tx("/ quintal", "/ क्विंटल")}
-              </span>
-            </p>
-          </div>
+          {/* Rendered only once a real row is in hand. An empty or errored
+              feed simply drops the card — better than a placeholder figure,
+              which is what it was before. */}
+          {wheat && (
+            <div
+              className={`absolute right-4 top-16 hidden px-4 py-3 md:block ${CLAY_CARD}`}
+            >
+              <p className="flex items-center gap-1.5 text-[11px] font-medium text-stone-500">
+                <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                {tx("Wheat", "गेहूं")} · {wheat.district}
+              </p>
+              <p className="font-display text-xl font-bold text-stone-800">
+                ₹{wheat.modalPrice.toLocaleString("en-IN")}
+                <span className="ml-1 text-[11px] font-medium text-stone-500">
+                  {tx("/ quintal", "/ क्विंटल")}
+                </span>
+              </p>
+              <p className="mt-0.5 text-[10px] text-stone-400">
+                {tx("Govt. of India · today", "भारत सरकार · आज")}
+              </p>
+            </div>
+          )}
 
           <div
             className={`absolute bottom-5 left-4 right-4 hidden px-4 py-3.5 md:block ${CLAY_CARD}`}
@@ -661,10 +660,10 @@ export default function Login() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[13px] font-semibold text-stone-800">
-                  {tx("Claim window open", "दावा विंडो खुली")}
+                  {tx("PMFBY crop-loss claim", "PMFBY फसल-नुकसान दावा")}
                 </p>
                 <p className="text-[11px] text-stone-500">
-                  {tx("48 hours left to report", "रिपोर्ट के लिए 48 घंटे बाकी")}
+                  {tx("Report within 72 hours of the loss", "नुकसान के 72 घंटे के भीतर रिपोर्ट करें")}
                 </p>
               </div>
               <div className="flex -space-x-2">

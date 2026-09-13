@@ -92,7 +92,7 @@ const AgriMarket = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={cn(
                   'glass p-6 transition-[transform,box-shadow,border-color,background-color,color]',
-                  'duration-500 ease-[var(--ease-editorial)] hover:-translate-y-1',
+                  'duration-500 [transition-timing-function:var(--ease-editorial)] hover:-translate-y-1',
                   isActive && 'ring-1 ring-primary',
                 )}
               >

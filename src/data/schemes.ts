@@ -90,7 +90,7 @@ export const CENTRAL_SCHEMES: Scheme[] = [
     eligibilityHi: 'किरायेदार किसान, मौखिक पट्टेदार और बटाईदार सहित सभी किसान',
     benefits: 'Crop loans up to ₹3 lakh at an effective 4% with prompt repayment; collateral-free limits apply',
     benefitsHi: 'समय पर चुकाने पर ₹3 लाख तक फसल ऋण प्रभावी 4% ब्याज पर; बिना गारंटी सीमा लागू',
-    link: 'https://www.india.gov.in/spotlight/kisan-credit-card-kcc',
+    link: 'https://www.myscheme.gov.in/schemes/kcc',
     category: 'credit',
   },
   {
@@ -181,7 +181,7 @@ export const CENTRAL_SCHEMES: Scheme[] = [
     eligibilityHi: 'व्यक्तिगत किसान, सहकारी समितियां, पंचायतें और एफपीओ',
     benefits: 'Substantial subsidy on solar pump cost, plus income from selling surplus power',
     benefitsHi: 'सौर पंप लागत पर पर्याप्त सब्सिडी, साथ ही अतिरिक्त बिजली बेचकर आय',
-    link: 'https://pmkusum.mnre.gov.in/',
+    link: 'https://pmkusum.mnre.gov.in/landing.html',
     category: 'machinery',
   },
   {
@@ -337,7 +337,7 @@ export const CENTRAL_SCHEMES: Scheme[] = [
     eligibilityHi: 'व्यक्तिगत उद्यमी, एफपीओ, एमएसएमई, धारा 8 कंपनियां और निजी फर्में',
     benefits: '3% interest subvention with credit guarantee for eligible projects',
     benefitsHi: 'पात्र परियोजनाओं हेतु ऋण गारंटी के साथ 3% ब्याज छूट',
-    link: 'https://ahidf.udyamimitra.in/',
+    link: 'https://dahd.gov.in/schemes/programmes/ahidf',
     category: 'allied',
   },
   {
@@ -350,7 +350,7 @@ export const CENTRAL_SCHEMES: Scheme[] = [
     eligibilityHi: 'डेयरी किसान और पशुपालक',
     benefits: 'Access to quality breeding services, artificial insemination and gokul grams',
     benefitsHi: 'गुणवत्ता प्रजनन सेवाएं, कृत्रिम गर्भाधान और गोकुल ग्राम तक पहुंच',
-    link: 'https://dahd.nic.in/',
+    link: 'https://dahd.gov.in/schemes/programmes/rashtriya_gokul_mission',
     category: 'allied',
   },
   {
@@ -420,7 +420,7 @@ export const STATE_SCHEMES: Scheme[] = [
     eligibilityHi: 'मंडियों में अधिसूचित फसल बेचने वाले पंजीकृत मध्य प्रदेश के किसान',
     benefits: 'Price-difference compensation credited after mandi sale',
     benefitsHi: 'मंडी में बिक्री के बाद मूल्य-अंतर मुआवजा',
-    link: 'https://mpeuparjan.nic.in/',
+    link: 'http://mpeuparjan.nic.in/',
     category: 'market',
   },
   {
@@ -448,7 +448,7 @@ export const STATE_SCHEMES: Scheme[] = [
     eligibilityHi: 'ओडिशा के छोटे और सीमांत किसान, कृषक और भूमिहीन कृषि परिवार',
     benefits: 'Cultivation assistance, livelihood support and life insurance cover',
     benefitsHi: 'खेती सहायता, आजीविका समर्थन और जीवन बीमा कवर',
-    link: 'https://kalia.odisha.gov.in/',
+    link: 'https://www.myscheme.gov.in/schemes/kalia',
     category: 'income',
   },
   {
@@ -698,7 +698,7 @@ export const STATE_SCHEMES: Scheme[] = [
     eligibilityHi: 'सहकारी कृषि बैंक में पंजीकृत और वैध फसल कार्ड रखने वाले राजस्थान के किसान',
     benefits: 'Interest-free crop loan, with real-time online tracking of loan status and any crop-loan waiver',
     benefitsHi: 'ब्याज-मुक्त फसल ऋण, साथ ही ऋण की स्थिति और किसी भी फसल ऋण माफी का रीयल-टाइम ऑनलाइन ट्रैकिंग',
-    link: 'https://jansoochna.rajasthan.gov.in/Services',
+    link: 'https://jansoochna.rajasthan.gov.in/',
     category: 'credit',
   },
   {

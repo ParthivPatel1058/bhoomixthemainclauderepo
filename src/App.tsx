@@ -51,7 +51,6 @@ const DamageReport = React.lazy(() => import("./pages/DamageReport"));
 const GovSchemes = React.lazy(() => import("./pages/GovSchemes"));
 const RoboticFarming = React.lazy(() => import("./pages/RoboticFarming"));
 const RobotDetail = React.lazy(() => import("./pages/RobotDetail"));
-const ShopLocator = React.lazy(() => import("./pages/ShopLocator"));
 const Orders = React.lazy(() => import("./pages/Orders"));
 const Addresses = React.lazy(() => import("./pages/Addresses"));
 const PartnerOrders = React.lazy(() => import("./pages/PartnerOrders"));
@@ -134,7 +133,6 @@ const App = () => {
                   <Route path="/gov-schemes" element={<GovSchemes />} />
                   <Route path="/robotic-farming" element={<RoboticFarming />} />
                   <Route path="/robotic-farming/:id" element={<RobotDetail />} />
-                  <Route path="/shop-locator" element={<ShopLocator />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/addresses" element={<Addresses />} />
                   <Route path="/partner-orders" element={<PartnerOrders />} />

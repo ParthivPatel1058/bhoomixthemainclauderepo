@@ -29,7 +29,7 @@ export function WeatherIcon({ icon, className = "h-8 w-8" }: { icon: string; cla
 
 const WeatherWidget = () => {
   const { language } = useLanguage();
-  const { weather, loading } = useWeather();
+  const { weather, loading, locationKnown } = useWeather();
 
   if (loading) {
     return (
@@ -37,6 +37,21 @@ const WeatherWidget = () => {
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="text-sm text-muted-foreground">
           {language === "hi" ? "मौसम लोड हो रहा है…" : "Loading weather…"}
+        </span>
+      </div>
+    );
+  }
+
+  // No position, no numbers. Rendering the fallback here would state a
+  // temperature and city as fact for somewhere the user is not.
+  if (!locationKnown) {
+    return (
+      <div className="glass rounded-3xl p-6 flex items-center justify-center gap-3">
+        <MapPin className="h-5 w-5 text-primary" />
+        <span className="text-sm text-muted-foreground">
+          {language === "hi"
+            ? "मौसम के लिए लोकेशन चालू करें या पता जोड़ें।"
+            : "Turn on location or add your address to see weather."}
         </span>
       </div>
     );

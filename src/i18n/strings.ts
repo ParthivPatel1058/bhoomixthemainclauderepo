@@ -36,12 +36,11 @@ export const translations = {
     roboticFarming: 'Robotic Farming',
     organicFarming: 'Organic Farming',
     vegetableFarming: 'Vegetable Farming',
-    shopLocator: 'Shop Locator',
     deliveryPartner: 'Delivery Partner',
     partnerOrders: 'Partner Deliveries',
 
     // Home
-    welcome: 'Welcome to Bhoomi',
+    welcome: 'Welcome to BhoomiX',
     tagline: 'Tools, advisory, and inputs for every farming decision.',
     searchPlaceholder: 'Search products, crops, or advisory…',
 
@@ -64,7 +63,7 @@ export const translations = {
     analyzing: 'Analyzing the image…',
     aiAnalysis: 'Analysis',
     you: 'You',
-    aiAssistant: 'Bhoomi Advisory',
+    aiAssistant: 'BhoomiX Advisory',
     thinking: 'Working on it…',
 
     // KisanMart
@@ -94,7 +93,7 @@ export const translations = {
     helpCenter: 'Help Center',
     reportIssue: 'Report an Issue',
     about: 'About',
-    aboutApp: 'About Bhoomi',
+    aboutApp: 'About BhoomiX',
     version: 'Version',
   },
   hi: {
@@ -126,12 +125,11 @@ export const translations = {
     roboticFarming: 'रोबोटिक खेती',
     organicFarming: 'जैविक खेती',
     vegetableFarming: 'सब्जी खेती',
-    shopLocator: 'दुकान खोजें',
     deliveryPartner: 'डिलीवरी पार्टनर',
     partnerOrders: 'पार्टनर डिलीवरी',
 
     // Home
-    welcome: 'भूमि में आपका स्वागत है',
+    welcome: 'BhoomiX में आपका स्वागत है',
     tagline: 'हर खेती के फैसले के लिए उपकरण, सलाह और सामान।',
     searchPlaceholder: 'उत्पाद, फसल, या सलाह खोजें…',
 
@@ -154,7 +152,7 @@ export const translations = {
     analyzing: 'तस्वीर का विश्लेषण हो रहा है…',
     aiAnalysis: 'विश्लेषण',
     you: 'आप',
-    aiAssistant: 'भूमि सलाह',
+    aiAssistant: 'BhoomiX सलाह',
     thinking: 'जवाब तैयार हो रहा है…',
 
     // KisanMart
@@ -184,7 +182,7 @@ export const translations = {
     helpCenter: 'सहायता केंद्र',
     reportIssue: 'समस्या रिपोर्ट करें',
     about: 'परिचय',
-    aboutApp: 'भूमि के बारे में',
+    aboutApp: 'BhoomiX के बारे में',
     version: 'संस्करण',
   },
 };

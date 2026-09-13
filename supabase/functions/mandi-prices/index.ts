@@ -21,11 +21,12 @@ const TTL_MS = 60 * 60 * 1000;
 const PAGE = 1000;
 
 /**
- * Ceiling on pages per refresh. The daily feed runs ~6,000 rows, so 20 pages is
- * generous headroom; it exists only so a malformed `total` cannot spin us
- * through the whole daily quota in one request.
+ * Ceiling on pages per state per refresh. The largest state (Tamil Nadu) runs
+ * ~6,500 rows, so 20 pages is generous headroom; it exists only so a malformed
+ * `total` cannot spin us through the whole daily quota in one request. It must
+ * also stay at or below the platform's 10,000-row search window (10 × PAGE).
  */
-const MAX_PAGES = 20;
+const MAX_PAGES = 10;
 
 interface Price {
   state: string;
@@ -138,63 +139,151 @@ function norm(value: string): string {
   return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+/** Collapse the feed's stray whitespace: trailing spaces and embedded newlines. */
+function clean(value: string | undefined): string {
+  return (value ?? '').replace(/\s+/g, ' ').trim();
+}
+
 function toPrice(r: Record<string, string>): Price {
   return {
-    state: r.state ?? '',
-    district: r.district ?? '',
-    market: r.market ?? '',
-    commodity: r.commodity ?? '',
-    variety: r.variety ?? '',
-    arrivalDate: r.arrival_date ?? '',
-    minPrice: Number(r.min_price) || 0,
-    maxPrice: Number(r.max_price) || 0,
-    modalPrice: Number(r.modal_price) || 0,
+    state: clean(r.state),
+    district: clean(r.district),
+    market: clean(r.market),
+    commodity: clean(r.commodity),
+    variety: clean(r.variety),
+    arrivalDate: clean(r.arrival_date),
+    // The feed carries paise-level floats from an upstream conversion
+    // (₹2649.999735); the page printed them raw. Whole rupees is the only
+    // precision a mandi ever quotes.
+    minPrice: Math.round(Number(r.min_price) || 0),
+    maxPrice: Math.round(Number(r.max_price) || 0),
+    modalPrice: Math.round(Number(r.modal_price) || 0),
   };
 }
 
 /**
- * Pull the entire day's feed, one page at a time.
+ * Not crops. The feed also carries livestock, fish, timber and a few
+ * processed goods; on a page titled "Mandi Prices" for farmers selling
+ * produce, "Wood ₹550 / quintal" and "Ox" are noise, and in NCT of Delhi
+ * they were the only rows.
+ */
+const NOT_A_CROP = new Set(
+  ['Wood', 'Firewood', 'Fish', 'Prawn', 'Ox', 'Calf', 'Cow', 'Buffalo', 'Bull',
+   'Goat', 'Sheep', 'Hen', 'Duck', 'Egg', 'Tobacco', 'Mentha Oil',
+  ].map((c) => c.toLowerCase()),
+);
+
+/**
+ * No genuine per-quintal crop price is under this. The rows below it are
+ * per-bunch, per-piece or per-kg quotes that a few markets enter without
+ * converting (coriander ₹9, papaya ₹15, coconut ₹40), and shown under a
+ * "/ quintal" label they are simply wrong.
+ */
+const MIN_PLAUSIBLE_PER_QUINTAL = 100;
+
+/**
+ * Drop rows that cannot be right. Each rule is something a farmer would
+ * read as a wrong price, not merely an odd one; the aim is to never show a
+ * figure that is provably not a quintal price. Genuine spreads and grades
+ * are left alone.
+ */
+function isUsable(p: Price): boolean {
+  if (!p.commodity || !p.market || !p.state) return false;
+  if (NOT_A_CROP.has(p.commodity.toLowerCase())) return false;
+  if (p.minPrice <= 0 || p.maxPrice <= 0 || p.modalPrice <= 0) return false;
+  if (p.modalPrice < MIN_PLAUSIBLE_PER_QUINTAL) return false;
+  if (p.minPrice > p.maxPrice) return false;
+  if (p.modalPrice < p.minPrice || p.modalPrice > p.maxPrice) return false;
+  return true;
+}
+
+/** The same quote filed under several varieties produced identical cards. */
+function dedupeKey(p: Price): string {
+  return [p.state, p.market, p.commodity, p.modalPrice].join('|').toLowerCase();
+}
+
+/**
+ * States exactly as the feed spells them. Sent as `filters[state]` and matched
+ * back exactly, so a spelling here that the feed does not use returns nothing —
+ * which is how "Kerala" (feed: "Keralam") and "Uttrakhand" (feed: "Uttarakhand")
+ * were silently empty. Verified against the live resource on 12 Sep 2026.
+ */
+const FEED_STATES = [
+  'Andhra Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chattisgarh', 'Goa',
+  'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand',
+  'Karnataka', 'Keralam', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'NCT of Delhi', 'Odisha', 'Pondicherry',
+  'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+];
+
+/** Gap between upstream calls. A burst of ~40 got the key throttled once. */
+const CALL_GAP_MS = 150;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Pull the day's feed, one state at a time.
  *
- * We do not send `filters[...]` upstream any more. data.gov.in reports a
- * *filtered* `total` while returning *unfiltered* `records` — verified
- * 6 Sep 2026: `filters[state]=Madhya Pradesh` answered `total: 32` with three
- * Andhra Pradesh rows in the body. Trusting that filter is what made this page
- * show "No rates found" for every state whose rows happen to fall outside the
- * first page: the safety re-filter downstream correctly threw away rows that
- * were not what was asked for, leaving nothing.
+ * It used to page the whole feed unfiltered. That silently lost data: the
+ * platform's search index refuses `offset + limit > 10000`, and the feed
+ * passed that size — 11,972 rows on 12 Sep 2026, so rows 10,001 onward were
+ * unreachable. Which rows fall past the line depends on the feed's internal
+ * order; Tamil Nadu alone was 6,429 of the first 10,000, and Madhya Pradesh —
+ * the page's default — surfaced 258 of its 1,384. Filtering upstream keeps
+ * every state far below the window, so nothing is cut.
  *
- * So the filter has to be ours. That means holding the day's rows, which is why
- * this fetches everything once an hour instead of per query.
+ * `filters[state]` was avoided before because on 6 Sep it returned other
+ * states' rows. Re-verified on 12 Sep: bodies now match the filter exactly.
+ * The match is token-based, though ("Delhi" also hits "NCT of Delhi"), so each
+ * state's rows are still re-checked exactly before they are kept.
  */
 async function fetchAll(key: string): Promise<Snapshot> {
   const rows: Price[] = [];
+  const seenKeys = new Set<string>();
   let updated: string | null = null;
-  let total = Infinity;
 
-  for (let page = 0; page < MAX_PAGES && rows.length < total; page++) {
-    const params = new URLSearchParams({
-      'api-key': key,
-      format: 'json',
-      limit: String(PAGE),
-      offset: String(page * PAGE),
-    });
+  for (const state of FEED_STATES) {
+    const want = norm(state);
+    let got = 0;
+    let total = Infinity;
 
-    const res = await fetch(`${BASE}?${params}`, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok) throw new Error(`data.gov.in HTTP ${res.status}`);
+    for (let page = 0; page < MAX_PAGES && got < total; page++) {
+      if (rows.length > 0 || page > 0) await sleep(CALL_GAP_MS);
 
-    const data = await res.json();
-    // The platform answers 200 with an error body for a bad or throttled key,
-    // so a successful status alone is not enough to trust the payload.
-    if (data?.error) throw new Error(String(data.error).slice(0, 200));
+      const params = new URLSearchParams({
+        'api-key': key,
+        format: 'json',
+        limit: String(PAGE),
+        offset: String(page * PAGE),
+        'filters[state]': state,
+      });
 
-    const records: Record<string, string>[] = data?.records ?? [];
-    for (const r of records) rows.push(toPrice(r));
+      const res = await fetch(`${BASE}?${params}`, { signal: AbortSignal.timeout(20000) });
+      if (!res.ok) throw new Error(`data.gov.in HTTP ${res.status}`);
 
-    updated = data?.updated_date ?? updated;
-    if (typeof data?.total === 'number') total = data.total;
+      const data = await res.json();
+      // The platform answers 200 with an error body for a bad or throttled key,
+      // so a successful status alone is not enough to trust the payload.
+      if (data?.error) throw new Error(String(data.error).slice(0, 200));
 
-    // A short page means the feed is exhausted; asking again just burns quota.
-    if (records.length < PAGE) break;
+      const records: Record<string, string>[] = data?.records ?? [];
+      for (const r of records) {
+        const price = toPrice(r);
+        if (norm(price.state) !== want || !isUsable(price)) continue;
+        const k = dedupeKey(price);
+        if (seenKeys.has(k)) continue;
+        seenKeys.add(k);
+        rows.push(price);
+      }
+      got += records.length;
+
+      updated = data?.updated_date ?? updated;
+      if (typeof data?.total === 'number') total = data.total;
+
+      // A short page means this state is exhausted; asking again burns quota.
+      if (records.length < PAGE) break;
+    }
   }
 
   return { at: Date.now(), prices: rows, updated };

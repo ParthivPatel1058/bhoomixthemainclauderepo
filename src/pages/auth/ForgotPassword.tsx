@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Turnstile, { turnstileEnabled, type TurnstileHandle } from "@/components/auth/Turnstile";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -41,6 +42,8 @@ export default function ForgotPassword() {
 
   const [email, setEmail] = useState(params.get("email") ?? "");
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
   const [sent, setSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
@@ -59,13 +62,20 @@ export default function ForgotPassword() {
       return;
     }
 
+    if (turnstileEnabled && !captcha) {
+      toast.error(tx("Please complete the security check", "कृपया सुरक्षा जाँच पूरी करें"));
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
       {
+        captchaToken: captcha ?? undefined,
         redirectTo: `${window.location.origin}/auth/reset-password`,
       },
     );
+    turnstile.current?.reset();
     setLoading(false);
 
     if (error) {
@@ -149,6 +159,7 @@ export default function ForgotPassword() {
                   </div>
                 </div>
 
+                <Turnstile ref={turnstile} onToken={setCaptcha} className="mt-4" />
                 <Button3D
                   type="submit"
                   tone="emerald"
