@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Turnstile, { turnstileEnabled, type TurnstileHandle } from "@/components/auth/Turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,8 @@ export default function Signup() {
   const nextPath =
     rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -58,6 +61,11 @@ export default function Signup() {
         return;
       }
 
+      if (turnstileEnabled && !captcha) {
+        toast.error(tx("Please complete the security check", "कृपया सुरक्षा जाँच पूरी करें"));
+        return;
+      }
+
       setLoading(true);
 
       const redirectUrl = `${window.location.origin}${nextPath}`;
@@ -68,8 +76,10 @@ export default function Signup() {
         options: {
           emailRedirectTo: redirectUrl,
           data: { username: validated.username, full_name: validated.username },
+          captchaToken: captcha ?? undefined,
         },
       });
+      turnstile.current?.reset();
 
       if (error) {
         if (error.message.includes("already registered")) {
@@ -213,6 +223,7 @@ export default function Signup() {
               </div>
             </div>
 
+            <Turnstile ref={turnstile} onToken={setCaptcha} className="mt-4" />
             <Button3D
               type="submit"
               tone="emerald"

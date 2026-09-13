@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMandiPrices } from "@/hooks/useMandiPrices";
+import Turnstile, { turnstileEnabled, type TurnstileHandle } from "@/components/auth/Turnstile";
+
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -56,19 +58,6 @@ async function readFunctionError(error: unknown): Promise<string | null> {
   return (error as Error)?.message ?? null;
 }
 
-/**
- * True only when the endpoint itself is absent — a network failure or a 404.
- * A deployed function answering 401 or 403 is a decision, not an outage, and
- * must never be treated as "fall back to the weaker path".
- */
-async function isFunctionMissing(error: unknown): Promise<boolean> {
-  const res = (error as { context?: Response })?.context;
-  if (res && typeof res.status === "number") return res.status === 404;
-  const name = (error as Error)?.name ?? "";
-  const message = (error as Error)?.message ?? "";
-  return /FunctionsFetchError/.test(name) || /Failed to (fetch|send)/i.test(message);
-}
-
 /* Clay surfaces, defined once so every control shares one light source.
    Claymorphism only reads as soft when the inner highlight and the outer
    drop shadow agree on where the light comes from — here, top-left. */
@@ -105,6 +94,11 @@ export default function Login() {
   const nextPath =
     rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const [loading, setLoading] = useState(false);
+  // Cloudflare Turnstile. `captcha` is null until the widget issues a token;
+  // when the widget is configured, submitting without one is refused here so
+  // the user gets a clear message instead of a server rejection.
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPw, setShowPw] = useState(false);
   /** Set once the server has emailed a code; drives the second step. */
@@ -219,6 +213,11 @@ export default function Login() {
       return;
     }
 
+    if (turnstileEnabled && !captcha) {
+      toast.error(tx("Please complete the security check", "कृपया सुरक्षा जाँच पूरी करें"));
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("login-2fa", {
@@ -226,36 +225,12 @@ export default function Login() {
           action: "start",
           email: validated.email,
           password: validated.password,
+          captchaToken: captcha,
         },
       });
-
-      // TEMPORARY. Until `login-2fa` is deployed the function is simply not
-      // there, and without this the sign-in page is dead for everyone. Only a
-      // missing endpoint falls through — a real 401 or 403 from a deployed
-      // function is an answer, not an outage, and must not be retried here.
-      //
-      // Delete this block the moment the function is live. While it exists,
-      // anyone who can stop that one request from completing gets password-only
-      // sign-in, which is the very bypass the function was written to close.
-      if (error && (await isFunctionMissing(error))) {
-        console.warn("login-2fa is not deployed; falling back to password sign-in");
-        const { error: pwError } = await supabase.auth.signInWithPassword({
-          email: validated.email,
-          password: validated.password,
-        });
-        if (pwError) {
-          toast.error(
-            /Invalid login credentials/.test(pwError.message)
-              ? tx("Invalid email or password", "ईमेल या पासवर्ड ग़लत है")
-              : pwError.message,
-          );
-          return;
-        }
-        toast.success(tx("Welcome back!", "वापसी पर स्वागत है!"));
-        if (nextPath === "/") navigate("/");
-        else window.location.href = nextPath;
-        return;
-      }
+      // Tokens are single-use. Whatever happened, the next attempt needs a
+      // fresh one, so reset now rather than on every error branch below.
+      turnstile.current?.reset();
 
       // A non-2xx from the function arrives as an error with the body attached.
       const message =
@@ -593,6 +568,7 @@ export default function Login() {
               </Link>
             </div>
 
+            <Turnstile ref={turnstile} onToken={setCaptcha} className="mt-4" />
             <button type="submit" disabled={loading} className={CLAY_BUTTON}>
               {loading
                 ? tx("Signing in…", "साइन इन हो रहा है…")
