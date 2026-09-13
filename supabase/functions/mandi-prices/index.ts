@@ -139,18 +139,67 @@ function norm(value: string): string {
   return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+/** Collapse the feed's stray whitespace: trailing spaces and embedded newlines. */
+function clean(value: string | undefined): string {
+  return (value ?? '').replace(/\s+/g, ' ').trim();
+}
+
 function toPrice(r: Record<string, string>): Price {
   return {
-    state: r.state ?? '',
-    district: r.district ?? '',
-    market: r.market ?? '',
-    commodity: r.commodity ?? '',
-    variety: r.variety ?? '',
-    arrivalDate: r.arrival_date ?? '',
-    minPrice: Number(r.min_price) || 0,
-    maxPrice: Number(r.max_price) || 0,
-    modalPrice: Number(r.modal_price) || 0,
+    state: clean(r.state),
+    district: clean(r.district),
+    market: clean(r.market),
+    commodity: clean(r.commodity),
+    variety: clean(r.variety),
+    arrivalDate: clean(r.arrival_date),
+    // The feed carries paise-level floats from an upstream conversion
+    // (₹2649.999735); the page printed them raw. Whole rupees is the only
+    // precision a mandi ever quotes.
+    minPrice: Math.round(Number(r.min_price) || 0),
+    maxPrice: Math.round(Number(r.max_price) || 0),
+    modalPrice: Math.round(Number(r.modal_price) || 0),
   };
+}
+
+/**
+ * Not crops. The feed also carries livestock, fish, timber and a few
+ * processed goods; on a page titled "Mandi Prices" for farmers selling
+ * produce, "Wood ₹550 / quintal" and "Ox" are noise, and in NCT of Delhi
+ * they were the only rows.
+ */
+const NOT_A_CROP = new Set(
+  ['Wood', 'Firewood', 'Fish', 'Prawn', 'Ox', 'Calf', 'Cow', 'Buffalo', 'Bull',
+   'Goat', 'Sheep', 'Hen', 'Duck', 'Egg', 'Tobacco', 'Mentha Oil',
+  ].map((c) => c.toLowerCase()),
+);
+
+/**
+ * No genuine per-quintal crop price is under this. The rows below it are
+ * per-bunch, per-piece or per-kg quotes that a few markets enter without
+ * converting (coriander ₹9, papaya ₹15, coconut ₹40), and shown under a
+ * "/ quintal" label they are simply wrong.
+ */
+const MIN_PLAUSIBLE_PER_QUINTAL = 100;
+
+/**
+ * Drop rows that cannot be right. Each rule is something a farmer would
+ * read as a wrong price, not merely an odd one; the aim is to never show a
+ * figure that is provably not a quintal price. Genuine spreads and grades
+ * are left alone.
+ */
+function isUsable(p: Price): boolean {
+  if (!p.commodity || !p.market || !p.state) return false;
+  if (NOT_A_CROP.has(p.commodity.toLowerCase())) return false;
+  if (p.minPrice <= 0 || p.maxPrice <= 0 || p.modalPrice <= 0) return false;
+  if (p.modalPrice < MIN_PLAUSIBLE_PER_QUINTAL) return false;
+  if (p.minPrice > p.maxPrice) return false;
+  if (p.modalPrice < p.minPrice || p.modalPrice > p.maxPrice) return false;
+  return true;
+}
+
+/** The same quote filed under several varieties produced identical cards. */
+function dedupeKey(p: Price): string {
+  return [p.state, p.market, p.commodity, p.modalPrice].join('|').toLowerCase();
 }
 
 /**
@@ -191,6 +240,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  */
 async function fetchAll(key: string): Promise<Snapshot> {
   const rows: Price[] = [];
+  const seenKeys = new Set<string>();
   let updated: string | null = null;
 
   for (const state of FEED_STATES) {
@@ -220,7 +270,11 @@ async function fetchAll(key: string): Promise<Snapshot> {
       const records: Record<string, string>[] = data?.records ?? [];
       for (const r of records) {
         const price = toPrice(r);
-        if (norm(price.state) === want) rows.push(price);
+        if (norm(price.state) !== want || !isUsable(price)) continue;
+        const k = dedupeKey(price);
+        if (seenKeys.has(k)) continue;
+        seenKeys.add(k);
+        rows.push(price);
       }
       got += records.length;
 

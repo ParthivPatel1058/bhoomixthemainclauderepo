@@ -45,6 +45,11 @@ async function statusFromError(error: unknown): Promise<MandiStatus> {
 export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
   const [prices, setPrices] = useState<MandiPrice[]>([]);
   const [status, setStatus] = useState<MandiStatus>('loading');
+  // The function caps a response at `limit` but reports the true match count
+  // and the feed's publish date; the page needs both to say "100 of 752"
+  // rather than "100 rates", and to date the figures.
+  const [total, setTotal] = useState(0);
+  const [updated, setUpdated] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +57,11 @@ export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
 
     (async () => {
       try {
-        const { data, error } = await supabase.functions.invoke<{ prices?: MandiPrice[] }>(
+        const { data, error } = await supabase.functions.invoke<{
+          prices?: MandiPrice[];
+          total?: number;
+          updated?: string | null;
+        }>(
           'mandi-prices',
           { body: { state, commodity, limit } },
         );
@@ -71,6 +80,8 @@ export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
         }
 
         setPrices(rows);
+        setTotal(typeof data?.total === 'number' ? data.total : rows.length);
+        setUpdated(data?.updated ?? null);
         setStatus(rows.length ? 'ok' : 'empty');
       } catch {
         if (!cancelled) setStatus('error');
@@ -82,5 +93,5 @@ export function useMandiPrices({ state, commodity, limit = 30 }: Options = {}) {
     };
   }, [state, commodity, limit]);
 
-  return { prices, status };
+  return { prices, status, total, updated };
 }

@@ -4,7 +4,7 @@ import BackButton from '@/components/BackButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMandiPrices } from '@/hooks/useMandiPrices';
 import { useAddresses } from '@/hooks/useAddresses';
-import { IndianRupee, Search, TrendingUp, KeyRound, Loader2, ExternalLink } from 'lucide-react';
+import { IndianRupee, Search, KeyRound, Loader2, ExternalLink } from 'lucide-react';
 
 /**
  * Every state the dataset reports. `value` is the feed's own spelling and is
@@ -63,11 +63,40 @@ function toFeedState(name: string | null | undefined): string | null {
 /** Where to start when the farmer has not told us where they are. */
 const DEFAULT_STATE = 'NCT of Delhi';
 
-/** The crops a farmer is most likely to be selling; the rest via search. */
-const COMMODITIES = [
-  'Wheat', 'Paddy(Dhan)(Common)', 'Soyabean', 'Maize', 'Cotton',
-  'Onion', 'Potato', 'Tomato', 'Gram', 'Mustard',
+/**
+ * The crops a farmer is most likely to be selling; the rest via search.
+ * `value` is the feed's exact commodity string — the function matches it
+ * exactly, so "Paddy(Dhan)(Common)" and "Gram" (the old values) matched
+ * nothing and those two chips always read "No rates found".
+ */
+const COMMODITIES: { value: string; label: string; labelHi: string }[] = [
+  { value: 'Wheat', label: 'Wheat', labelHi: 'गेहूं' },
+  { value: 'Paddy(Common)', label: 'Paddy', labelHi: 'धान' },
+  { value: 'Soyabean', label: 'Soyabean', labelHi: 'सोयाबीन' },
+  { value: 'Maize', label: 'Maize', labelHi: 'मक्का' },
+  { value: 'Cotton', label: 'Cotton', labelHi: 'कपास' },
+  { value: 'Onion', label: 'Onion', labelHi: 'प्याज़' },
+  { value: 'Potato', label: 'Potato', labelHi: 'आलू' },
+  { value: 'Tomato', label: 'Tomato', labelHi: 'टमाटर' },
+  { value: 'Bengal Gram(Gram)(Whole)', label: 'Gram', labelHi: 'चना' },
+  { value: 'Mustard', label: 'Mustard', labelHi: 'सरसों' },
 ];
+
+/**
+ * Where to send a farmer whose state reported no crop rates today. Delhi is
+ * the common case: its only mandi rows are the Gazipur fish market, so a
+ * Delhi farmer sells in these instead.
+ */
+const NEARBY: Record<string, string[]> = {
+  'NCT of Delhi': ['Haryana', 'Uttar Pradesh', 'Punjab'],
+  Chandigarh: ['Punjab', 'Haryana'],
+  Goa: ['Karnataka', 'Maharashtra'],
+  Sikkim: ['West Bengal'],
+  Pondicherry: ['Tamil Nadu'],
+};
+
+/** ₹ with Indian digit grouping: 12,50,000 not 1,250,000. */
+const inr = (n: number) => n.toLocaleString('en-IN');
 
 /**
  * Today's mandi rates, so a farmer walks into the market already knowing the
@@ -93,7 +122,7 @@ export default function MandiPrices() {
   // Filtering by commodity server-side rather than client-side: the API caps a
   // response at `limit`, so narrowing here is what surfaces a farmer's crop in
   // a state that reports thousands of rows a day.
-  const { prices, status } = useMandiPrices({ state, commodity: commodity || undefined, limit: 100 });
+  const { prices, status, total, updated } = useMandiPrices({ state, commodity: commodity || undefined, limit: 100 });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -200,15 +229,15 @@ export default function MandiPrices() {
               </button>
               {COMMODITIES.map((c) => (
                 <button
-                  key={c}
-                  onClick={() => setCommodity(c)}
+                  key={c.value}
+                  onClick={() => setCommodity(c.value)}
                   className={`min-h-11 flex-shrink-0 rounded-full border px-4 text-sm font-semibold transition-colors ${
-                    commodity === c
+                    commodity === c.value
                       ? 'border-primary bg-primary text-primary-foreground'
                       : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {c.replace(/\(.*\)/, '')}
+                  {tx(c.label, c.labelHi)}
                 </button>
               ))}
             </div>
@@ -240,15 +269,45 @@ export default function MandiPrices() {
                   {tx('No rates found', 'कोई भाव नहीं मिला')}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {tx('Try another state, or clear the search.', 'दूसरा राज्य चुनें, या खोज हटाएं।')}
+                  {query
+                    ? tx('Clear the search, or pick a crop to load more rates.', 'खोज हटाएं, या और भाव लाने के लिए फसल चुनें।')
+                    : tx('No crop rates were reported from this state today.', 'आज इस राज्य से फसलों के भाव नहीं आए।')}
                 </p>
+                {!query && (NEARBY[state] ?? []).length > 0 && (
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <span className="self-center text-sm text-muted-foreground">{tx('Nearby:', 'पास में:')}</span>
+                    {NEARBY[state].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { setStateTouched(true); setState(s); }}
+                        className="min-h-9 rounded-full border border-primary/40 px-3 text-sm font-semibold text-primary hover:bg-primary/10"
+                      >
+                        {STATES.find((x) => x.value === s)?.label ?? s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {status === 'ok' && filtered.length > 0 && (
               <>
                 <p className="mb-4 text-sm text-muted-foreground">
-                  {tx('{n} rates', '{n} भाव').replace('{n}', String(filtered.length))}
+                  {/* Say "100 of 752", not "100 rates": the function caps a
+                      page at 100 and the old label passed that cap off as
+                      the total. The search box only sees these 100, so the
+                      farmer needs to know narrowing by crop is the way in. */}
+                  {query
+                    ? tx('{n} matching', '{n} मिले').replace('{n}', String(filtered.length))
+                    : total > prices.length
+                      ? tx('Showing {a} of {b} — pick a crop to narrow', '{b} में से {a} — फसल चुनकर छाँटें')
+                          .replace('{a}', String(prices.length)).replace('{b}', String(total))
+                      : tx('{n} rates', '{n} भाव').replace('{n}', String(prices.length))}
+                  {updated && (
+                    <span className="ml-2 text-xs opacity-70">
+                      · {tx('Feed updated', 'फ़ीड अपडेट')} {new Date(updated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
                 </p>
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((p, i) => (
@@ -264,25 +323,30 @@ export default function MandiPrices() {
                             {p.district ? `, ${p.district}` : ''}
                           </p>
                         </div>
-                        <TrendingUp className="h-5 w-5 flex-shrink-0 text-primary" />
                       </div>
 
                       <div className="mb-3 flex items-baseline gap-1.5">
                         <IndianRupee className="h-5 w-5 text-foreground" />
-                        <span data-numeric className="text-2xl font-bold text-foreground">{p.modalPrice}</span>
+                        <span data-numeric className="text-2xl font-bold text-foreground">{inr(p.modalPrice)}</span>
                         <span className="text-sm text-muted-foreground">
                           {tx('/ quintal', '/ क्विंटल')}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        {/* A quarter of rows quote one flat figure; "Range:
+                            ₹2505 – ₹2505" read as a data error. */}
                         <span data-numeric>
-                          {tx('Range', 'सीमा')}: ₹{p.minPrice} – ₹{p.maxPrice}
+                          {p.minPrice === p.maxPrice
+                            ? tx('Single quote', 'एक ही भाव')
+                            : `${tx('Range', 'सीमा')}: ₹${inr(p.minPrice)} – ₹${inr(p.maxPrice)}`}
                         </span>
                         {p.arrivalDate && <span>{p.arrivalDate}</span>}
                       </div>
 
-                      {p.variety && (
+                      {/* 60% of rows carry "Other" or just repeat the crop
+                          name here; neither tells a farmer anything. */}
+                      {p.variety && p.variety !== 'Other' && p.variety.toLowerCase() !== p.commodity.toLowerCase() && (
                         <p className="mt-2 text-xs text-muted-foreground">
                           {tx('Variety', 'किस्म')}: {p.variety}
                         </p>
