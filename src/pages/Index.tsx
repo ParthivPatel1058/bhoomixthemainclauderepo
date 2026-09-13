@@ -144,7 +144,7 @@ Smarter`, `स्मार्ट
           <Reveal immediate delay={1} from="right" className="w-[19rem]">
             <dl className="glass overflow-hidden rounded-lg">
               {([
-                { n: 23, suffix: '', l: tx('Indian languages, in their own script', '23 भारतीय भाषाएं, अपनी लिपि में') },
+                { n: 22, suffix: '', l: tx('Indian languages, in their own script', '22 भारतीय भाषाएं, अपनी लिपि में') },
                 { v: tx('Daily', 'रोज़'), l: tx('Mandi rates from government open data', 'सरकारी ओपन डेटा से मंडी भाव') },
                 { v: '72h', l: tx('The PMFBY claim window, counted for you', 'पीएमएफबीवाई दावा समय, आपके लिए गिना गया') },
               ] as { n?: number; suffix?: string; v?: string; l: string }[]).map((row, i) => (

@@ -1,5 +1,9 @@
-import { Phone, Mail, MapPin, MessageCircle, Clock, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { HelpCircle, Leaf, Loader2, MessageSquare, Package, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,231 +12,181 @@ import { useToast } from '@/hooks/use-toast';
 import PageShell from '@/components/layout/PageShell';
 import PageHeader from '@/components/layout/PageHeader';
 
+/**
+ * Support.
+ *
+ * This page used to be a template. It listed a toll-free number, an email
+ * address at a different company, a WhatsApp number belonging to whoever
+ * owns 98765-43210, an office at "123 Kisan Bhawan", "24/7" availability
+ * and a "reply within 24 hours" promise — none of it real — and the form
+ * showed "Message Sent!" while discarding the text. A farmer with a real
+ * problem got a false receipt and no one ever saw their message.
+ *
+ * Now the form writes to `support_messages`, which the team reads in the
+ * dashboard, and the page claims exactly the channels that exist. Real
+ * phone, email and office details belong here once there are any; until
+ * then, nothing is invented.
+ */
 const Support = () => {
-  const { language, tx } = useLanguage();
+  const { tx } = useLanguage();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: user?.email ?? '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast({ title: tx('Sign in to send a message', 'संदेश भेजने के लिए साइन इन करें') });
+      return;
+    }
+    setSending(true);
+    const { error } = await supabase.from('support_messages').insert({
+      user_id: user.id,
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || null,
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+    });
+    setSending(false);
+
+    // Only say it was sent when it was. The old form said so unconditionally.
+    if (error) {
+      toast({
+        title: tx('Could not send your message', 'संदेश नहीं भेजा जा सका'),
+        description: tx('Please try again in a moment.', 'कृपया थोड़ी देर बाद फिर कोशिश करें।'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSent(true);
     toast({
-      title: tx('Message Sent!', 'संदेश भेजा गया!'),
-      description: tx('We will get back to you soon', 'हम जल्द ही आपसे संपर्क करेंगे')
+      title: tx('Message sent', 'संदेश भेजा गया'),
+      description: tx('The bhoomix team has it and will reply by email.', 'bhoomix टीम को मिल गया है, ईमेल से जवाब देंगे।'),
     });
   };
 
+  const quickLinks = [
+    {
+      icon: Leaf,
+      label: tx('Urgent crop question? Ask the advisory', 'फसल का ज़रूरी सवाल? सलाह पूछें'),
+      to: '/kisan-help',
+    },
+    { icon: Package, label: tx('Track my order', 'मेरा ऑर्डर ट्रैक करें'), to: '/orders' },
+    { icon: ShoppingBag, label: tx('How to place an order', 'ऑर्डर कैसे दें'), to: '/agri-market' },
+  ];
+
   return (
     <PageShell width="wide">
-          <PageHeader
+      <PageHeader
         eyebrow={tx('Help', 'सहायता')}
         title={tx('Support', 'सहायता')}
         lede={tx(
-          'Call, write, or come by. Someone answers every one of these.',
-          'कॉल करें, लिखें, या मिलने आएं। इनमें से हर एक का जवाब मिलता है।',
+          'Write to the bhoomix team. Every message is read and answered by email.',
+          'bhoomix टीम को लिखें। हर संदेश पढ़ा जाता है और ईमेल से जवाब दिया जाता है।',
         )}
-        stats={[
-          { label: tx('Phone', 'फोन'), value: '24/7', emphasis: true },
-          { label: tx('Email reply', 'ईमेल उत्तर'), value: tx('under 24 hrs', '24 घंटे से कम') },
-          { label: tx('Office', 'कार्यालय'), value: tx('Mon-Sat', 'सोम-शनि') },
-        ]}
       />
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Contact Information */}
-            <div className="space-y-6">
-              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-primary" />
-                    {tx('Call Us', 'हमें कॉल करें')}
-                  </CardTitle>
-                  <CardDescription>
-                    {tx('Available 24/7', '24/7 उपलब्ध')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <a 
-                    href="tel:+911800123456" 
-                    className="text-2xl font-bold text-primary hover:underline"
-                  >
-                    1800-123-456
-                  </a>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {tx('Toll-free number', 'टोल-फ्री नंबर')}
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* Contact form — the one channel that exists. */}
+        <div>
+          <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                {tx('Send us a message', 'हमें संदेश भेजें')}
+              </CardTitle>
+              <CardDescription>
+                {tx(
+                  'Tell us what happened. Add your phone number if you would rather be called back.',
+                  'बताएं क्या हुआ। अगर कॉल चाहते हैं तो अपना फोन नंबर भी लिखें।',
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {sent ? (
+                <div className="rounded-2xl bg-primary/10 p-6 text-center">
+                  <p className="font-semibold text-foreground">
+                    {tx('Thanks — your message is with the team.', 'धन्यवाद — आपका संदेश टीम के पास है।')}
                   </p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mail className="h-5 w-5 text-primary" />
-                    {tx('Email Us', 'हमें ईमेल करें')}
-                  </CardTitle>
-                  <CardDescription>
-                    {tx('Response within 24 hours', '24 घंटे के भीतर प्रतिक्रिया')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <a 
-                    href="mailto:support@agrihub.com" 
-                    className="text-xl font-semibold text-primary hover:underline"
-                  >
-                    support@agrihub.com
-                  </a>
-                </CardContent>
-              </Card>
-
-              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    {tx('Visit Us', 'हमसे मिलें')}
-                  </CardTitle>
-                  <CardDescription>
-                    {tx('Office hours', 'कार्यालय समय')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm">
-                    AgriHub Office<br />
-                    123 Kisan Bhawan<br />
-                    Agricultural Complex<br />
-                    Delhi - 110001
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {tx('We reply to the email address you gave.', 'हम आपके दिए ईमेल पर जवाब देंगे।')}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      {tx('Mon-Sat: 9:00 AM - 6:00 PM', 'सोम-शनि: सुबह 9:00 - शाम 6:00')}
-                    </span>
+                  <Button variant="outline" className="mt-4" onClick={() => { setSent(false); setForm((f) => ({ ...f, subject: '', message: '' })); }}>
+                    {tx('Send another', 'एक और भेजें')}
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">{tx('Name', 'नाम')}</label>
+                    <Input value={form.name} onChange={set('name')} placeholder={tx('Your name', 'आपका नाम')} maxLength={120} required />
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass btn-metal hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <MessageCircle className="h-5 w-5" />
-                    {tx('WhatsApp Support', 'व्हाट्सएप सपोर्ट')}
-                  </CardTitle>
-                  <CardDescription className="text-white/80">
-                    {tx('Chat with us instantly', 'तुरंत हमसे चैट करें')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="secondary"
-                    className="w-full"
-                    onClick={() => window.open('https://wa.me/919876543210', '_blank')}
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    +91 98765-43210
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">{tx('Email', 'ईमेल')}</label>
+                    <Input type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" maxLength={254} required />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">
+                      {tx('Phone', 'फोन')} <span className="text-muted-foreground">({tx('optional', 'वैकल्पिक')})</span>
+                    </label>
+                    <Input type="tel" value={form.phone} onChange={set('phone')} inputMode="tel" maxLength={20} />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">{tx('Subject', 'विषय')}</label>
+                    <Input value={form.subject} onChange={set('subject')} placeholder={tx('What is this about?', 'यह किस बारे में है?')} maxLength={200} required />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">{tx('Message', 'संदेश')}</label>
+                    <Textarea value={form.message} onChange={set('message')} placeholder={tx('Your message…', 'आपका संदेश…')} rows={6} maxLength={4000} required />
+                  </div>
+                  <Button type="submit" className="btn-metal w-full border-0 hover:shadow-lg" size="lg" disabled={sending}>
+                    {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {sending ? tx('Sending…', 'भेज रहे हैं…') : tx('Send message', 'संदेश भेजें')}
                   </Button>
-                </CardContent>
-              </Card>
-            </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-            {/* Contact Form */}
-            <div>
-              <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HelpCircle className="h-5 w-5 text-primary" />
-                    {tx('Send us a Message', 'हमें संदेश भेजें')}
-                  </CardTitle>
-                  <CardDescription>
-                    {tx('Fill out the form and we\'ll get back to you', 'फॉर्म भरें और हम आपसे संपर्क करेंगे')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {tx('Name', 'नाम')}
-                      </label>
-                      <Input 
-                        placeholder={tx('Your name', 'आपका नाम')}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {tx('Email', 'ईमेल')}
-                      </label>
-                      <Input 
-                        type="email"
-                        placeholder={tx('your.email@example.com', 'आपका.ईमेल@example.com')}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {tx('Phone', 'फोन')}
-                      </label>
-                      <Input 
-                        type="tel"
-                        placeholder="+91 98765-43210"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {tx('Subject', 'विषय')}
-                      </label>
-                      <Input 
-                        placeholder={tx('What is this about?', 'यह किस बारे में है?')}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        {tx('Message', 'संदेश')}
-                      </label>
-                      <Textarea 
-                        placeholder={tx('Your message...', 'आपका संदेश...')}
-                        rows={6}
-                        required
-                      />
-                    </div>
-
-                    <Button 
-                      type="submit"
-                      className="w-full btn-metal border-0 hover:shadow-lg"
-                      size="lg"
-                    >
-                      {tx('Send Message', 'संदेश भेजें')}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              {/* FAQ Quick Links */}
-              <Card className="glass mt-6 hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {tx('Quick Help', 'त्वरित सहायता')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
-                    {tx('How to place an order?', 'ऑर्डर कैसे दें?')}
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    {tx('Track my order', 'मेरा ऑर्डर ट्रैक करें')}
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    {tx('Return & Refund Policy', 'वापसी और रिफंड नीति')}
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    {tx('Payment Options', 'भुगतान विकल्प')}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+        {/* Things the app can already do for you, so a stuck farmer is not
+            waiting on an email for something that has an answer now. */}
+        <div>
+          <Card className="glass hover:shadow-xl transition-[transform,box-shadow,border-color,background-color,color,opacity,filter]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="h-5 w-5 text-primary" />
+                {tx('Get an answer now', 'अभी जवाब पाएं')}
+              </CardTitle>
+              <CardDescription>
+                {tx('For the most common questions, you do not need to wait for us.', 'आम सवालों के लिए आपको हमारा इंतज़ार नहीं करना पड़ेगा।')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {quickLinks.map(({ icon: Icon, label, to }) => (
+                <Button key={to} variant="outline" className="w-full justify-start" onClick={() => navigate(to)}>
+                  <Icon className="mr-2 h-4 w-4 text-primary" />
+                  {label}
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </PageShell>
   );
 };

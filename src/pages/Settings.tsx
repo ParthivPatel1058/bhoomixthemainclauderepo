@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useOrderCount } from '@/hooks/useOrderCount';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguagePicker from '@/components/LanguagePicker';
 import { LANGUAGE_MAP } from '@/i18n/languages';
@@ -28,13 +30,13 @@ import {
   PanelLeftClose,
   MapPin,
   RotateCcw,
-  Mail,
-  Phone,
   MessageSquare
 } from 'lucide-react';
 
 const Settings = () => {
   const { t, language, setLanguage, tx } = useLanguage();
+  const navigate = useNavigate();
+  const orderCount = useOrderCount();
   const { theme, setTheme } = useTheme();
   const { prefs, set, reset } = useUIPrefs();
   const en = language === 'en';
@@ -245,25 +247,34 @@ const Settings = () => {
                   <CardDescription>{tx('Get help and support', 'मदद और सहायता पाएं')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full justify-start glass rounded-2xl h-auto p-6 border-2 border-primary/20 hover:border-primary/50" variant="outline">
-                    <Mail className="h-5 w-5 mr-3 text-primary" />
+                  {/* This tab listed "support@kisansmart.com" and a toll-free
+                      number — neither belonged to this product — beside a
+                      ticket button that did nothing. The Support page is the
+                      channel that actually reaches the team. */}
+                  <Button
+                    className="w-full justify-start glass rounded-2xl h-auto p-6 border-2 border-primary/20 hover:border-primary/50"
+                    variant="outline"
+                    onClick={() => navigate('/support')}
+                  >
+                    <MessageSquare className="h-5 w-5 mr-3 text-primary" />
                     <div className="text-left">
                       <p className="font-semibold">{t('contactSupport')}</p>
-                      <p className="text-sm text-muted-foreground">support@kisansmart.com</p>
+                      <p className="text-sm text-muted-foreground">
+                        {tx('Send the team a message — replies come by email', 'टीम को संदेश भेजें — जवाब ईमेल से आएगा')}
+                      </p>
                     </div>
                   </Button>
-                  <Button className="w-full justify-start glass rounded-2xl h-auto p-6 border-2 border-primary/20 hover:border-primary/50" variant="outline">
-                    <Phone className="h-5 w-5 mr-3 text-secondary" />
+                  <Button
+                    className="w-full justify-start glass rounded-2xl h-auto p-6 border-2 border-primary/20 hover:border-primary/50"
+                    variant="outline"
+                    onClick={() => navigate('/kisan-help')}
+                  >
+                    <HelpCircle className="h-5 w-5 mr-3 text-secondary" />
                     <div className="text-left">
-                      <p className="font-semibold">{t('helpCenter')}</p>
-                      <p className="text-sm text-muted-foreground">1800-123-4567 ({tx('Toll Free', 'टोल फ्री')})</p>
-                    </div>
-                  </Button>
-                  <Button className="w-full justify-start glass rounded-2xl h-auto p-6 border-2 border-primary/20 hover:border-primary/50" variant="outline">
-                    <MessageSquare className="h-5 w-5 mr-3 text-accent" />
-                    <div className="text-left">
-                      <p className="font-semibold">{t('reportIssue')}</p>
-                      <p className="text-sm text-muted-foreground">{tx('Submit a support ticket', 'सहायता टिकट भेजें')}</p>
+                      <p className="font-semibold">{tx('Crop advisory', 'फसल सलाह')}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {tx('Answers to crop questions right now', 'फसल के सवालों के जवाब अभी')}
+                      </p>
                     </div>
                   </Button>
                 </CardContent>
@@ -280,13 +291,28 @@ const Settings = () => {
                   <CardDescription>{t('orderHistory')}</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Was a hardcoded "No orders yet" regardless of the truth,
+                      with a Shop Now button that went nowhere. */}
                   <div className="text-center py-12">
                     <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-lg font-semibold mb-2">{tx('No orders yet', 'अभी कोई ऑर्डर नहीं')}</p>
-                    <p className="text-muted-foreground mb-4">{tx('Start shopping to see your orders here', 'खरीदारी शुरू करें, आपके ऑर्डर यहाँ दिखेंगे')}</p>
-                    <Button className="btn-metal rounded-2xl">
-                      {t('shopNow')}
-                    </Button>
+                    {orderCount > 0 ? (
+                      <>
+                        <p className="text-lg font-semibold mb-2">
+                          {tx('You have {n} orders', 'आपके {n} ऑर्डर हैं').replace('{n}', String(orderCount))}
+                        </p>
+                        <Button className="btn-metal rounded-2xl" onClick={() => navigate('/orders')}>
+                          {tx('View orders', 'ऑर्डर देखें')}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-lg font-semibold mb-2">{tx('No orders yet', 'अभी कोई ऑर्डर नहीं')}</p>
+                        <p className="text-muted-foreground mb-4">{tx('Start shopping to see your orders here', 'खरीदारी शुरू करें, आपके ऑर्डर यहाँ दिखेंगे')}</p>
+                        <Button className="btn-metal rounded-2xl" onClick={() => navigate('/agri-market')}>
+                          {t('shopNow')}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -304,25 +330,28 @@ const Settings = () => {
                 <CardContent className="space-y-6">
                   <div className="glass rounded-2xl p-6 text-center">
                     <div className="text-6xl mb-4">🌾</div>
+                    {/* "KisanSmart" and "Version 1.0.0" were left over from before
+                        the product was named; neither was ever true of this app. */}
                     <h3 className="mb-2 text-2xl font-semibold tracking-tight text-foreground">
-                      KisanSmart
+                      BhoomiX
                     </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Empowering farmers with technology and AI-powered solutions
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('version')} 1.0.0
+                    <p className="text-muted-foreground">
+                      {tx(
+                        'Tools and advisory for Indian farmers',
+                        'भारतीय किसानों के लिए उपकरण और सलाह',
+                      )}
                     </p>
                   </div>
                   <div className="glass rounded-2xl p-6 space-y-3">
                     <h4 className="font-semibold text-lg">{tx('Features:', 'विशेषताएं:')}</h4>
                     <ul className="space-y-2 text-muted-foreground">
-                      <li>✅ AI-powered crop disease detection</li>
-                      <li>✅ Quality agricultural products marketplace</li>
-                      <li>✅ Quick grocery delivery</li>
-                      <li>✅ Multi-language support (23 Indian languages)</li>
-                      <li>✅ Weather updates and farming tips</li>
-                      <li>✅ Government schemes information</li>
+                      <li>✅ {tx('AI crop disease diagnosis from a photo', 'फोटो से AI फसल रोग निदान')}</li>
+                      <li>✅ {tx('Seeds, fertiliser and tools marketplace', 'बीज, खाद और औज़ार बाज़ार')}</li>
+                      <li>✅ {tx('Grocery delivery', 'किराना डिलीवरी')}</li>
+                      <li>✅ {tx('Daily mandi prices from Government of India open data', 'भारत सरकार ओपन डेटा से रोज़ के मंडी भाव')}</li>
+                      <li>✅ {tx('Live weather and spray / irrigation advice', 'ताज़ा मौसम और छिड़काव / सिंचाई सलाह')}</li>
+                      <li>✅ {tx('Central and state government schemes', 'केंद्र और राज्य सरकार की योजनाएँ')}</li>
+                      <li>✅ {tx('English and 22 Indian languages', 'अंग्रेज़ी और 22 भारतीय भाषाएँ')}</li>
                     </ul>
                   </div>
                 </CardContent>

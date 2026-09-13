@@ -641,14 +641,17 @@ export default function Login() {
         <div className="relative m-3 h-48 overflow-hidden rounded-[2rem] shadow-[0_20px_45px_-15px_rgba(30,40,25,0.5)] md:h-auto">
           <BrandRipple />
 
-          {/* Floating cards: real bhoomix moments, not filler. */}
+          {/* Floating cards. Each states something the product actually does;
+              the earlier versions carried invented specifics ("4 seconds",
+              "48 hours left", a made-up wheat price) on a page whose whole
+              pitch is real data. */}
           <div className="absolute left-4 top-4 hidden rounded-2xl bg-emerald-500/95 px-4 py-3 shadow-[0_10px_25px_-8px_rgba(6,78,59,0.7),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-sm md:block">
             <p className="flex items-center gap-2 text-[13px] font-semibold text-white">
               <ScanLine className="h-4 w-4" />
               {tx("Leaf scanned", "पत्ती स्कैन हुई")}
             </p>
             <p className="mt-0.5 text-[11px] text-emerald-50">
-              {tx("Diagnosis in 4 seconds", "4 सेकंड में निदान")}
+              {tx("AI diagnosis from one photo", "एक फोटो से AI निदान")}
             </p>
           </div>
 
@@ -681,10 +684,10 @@ export default function Login() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[13px] font-semibold text-stone-800">
-                  {tx("Claim window open", "दावा विंडो खुली")}
+                  {tx("PMFBY crop-loss claim", "PMFBY फसल-नुकसान दावा")}
                 </p>
                 <p className="text-[11px] text-stone-500">
-                  {tx("48 hours left to report", "रिपोर्ट के लिए 48 घंटे बाकी")}
+                  {tx("Report within 72 hours of the loss", "नुकसान के 72 घंटे के भीतर रिपोर्ट करें")}
                 </p>
               </div>
               <div className="flex -space-x-2">

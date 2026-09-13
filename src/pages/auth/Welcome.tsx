@@ -34,7 +34,7 @@ export default function Welcome() {
 
   const points = [
     tx("Free crop disease scanning", "मुफ़्त फसल रोग जांच"),
-    tx("Available in 23 Indian languages", "23 भारतीय भाषाओं में उपलब्ध"),
+    tx("Available in 22 Indian languages", "22 भारतीय भाषाओं में उपलब्ध"),
     tx("No credit card required", "क्रेडिट कार्ड की ज़रूरत नहीं"),
   ];
 
