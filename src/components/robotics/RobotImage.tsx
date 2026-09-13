@@ -63,7 +63,7 @@ export default function RobotImage({
             onLoad={() => setLoaded(true)}
             onError={() => setFailed(true)}
             className={cn(
-              'h-full w-full transition-opacity duration-700 ease-[var(--ease-editorial)]',
+              'h-full w-full transition-opacity duration-700 [transition-timing-function:var(--ease-editorial)]',
               fit === 'contain' ? 'object-contain p-4' : 'object-cover',
               loaded ? 'opacity-100' : 'opacity-0',
             )}

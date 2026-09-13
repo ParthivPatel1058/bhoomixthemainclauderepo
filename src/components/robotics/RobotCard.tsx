@@ -48,7 +48,7 @@ export default function RobotCard({
   const headline = robot.specs.filter((s) => s.headline).slice(0, 4);
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-raised transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-editorial)] focus-within:border-secondary/50 hover:-translate-y-1 hover:border-secondary/40 hover:shadow-floating">
+    <article className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-raised transition-[transform,box-shadow,border-color] duration-500 [transition-timing-function:var(--ease-editorial)] focus-within:border-secondary/50 hover:-translate-y-1 hover:border-secondary/40 hover:shadow-floating">
       {/* Media. Fixed ratio so a grid row stays level whatever the source
           image is shaped like, and no wheel or propeller gets cropped off. */}
       <div className="relative">
@@ -168,7 +168,7 @@ export default function RobotCard({
             {tx('Details', 'विवरण')}
             <ArrowUpRight
               aria-hidden
-              className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-editorial)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              className="h-4 w-4 transition-transform duration-300 [transition-timing-function:var(--ease-editorial)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />
           </span>
         </div>

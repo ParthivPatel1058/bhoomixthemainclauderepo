@@ -149,7 +149,7 @@ export function SidebarSkin({
       aria-hidden={isOverlay}
       className={cn(
         'relative flex h-full w-full flex-col overflow-hidden rounded-[34px] select-none',
-        'transition-colors duration-[1400ms] ease-[cubic-bezier(0.76,0,0.24,1)]',
+        'transition-colors [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.76,0,0.24,1)]',
         shell,
         isOverlay && 'pointer-events-none',
       )}
@@ -194,7 +194,7 @@ export function SidebarSkin({
         )}
       </div>
 
-      <div className={cn('mx-4 shrink-0 border-t transition-colors duration-[1400ms]', divider)} />
+      <div className={cn('mx-4 shrink-0 border-t transition-colors [transition-duration:1400ms]', divider)} />
 
       {/* ---- Navigation ----
           Scrolls rather than forcing a minimum height. The design package
@@ -455,7 +455,7 @@ export function SidebarSkin({
           <div
             className={cn(
               'relative flex items-center justify-between rounded-[16px] px-3.5 py-2',
-              'transition-colors duration-[1400ms] ease-[cubic-bezier(0.76,0,0.24,1)]',
+              'transition-colors [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.76,0,0.24,1)]',
               isDark
                 ? 'border border-white/[0.08] bg-[#18161D]/95'
                 : 'border border-neutral-200/80 bg-[#F1F3F7] shadow-sm',
@@ -464,7 +464,7 @@ export function SidebarSkin({
             <span className="flex min-w-0 flex-col pr-1">
               <span
                 className={cn(
-                  'text-[12px] font-semibold tracking-tight transition-colors duration-[1400ms]',
+                  'text-[12px] font-semibold tracking-tight transition-colors [transition-duration:1400ms]',
                   isDark ? 'text-white' : 'text-[#121015]',
                 )}
               >
@@ -472,7 +472,7 @@ export function SidebarSkin({
               </span>
               <span
                 className={cn(
-                  'text-[10px] transition-colors duration-[1400ms]',
+                  'text-[10px] transition-colors [transition-duration:1400ms]',
                   isDark ? 'text-[#8E8A98]' : 'text-neutral-500',
                 )}
               >
@@ -498,7 +498,7 @@ export function SidebarSkin({
           <div
             className={cn(
               'mx-auto flex items-center justify-center overflow-hidden rounded-[16px] px-0.5 py-2.5',
-              'transition-colors duration-[1400ms] ease-[cubic-bezier(0.76,0,0.24,1)]',
+              'transition-colors [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.76,0,0.24,1)]',
               isDark ? 'border border-white/5 bg-[#18161D]' : 'border border-neutral-200 bg-[#F1F3F7]',
             )}
           >

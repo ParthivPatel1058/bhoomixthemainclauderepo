@@ -88,7 +88,7 @@ function BentoCard({
         src={item.image}
         alt={item.title}
         loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
+        className="absolute inset-0 h-full w-full object-cover transition-transform [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
       />
 
       {/* Legibility + cursor spotlight */}
@@ -110,7 +110,7 @@ function BentoCard({
             >
               {item.title}
             </span>
-            <span className="mt-1 block max-h-0 overflow-hidden text-sm leading-relaxed text-white/75 opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-24 group-hover:opacity-100">
+            <span className="mt-1 block max-h-0 overflow-hidden text-sm leading-relaxed text-white/75 opacity-0 transition-[transform,box-shadow,border-color,background-color,color,opacity,filter] duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] group-hover:max-h-24 group-hover:opacity-100">
               {item.summary}
             </span>
           </span>

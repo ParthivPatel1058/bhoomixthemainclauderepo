@@ -210,7 +210,7 @@ export function ExternalAction({
       )}`}
       className={cn(
         'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-[13px] font-semibold',
-        'transition-[transform,box-shadow,border-color,background-color,color] duration-300 ease-[var(--ease-editorial)]',
+        'transition-[transform,box-shadow,border-color,background-color,color] duration-300 [transition-timing-function:var(--ease-editorial)]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         variant === 'primary'
           ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98]'
