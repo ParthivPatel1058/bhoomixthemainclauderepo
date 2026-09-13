@@ -36,7 +36,9 @@ export default defineConfig({
            changes far more often than these do. */
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
-          if (/react|react-dom|react-router-dom/.test(id) && /node_modules\/(react|react-dom|react-router-dom)\//.test(id)) {
+          // react-router v7 ships its code in `react-router`; `react-router-dom`
+          // is a re-export shim, so both belong in the router's vendor chunk.
+          if (/node_modules\/(react|react-dom|react-router|react-router-dom)\//.test(id)) {
             return "vendor-react";
           }
           if (id.includes("framer-motion") || id.includes("gsap")) return "vendor-motion";
