@@ -55,3 +55,10 @@ verify_jwt = true
 # advisory page, so require a JWT rather than leaving an open billable URL.
 [functions.sarvam-listen]
 verify_jwt = true
+
+# A browser cannot set an Authorization header on a WebSocket, so the gateway
+# cannot verify one. The relay checks the caller's access token itself, from a
+# query parameter — see the function header. Do not set this to true: it would
+# reject the upgrade before the function ever runs.
+[functions.gemini-live-relay]
+verify_jwt = false

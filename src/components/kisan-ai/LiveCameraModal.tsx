@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, SwitchCamera, Mic, MicOff, Loader2, Camera } from 'lucide-react';
+import { X, SwitchCamera, Mic, MicOff, Loader2, Camera, Radio } from 'lucide-react';
 import { audioService, isVoiceFallback, languageLabel } from './audioService';
 import { VoiceCapture } from './voiceCapture';
+import { GeminiLiveSession, type LiveStatus } from './geminiLive';
 import { VoiceStatus, SpokenAnswer } from './types';
 
 interface LiveCameraModalProps {
@@ -38,6 +39,14 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
   const [answer, setAnswer] = useState('');
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [micSupported, setMicSupported] = useState(true);
+  /**
+   * Live mode streams continuously to Gemini instead of recording one question
+   * at a time. Off by default: the turn-based path works without the relay
+   * deployed, so it stays the thing that happens if nothing is configured.
+   */
+  const [liveMode, setLiveMode] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('idle');
+  const [liveNotice, setLiveNotice] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   /** Language detected from speech; overrides the UI language for the reply. */
   const [heardLanguage, setHeardLanguage] = useState<string | null>(null);
@@ -46,6 +55,8 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
   const streamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const captureRef = useRef<VoiceCapture | null>(null);
+  const liveRef = useRef<GeminiLiveSession | null>(null);
+  const frameTimerRef = useRef<number | null>(null);
   const sttFailuresRef = useRef(0);
   const statusRef = useRef<VoiceStatus>('idle');
   const sessionActiveRef = useRef(false);
@@ -179,6 +190,84 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
     startRecognition();
   }, [language, setPhase, startRecognition]);
 
+  /**
+   * Switch between continuous Live streaming and the turn-based path.
+   *
+   * The two cannot run together: both want the microphone, and leaving the
+   * recogniser running would transcribe the assistant's own voice coming back
+   * out of the speaker and answer it.
+   */
+  const toggleLive = useCallback(async () => {
+    setLiveNotice(null);
+
+    if (liveRef.current) {
+      if (frameTimerRef.current !== null) {
+        window.clearInterval(frameTimerRef.current);
+        frameTimerRef.current = null;
+      }
+      liveRef.current.close();
+      liveRef.current = null;
+      setLiveMode(false);
+      setLiveStatus('idle');
+      setPhase('listening');
+      return;
+    }
+
+    const stream = audioService.getMicStream();
+    if (!stream) {
+      setLiveNotice('A microphone is needed for live mode.');
+      return;
+    }
+
+    // Hand the microphone over from the turn-based recogniser.
+    captureRef.current?.stop();
+    captureRef.current = null;
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* already stopped */
+    }
+    recognitionRef.current = null;
+    audioService.stopSpeaking();
+
+    const session = new GeminiLiveSession();
+    const ok = await session.connect(stream, {
+      onStatus: (st) => {
+        setLiveStatus(st);
+        setPhase(st === 'speaking' ? 'speaking' : st === 'connecting' ? 'processing' : 'listening');
+      },
+      onUserText: (t) => setTranscript(t),
+      onAssistantText: (t) => setAnswer(t),
+      onError: (msg) => {
+        setLiveNotice(msg);
+        setLiveMode(false);
+        setLiveStatus('idle');
+      },
+      onClose: () => {
+        setLiveMode(false);
+        setLiveStatus('idle');
+      },
+    });
+
+    if (!ok) {
+      // connect() already reported why; fall back to the turn-based path.
+      setLiveMode(false);
+      startBrowserAsr();
+      return;
+    }
+
+    liveRef.current = session;
+    setLiveMode(true);
+
+    /* One frame a second. The Live API is built for roughly this rate, and a
+       video-rate stream would spend the farmer's data for no extra
+       understanding. */
+    frameTimerRef.current = window.setInterval(() => {
+      const frame = captureFrame();
+      if (frame) session.sendVideoFrame(frame);
+    }, 1000);
+  }, [captureFrame, setPhase, startBrowserAsr]);
+
   const stopEverything = useCallback(() => {
     sessionActiveRef.current = false;
     audioService.stopSpeaking();
@@ -194,6 +283,15 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
 
     captureRef.current?.stop();
     captureRef.current = null;
+
+    if (frameTimerRef.current !== null) {
+      window.clearInterval(frameTimerRef.current);
+      frameTimerRef.current = null;
+    }
+    liveRef.current?.close();
+    liveRef.current = null;
+    setLiveStatus('idle');
+
     audioService.stopMicrophone();
 
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -319,8 +417,12 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
 
   const hint: Record<VoiceStatus, string> = {
     idle: '',
-    listening: micSupported ? 'Point at the crop and ask your question' : 'Tap the shutter to ask',
-    processing: 'Looking at your crop…',
+    listening: liveMode
+      ? 'Live — just talk, you can interrupt any time'
+      : micSupported
+        ? 'Point at the crop and ask your question'
+        : 'Tap the shutter to ask',
+    processing: liveMode ? 'Connecting…' : 'Looking at your crop…',
     speaking: '',
   };
 
@@ -366,6 +468,23 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => void toggleLive()}
+              aria-pressed={liveMode}
+              title={liveMode ? 'Stop live conversation' : 'Start live conversation'}
+              aria-label={liveMode ? 'Stop live conversation' : 'Start live conversation'}
+              className={
+                'flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide backdrop-blur transition-all active:scale-95 ' +
+                (liveMode
+                  ? 'bg-red-500/90 text-white'
+                  : 'bg-black/40 text-white/80 hover:bg-white/20 hover:text-white')
+              }
+            >
+              <Radio className={'w-4 h-4 ' + (liveMode ? 'animate-pulse' : '')} />
+              Live
+            </button>
+
+            <button
+              type="button"
               onClick={() => setFacing((f) => (f === 'environment' ? 'user' : 'environment'))}
               aria-label="Switch camera"
               title="Switch camera"
@@ -393,6 +512,11 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
           ) : (
             <>
               <div className="w-full max-w-lg text-center mb-6 min-h-[72px] flex flex-col justify-end gap-2">
+                {liveNotice && (
+                  <p role="status" className="text-xs text-amber-300 bg-black/50 backdrop-blur rounded-xl px-3 py-2">
+                    {liveNotice}
+                  </p>
+                )}
                 {answer ? (
                   <motion.p
                     key="answer"
@@ -422,7 +546,9 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
                     <Mic
                       className={
                         'w-5 h-5 ' +
-                        (status === 'listening' ? 'text-red-400 animate-pulse' : 'text-white/40')
+                        (liveMode || status === 'listening'
+                          ? 'text-red-400 animate-pulse'
+                          : 'text-white/40')
                       }
                     />
                   ) : (
@@ -433,7 +559,8 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
                 <button
                   type="button"
                   onClick={handleManualAsk}
-                  disabled={isBusy}
+                  disabled={isBusy || liveMode}
+                  title={liveMode ? 'Not needed in live mode — just speak' : 'Capture and ask'}
                   aria-label="Capture and ask"
                   className="w-[68px] h-[68px] rounded-full border-4 border-white/85 flex items-center justify-center transition-transform active:scale-95 disabled:opacity-60"
                 >
