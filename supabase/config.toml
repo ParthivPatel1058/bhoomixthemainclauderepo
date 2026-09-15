@@ -62,3 +62,9 @@ verify_jwt = true
 # reject the upgrade before the function ever runs.
 [functions.gemini-live-relay]
 verify_jwt = false
+
+# Reads public market rates and is reachable from the mandi page before
+# sign-in, so no JWT. The capture action is guarded separately by
+# MANDI_CAPTURE_SECRET, because that one writes.
+[functions.mandi-insight]
+verify_jwt = false

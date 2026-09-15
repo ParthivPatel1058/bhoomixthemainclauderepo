@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import Navigation from '@/components/Navigation';
 import BackButton from '@/components/BackButton';
 import { useLanguage } from '@/contexts/LanguageContext';
+import PriceInsightSheet from '@/components/mandi/PriceInsightSheet';
 import { useMandiPrices } from '@/hooks/useMandiPrices';
 import { IndianRupee, Search, TrendingUp, KeyRound, Loader2, ExternalLink } from 'lucide-react';
 
@@ -29,6 +30,8 @@ export default function MandiPrices() {
   const { tx } = useLanguage();
   const [state, setState] = useState('Madhya Pradesh');
   const [commodity, setCommodity] = useState('');
+  /** The rate a farmer tapped, opened as an analytics sheet. */
+  const [selected, setSelected] = useState<{ commodity: string; price: number } | null>(null);
   const [query, setQuery] = useState('');
   // Filtering by commodity server-side rather than client-side: the API caps a
   // response at `limit`, so narrowing here is what surfaces a farmer's crop in
@@ -189,9 +192,12 @@ export default function MandiPrices() {
                 </p>
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((p, i) => (
-                    <article
+                    <button
+                      type="button"
                       key={`${p.market}-${p.commodity}-${p.variety}-${i}`}
-                      className="rounded-2xl border border-border bg-card p-5"
+                      onClick={() => setSelected({ commodity: p.commodity, price: p.modalPrice })}
+                      aria-label={tx('Price analysis for ', 'मूल्य विश्लेषण: ') + p.commodity}
+                      className="rounded-2xl border border-border bg-card p-5 text-left transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-floating focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     >
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -224,7 +230,10 @@ export default function MandiPrices() {
                           {tx('Variety', 'किस्म')}: {p.variety}
                         </p>
                       )}
-                    </article>
+                    <p className="mt-3 border-t border-border/60 pt-2 text-xs font-medium text-primary">
+                        {tx('Tap for price outlook →', 'मूल्य अनुमान देखें →')}
+                      </p>
+                    </button>
                   ))}
                 </div>
               </>
@@ -232,6 +241,12 @@ export default function MandiPrices() {
           </>
         )}
       </div>
+      <PriceInsightSheet
+        commodity={selected?.commodity ?? null}
+        state={state}
+        currentPrice={selected?.price}
+        onClose={() => setSelected(null)}
+      />
     </div>
   );
 }
