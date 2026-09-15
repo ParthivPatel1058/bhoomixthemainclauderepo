@@ -20,10 +20,14 @@
  * chat keeps working in the window between deploying this and setting them.
  *
  * POST { message?: string, image?: dataUrl, type?: 'text' | 'image', language?: 'en' | 'hi' }
+ *
+ * With type='image', `message` is optional: send it to ask a specific question
+ * about the frame (live camera), omit it for a generic diagnosis (photo upload).
  * ->   { reply: string }  |  { error: string }
  */
 
 import { corsHeaders as buildCorsHeaders, rateLimited, tooManyRequests } from '../_shared/http.ts';
+import { detectLanguage, isTranslatable, translateText } from '../_shared/sarvam.ts';
 
 /* This function runs with `verify_jwt = false` and spends NVIDIA quota on
    every call, so an open URL is an open budget. Twelve a minute is far more
@@ -89,13 +93,16 @@ type Parsed = {
   message?: string;
   image?: string;
   type?: 'text' | 'image';
-  language: 'en' | 'hi';
+  /** Any app language code — the UI's current language. */
+  language: string;
+  /** Detect the reply language from the message instead of trusting `language`. */
+  autoDetect: boolean;
 };
 
 function validate(raw: unknown): { error: string } | { parsed: Parsed } {
   if (!raw || typeof raw !== 'object') return { error: 'Invalid request body' };
 
-  const { message, image, type, language } = raw as Record<string, unknown>;
+  const { message, image, type, language, autoDetect } = raw as Record<string, unknown>;
 
   if (type !== undefined && type !== 'text' && type !== 'image') {
     return { error: 'Invalid type. Must be "text" or "image"' };
@@ -124,7 +131,10 @@ function validate(raw: unknown): { error: string } | { parsed: Parsed } {
       message: typeof message === 'string' ? message.trim() : undefined,
       image: typeof image === 'string' ? image : undefined,
       type: type as 'text' | 'image' | undefined,
-      language: language === 'hi' ? 'hi' : 'en',
+      /* Any Eighth Schedule code is allowed now. Unknown codes fall back to
+         English at the translation step rather than being rejected here. */
+      language: typeof language === 'string' && language.trim() ? language.trim() : 'en',
+      autoDetect: autoDetect !== false,
     },
   };
 }
@@ -148,8 +158,8 @@ const IDENTITY_HI =
   'Anthropic, Claude, OpenAI, ChatGPT, GPT, Google, Gemini, Meta, Llama, DeepSeek, NVIDIA, ' +
   'AgentRouter या किसी अन्य कंपनी, प्रदाता या मॉडल का नाम कभी न बताएं। ';
 
-function systemPromptFor(parsed: Parsed): string {
-  const isHindi = parsed.language === 'hi';
+function systemPromptFor(parsed: Parsed, modelLang: 'en' | 'hi'): string {
+  const isHindi = modelLang === 'hi';
   const identity = isHindi ? IDENTITY_HI : IDENTITY_EN;
 
   if (parsed.type === 'image') {
@@ -178,20 +188,27 @@ function systemPromptFor(parsed: Parsed): string {
 }
 
 /** OpenAI-compatible content: a plain string for text, a parts array for vision. */
-function userContentFor(parsed: Parsed) {
+function userContentFor(parsed: Parsed, modelLang: 'en' | 'hi', prompt?: string) {
   if (parsed.type === 'image' && parsed.image) {
-    const prompt =
-      parsed.language === 'hi'
+    /* A spoken question that arrives with the frame is the whole point of the
+       live-camera mode — "this is my crop, what do I do?" is more specific
+       than anything a fixed prompt can ask, so it wins when present. Callers
+       that send a photo alone (the crop-disease page) still get the original
+       wording, so their behaviour is unchanged. */
+    const fallback =
+      modelLang === 'hi'
         ? 'इस फसल की तस्वीर का विश्लेषण करें। केवल मुख्य बिंदुओं में संक्षिप्त जवाब दें।'
         : 'Analyze this crop image. Provide brief answer in key highlights only.';
 
+    const asked = prompt ?? parsed.message;
+
     return [
-      { type: 'text', text: prompt },
+      { type: 'text', text: asked && asked.length > 0 ? asked : fallback },
       { type: 'image_url', image_url: { url: parsed.image } },
     ];
   }
 
-  return parsed.message ?? '';
+  return prompt ?? parsed.message ?? '';
 }
 
 Deno.serve(async (req) => {
@@ -231,6 +248,41 @@ Deno.serve(async (req) => {
   if ('error' in checked) return json({ error: checked.error }, 400);
   const parsed = checked.parsed;
 
+  /* ---------------------------------------------------------------- */
+  /* Language routing                                                  */
+  /*                                                                   */
+  /* The farmer is answered in the language they actually used, not the*/
+  /* one the UI happens to be set to — someone browsing in English and */
+  /* typing "hi kaise ho" wants Hindi back. Sarvam identifies romanised*/
+  /* Hinglish as Hindi, which is the case that makes this worth doing. */
+  /*                                                                   */
+  /* The model itself is only ever asked in English or Hindi, the two  */
+  /* it answers well; everything else is translated on the way out.    */
+  /* ---------------------------------------------------------------- */
+  const sarvamKey = Deno.env.get('SARVAM_API_KEY');
+
+  let replyLang = parsed.language;
+
+  if (sarvamKey && parsed.autoDetect && parsed.message && parsed.message.length >= 4) {
+    const detected = await detectLanguage(parsed.message, sarvamKey);
+    if (detected) replyLang = detected;
+  }
+
+  if (!isTranslatable(replyLang)) replyLang = 'en';
+
+  /* English and Hindi go straight to the model. Everything else is asked in
+     English, because the advisory model's Marathi or Santali is far weaker
+     than Sarvam's translation of its English. */
+  const modelLang: 'en' | 'hi' = replyLang === 'hi' ? 'hi' : 'en';
+  const needsRoundTrip = Boolean(sarvamKey) && replyLang !== 'en' && replyLang !== 'hi';
+
+  let promptForModel = parsed.message;
+  if (needsRoundTrip && parsed.message && sarvamKey) {
+    const asEnglish = await translateText(parsed.message, replyLang, 'en', sarvamKey);
+    // A failed translation is not fatal: the model still sees the original.
+    if (asEnglish) promptForModel = asEnglish;
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -245,8 +297,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: systemPromptFor(parsed) },
-          { role: 'user', content: userContentFor(parsed) },
+          { role: 'system', content: systemPromptFor(parsed, modelLang) },
+          { role: 'user', content: userContentFor(parsed, modelLang, promptForModel) },
         ],
         max_tokens: 500,
         temperature: 0.6,
@@ -284,7 +336,22 @@ Deno.serve(async (req) => {
       return json({ error: 'The AI returned an empty response' }, 502);
     }
 
-    return json({ reply });
+    /* Back into the farmer's language. If Sarvam fails the English answer is
+       still returned — a readable answer in the wrong language beats an error
+       in the right one. `language` tells the client what it actually got, so
+       the browser speaks it with the matching voice. */
+    let outbound = reply;
+    let outboundLang: string = modelLang;
+
+    if (needsRoundTrip && sarvamKey) {
+      const translated = await translateText(reply, 'en', replyLang, sarvamKey);
+      if (translated) {
+        outbound = translated;
+        outboundLang = replyLang;
+      }
+    }
+
+    return json({ reply: outbound, language: outboundLang });
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
       console.error(provider.name, 'timed out after', TIMEOUT_MS, 'ms; model:', model);

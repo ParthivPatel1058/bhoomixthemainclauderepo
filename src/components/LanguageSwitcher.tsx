@@ -6,7 +6,8 @@ import { LANGUAGE_MAP } from '@/i18n/languages';
 
 /**
  * Opens the full language picker. This used to toggle straight between English
- * and Hindi, which no longer works now that there are 23 languages to reach.
+ * and Hindi, which no longer works now that there are 22 Indian languages plus
+ * English to reach.
  */
 const LanguageSwitcher = () => {
   const { language } = useLanguage();

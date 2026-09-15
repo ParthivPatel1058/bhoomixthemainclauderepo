@@ -41,9 +41,35 @@ export interface CropVisionResult {
 /* Internal helpers                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Only 'en' and 'hi' are understood server-side; anything else falls back. */
+/**
+ * `crop-vision` still authors its prompts in English and Hindi only, so its
+ * language argument is flattened. `kisan-ai-chat` no longer needs this — it
+ * takes any Eighth Schedule code and handles the translation itself.
+ */
 function normaliseLanguage(language: string): 'en' | 'hi' {
   return language === 'hi' ? 'hi' : 'en';
+}
+
+/**
+ * An advisory answer plus the language it is actually written in.
+ *
+ * `language` is not always the language that was requested: the function
+ * detects what the farmer typed and answers in that instead, so someone
+ * browsing in English who types "hi kaise ho" gets `language: 'hi'` back. The
+ * browser needs to know, or it speaks Hindi text with an English voice.
+ */
+export interface KisanReply {
+  reply: string;
+  language: string;
+}
+
+/**
+ * Older deployments of `kisan-ai-chat` answer with `{ reply }` alone. Falling
+ * back to the requested language keeps this client working against a function
+ * that has not been redeployed yet.
+ */
+function asKisanReply(data: { reply: string; language?: string }, requested: string): KisanReply {
+  return { reply: data.reply, language: data.language || requested };
 }
 
 /**
@@ -105,33 +131,73 @@ export async function analyzeCropImage(
 /* Kisan AI Chat (text + image)                                       */
 /* ------------------------------------------------------------------ */
 
-/** Send a text question to the Kisan advisory chat. */
-export async function kisanChat(message: string, language: string): Promise<string> {
-  const data = await invokeFunction<{ reply: string }>('kisan-ai-chat', {
+/**
+ * Send a text question to the Kisan advisory chat.
+ *
+ * `language` is the UI language, used only as a fallback — the function
+ * detects the language of `message` itself and answers in that.
+ */
+export async function kisanChat(message: string, language: string): Promise<KisanReply> {
+  const data = await invokeFunction<{ reply: string; language?: string }>('kisan-ai-chat', {
     message,
     type: 'text',
-    language: normaliseLanguage(language),
+    language,
+    autoDetect: true,
   });
 
-  return data.reply;
+  return asKisanReply(data, language);
 }
 
 /** Analyse a crop photo through the Kisan advisory chat. */
 export async function kisanImageAnalysis(
   imageDataUrl: string,
   language: string,
-): Promise<string> {
+): Promise<KisanReply> {
   if (!imageDataUrl.startsWith('data:image/')) {
     throw new Error('Image must be a base64 data URL');
   }
 
-  const data = await invokeFunction<{ reply: string }>('kisan-ai-chat', {
+  const data = await invokeFunction<{ reply: string; language?: string }>('kisan-ai-chat', {
     image: imageDataUrl,
     type: 'image',
-    language: normaliseLanguage(language),
+    language,
+    // Nothing was typed, so there is no text to detect from — honour the UI.
+    autoDetect: false,
   });
 
-  return data.reply;
+  return asKisanReply(data, language);
+}
+
+/**
+ * Ask a question *about* a camera frame.
+ *
+ * The live-camera advisory captures a still from the back camera and sends it
+ * with whatever the farmer just said, so the answer addresses the actual
+ * question ("is this ready to harvest?") rather than running a generic
+ * diagnosis. Falls back to a plain diagnosis prompt server-side when the
+ * question is empty.
+ */
+export async function kisanVisionChat(
+  imageDataUrl: string,
+  question: string,
+  language: string,
+): Promise<KisanReply> {
+  if (!imageDataUrl.startsWith('data:image/')) {
+    throw new Error('Image must be a base64 data URL');
+  }
+
+  const asked = question.trim();
+
+  const data = await invokeFunction<{ reply: string; language?: string }>('kisan-ai-chat', {
+    image: imageDataUrl,
+    message: asked || undefined,
+    type: 'image',
+    language,
+    // The spoken question carries the language signal when there is one.
+    autoDetect: asked.length > 0,
+  });
+
+  return asKisanReply(data, language);
 }
 
 /**

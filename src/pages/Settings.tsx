@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguagePicker from '@/components/LanguagePicker';
-import { LANGUAGE_MAP } from '@/i18n/languages';
+import { LANGUAGE_MAP, INDIAN_LANGUAGE_COUNT } from '@/i18n/languages';
+import ImageCredits from '@/components/ImageCredits';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUIPrefs } from '@/hooks/useUIPrefs';
 import Navigation from '@/components/Navigation';
@@ -144,7 +145,7 @@ const Settings = () => {
                               {LANGUAGE_MAP[language]?.native ?? language}
                             </span>
                             <span className="block text-sm text-muted-foreground">
-                              {tx('Tap to change — 23 languages available', 'बदलने के लिए टैप करें — 23 भाषाएँ उपलब्ध')}
+                              {tx(`Tap to change — ${INDIAN_LANGUAGE_COUNT} Indian languages + English`, `बदलने के लिए टैप करें — ${INDIAN_LANGUAGE_COUNT} भारतीय भाषाएँ + अंग्रेज़ी`)}
                             </span>
                           </span>
                           <Globe className="h-6 w-6 flex-shrink-0 text-primary" />
@@ -320,11 +321,15 @@ const Settings = () => {
                       <li>✅ AI-powered crop disease detection</li>
                       <li>✅ Quality agricultural products marketplace</li>
                       <li>✅ Quick grocery delivery</li>
-                      <li>✅ Multi-language support (23 Indian languages)</li>
+                      <li>✅ Multi-language support ({INDIAN_LANGUAGE_COUNT} Indian languages)</li>
                       <li>✅ Weather updates and farming tips</li>
                       <li>✅ Government schemes information</li>
                     </ul>
                   </div>
+
+                  {/* Required by the CC BY / BY-SA licences on a few catalogue
+                      photographs. Not optional decoration. */}
+                  <ImageCredits />
                 </CardContent>
               </Card>
             )}

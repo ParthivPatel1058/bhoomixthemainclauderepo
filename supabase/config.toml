@@ -17,8 +17,8 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "http://localhost:8080"
+additional_redirect_urls = ["http://localhost:8080", "http://localhost:3000"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
@@ -45,3 +45,13 @@ verify_jwt = true
 # UI translation runs before sign-in (the welcome screen is localised too).
 [functions.translate]
 verify_jwt = false
+
+# Synthesis costs money per call and is only reachable from the signed-in
+# advisory page, so require a JWT rather than leaving an open billable URL.
+[functions.sarvam-speech]
+verify_jwt = true
+
+# Transcription is billed per call and only reachable from the signed-in
+# advisory page, so require a JWT rather than leaving an open billable URL.
+[functions.sarvam-listen]
+verify_jwt = true

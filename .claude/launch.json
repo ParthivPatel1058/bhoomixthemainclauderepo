@@ -4,15 +4,11 @@
     {
       "name": "bhoomix-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 8080
-    },
-    {
-      "name": "template-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "cwd": "../evasion-ecommerce-template-wl-main",
-      "port": 3000
     }
   ]
 }

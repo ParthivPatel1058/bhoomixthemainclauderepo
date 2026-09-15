@@ -7,6 +7,7 @@
  * (catalog -> AgriMarket -> CartDrawer -> catalog) which crashed the app at
  * startup with "Cannot access 'AGRI_PRODUCTS' before initialization".
  */
+import { EXTRA_AGRI_PRODUCTS } from '@/data/agriCatalogExtra';
 import organicWheatSeeds from '@/assets/organic-wheat-seeds.jpg';
 import organicPaddySeeds from '@/assets/organic-paddy-seeds.jpg';
 import organicMaizeSeeds from '@/assets/organic-maize-seeds.jpg';
@@ -20,7 +21,6 @@ import organicSprayer from '@/assets/organic-sprayer.jpg';
 import manualWeeder from '@/assets/manual-weeder.jpg';
 import mulchSpreader from '@/assets/mulch-spreader.jpg';
 import compostMaker from '@/assets/compost-maker.jpg';
-import neemOil from '@/assets/neem-oil.jpg';
 
 export interface Product {
   id: number;
@@ -35,6 +35,10 @@ export interface Product {
   reviews: number;
   inStock: boolean;
   image: string;
+  /** Pre-discount price, shown struck through when `onSale` is set. */
+  mrp?: string;
+  /** Drives the ON SALE badge on the product card. */
+  onSale?: boolean;
 }
 
 export const AGRI_PRODUCTS: Product[] = [
@@ -226,61 +230,7 @@ export const AGRI_PRODUCTS: Product[] = [
     image: compostMaker
   },
 
-  // Pesticides
-  {
-    id: 15,
-    name: 'Neem Oil (Organic)',
-    nameHi: 'नीम तेल (जैविक)',
-    category: 'pesticides',
-    description: 'Natural pesticide. Safe for organic farming. Controls aphids, mites, and whiteflies.',
-    descriptionHi: 'प्राकृतिक कीटनाशक। जैविक खेती के लिए सुरक्षित। एफिड्स, माइट्स और व्हाइटफ्लाइज़ को नियंत्रित करता है।',
-    price: '₹280',
-    unit: '/liter',
-    rating: 4.7,
-    reviews: 567,
-    inStock: true,
-    image: neemOil
-  },
-  {
-    id: 16,
-    name: 'Chlorpyrifos 20% EC',
-    nameHi: 'क्लोरपाइरीफॉस 20% EC',
-    category: 'pesticides',
-    description: 'Broad-spectrum insecticide. Effective against termites, borers. For all crops.',
-    descriptionHi: 'व्यापक-स्पेक्ट्रम कीटनाशक। दीमक, बोरर के खिलाफ प्रभावी। सभी फसलों के लिए।',
-    price: '₹340',
-    unit: '/liter',
-    rating: 4.5,
-    reviews: 423,
-    inStock: true,
-    image: '🧪'
-  },
-  {
-    id: 17,
-    name: 'Mancozeb 75% WP (Fungicide)',
-    nameHi: 'मैनकोज़ेब 75% WP (फफूंदनाशी)',
-    category: 'pesticides',
-    description: 'Fungicide for leaf spot, blight, rust. Preventive action. Suitable for vegetables.',
-    descriptionHi: 'लीफ स्पॉट, ब्लाइट, रस्ट के लिए फफूंदनाशी। निवारक कार्रवाई। सब्जियों के लिए उपयुक्त।',
-    price: '₹450',
-    unit: '/kg',
-    rating: 4.6,
-    reviews: 312,
-    inStock: true,
-    image: '🧪'
-  },
-  {
-    id: 18,
-    name: '2,4-D Herbicide',
-    nameHi: '2,4-D हर्बीसाइड',
-    category: 'pesticides',
-    description: 'Selective herbicide for broadleaf weeds. Post-emergence application. For wheat, rice.',
-    descriptionHi: 'चौड़ी पत्ती वाले खरपतवार के लिए चयनात्मक हर्बीसाइड। उभरने के बाद आवेदन। गेहूं, चावल के लिए।',
-    price: '₹380',
-    unit: '/liter',
-    rating: 4.4,
-    reviews: 267,
-    inStock: true,
-    image: '🧪'
-  },
+  /* The researched fertiliser and seed catalogue. Kept in its own module so
+     this file stays a short list of the photographed legacy products. */
+  ...EXTRA_AGRI_PRODUCTS,
 ];

@@ -51,3 +51,21 @@ export const AUTHORED: ReadonlySet<string> = new Set(['en', 'hi']);
 export const isRTL = (code: string) => LANGUAGE_MAP[code]?.rtl === true;
 
 export const languageName = (code: string) => LANGUAGE_MAP[code]?.native ?? code;
+
+/**
+ * The 22 Eighth Schedule languages — everything in LANGUAGES except English.
+ *
+ * Derived rather than hand-counted: UI copy that claims a number must read it
+ * from here, or the claim drifts the moment a language is added or removed.
+ * English is excluded because it is not an Indian language for this purpose,
+ * which is exactly the distinction the older "23 Indian languages" copy lost.
+ */
+export const INDIAN_LANGUAGES: readonly LanguageMeta[] = LANGUAGES.filter(
+  (l) => l.code !== 'en',
+);
+
+/** How many Indian languages the app offers. Currently 22. */
+export const INDIAN_LANGUAGE_COUNT = INDIAN_LANGUAGES.length;
+
+/** Total pickable languages, including English. Currently 23. */
+export const TOTAL_LANGUAGE_COUNT = LANGUAGES.length;

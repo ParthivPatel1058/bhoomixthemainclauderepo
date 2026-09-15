@@ -24,6 +24,7 @@ import TubelightNavBar from '@/components/ui/tubelight-navbar';
 import Reveal, { RevealWords } from '@/components/Reveal';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
+import { INDIAN_LANGUAGE_COUNT } from '@/i18n/languages';
 
 /* Curated agriculture photography (Unsplash, verified). */
 const W = (id: string) => `https://images.unsplash.com/photo-${id}?w=900&q=80&auto=format&fit=crop`;
@@ -144,7 +145,7 @@ Smarter`, `स्मार्ट
           <Reveal immediate delay={1} from="right" className="w-[19rem]">
             <dl className="glass overflow-hidden rounded-lg">
               {([
-                { n: 23, suffix: '', l: tx('Indian languages, in their own script', '23 भारतीय भाषाएं, अपनी लिपि में') },
+                { n: INDIAN_LANGUAGE_COUNT, suffix: '', l: tx('Indian languages, in their own script', `${INDIAN_LANGUAGE_COUNT} भारतीय भाषाएं, अपनी लिपि में`) },
                 { v: tx('Daily', 'रोज़'), l: tx('Mandi rates from government open data', 'सरकारी ओपन डेटा से मंडी भाव') },
                 { v: '72h', l: tx('The PMFBY claim window, counted for you', 'पीएमएफबीवाई दावा समय, आपके लिए गिना गया') },
               ] as { n?: number; suffix?: string; v?: string; l: string }[]).map((row, i) => (

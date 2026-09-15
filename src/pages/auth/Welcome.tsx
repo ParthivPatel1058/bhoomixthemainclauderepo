@@ -4,6 +4,7 @@ import { Globe, Check, ArrowRight, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import BrandRipple from "@/components/BrandRipple";
 import BhoomixMark from "@/components/BhoomixMark";
+import { INDIAN_LANGUAGE_COUNT } from '@/i18n/languages';
 
 /** How long the launch animation plays before the route actually changes. */
 const LAUNCH_MS = 650;
@@ -34,7 +35,7 @@ export default function Welcome() {
 
   const points = [
     tx("Free crop disease scanning", "मुफ़्त फसल रोग जांच"),
-    tx("Available in 23 Indian languages", "23 भारतीय भाषाओं में उपलब्ध"),
+    tx(`Available in ${INDIAN_LANGUAGE_COUNT} Indian languages`, `${INDIAN_LANGUAGE_COUNT} भारतीय भाषाओं में उपलब्ध`),
     tx("No credit card required", "क्रेडिट कार्ड की ज़रूरत नहीं"),
   ];
 
