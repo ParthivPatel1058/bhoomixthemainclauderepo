@@ -8,11 +8,11 @@
  * terminates here and a second socket is opened upstream with the key.
  *
  *   supabase secrets set GEMINI_API_KEY=...
- *   supabase secrets set GEMINI_LIVE_MODEL=...        # optional
+ *   supabase secrets set GEMINI_LIVE_MODEL=...        # optional, pins the model
  *
  * Connect with the caller's Supabase access token in the query string:
  *
- *   wss://<project>.functions.supabase.co/gemini-live-relay?token=<jwt>
+ *   wss://<project>.functions.supabase.co/gemini-live-relay?token=<jwt>&lang=hi
  *
  * A browser cannot set an Authorization header on a WebSocket, which is why
  * the token travels as a query parameter and why this function runs with
@@ -30,22 +30,39 @@ const GEMINI_WS =
   'wss://generativelanguage.googleapis.com/ws/' +
   'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
 
-/** Overridable because Live model ids move faster than deploys. */
-const DEFAULT_MODEL = 'models/gemini-2.0-flash-live-001';
+/**
+ * Live model ids move faster than deploys, and which of them a given key is
+ * entitled to is not knowable from here. Rather than pin one and dead-end on a
+ * rejected handshake, each is tried in order until one accepts the setup
+ * frame. A name that no longer exists costs one failed handshake.
+ *
+ * Ordered best-sounding first: the native-audio dialog models produce markedly
+ * more natural speech than the older flash-live ones.
+ */
+const MODEL_CANDIDATES = [
+  'models/gemini-2.5-flash-preview-native-audio-dialog',
+  'models/gemini-live-2.5-flash-preview',
+  'models/gemini-2.0-flash-live-001',
+  'models/gemini-2.0-flash-exp',
+];
 
-/** Upstream must finish its handshake within this or we give up cleanly. */
-const UPSTREAM_OPEN_TIMEOUT_MS = 10_000;
+/** An explicit secret wins outright — no probing, no surprises. */
+function modelsToTry(): string[] {
+  const pinned = Deno.env.get('GEMINI_LIVE_MODEL');
+  return pinned ? [pinned] : MODEL_CANDIDATES;
+}
+
+/** Each candidate gets this long to acknowledge the setup frame. */
+const UPSTREAM_OPEN_TIMEOUT_MS = 8_000;
 
 /**
- * Frames queued while the upstream socket is still opening. A few hundred
+ * Frames queued while the upstream handshake is still in flight. A few hundred
  * milliseconds of 16 kHz PCM is a handful of frames; the cap exists so a
  * client that never stops talking cannot grow this without bound.
  */
 const MAX_PENDING_FRAMES = 200;
 
-/* The same identity guardrail the text advisory uses. Without it the model
-   introduces itself as Gemini, which contradicts every other surface. */
-/** Endonyms, so the instruction names each language the way its speakers do. */
+/** Endonyms, so the instruction names each language as its speakers do. */
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English', hi: 'Hindi', as: 'Assamese', bn: 'Bengali', brx: 'Bodo',
   doi: 'Dogri', gu: 'Gujarati', kn: 'Kannada', ks: 'Kashmiri', kok: 'Konkani',
@@ -88,7 +105,9 @@ function systemInstructionFor(hint: string | null): string {
     '   speaking Hindi and must be answered in Hindi, in Devanagari.',
     '4. If they switch language mid-conversation, switch with them immediately.',
     hinted
-      ? '5. Before anyone has spoken, assume ' + hinted + '. Abandon that assumption the moment you hear something else.'
+      ? '5. Before anyone has spoken, assume ' +
+        hinted +
+        '. Abandon that assumption the moment you hear something else.'
       : '',
     '',
     'MANNER:',
@@ -139,8 +158,8 @@ Deno.serve(async (req) => {
   /* Verified over REST rather than by decoding the JWT here: signature and
      expiry checking belongs to the auth server, and a relay that trusts a
      self-decoded token is a relay that trusts a forged one. */
-  const who = await fetch(`${supabaseUrl}/auth/v1/user`, {
-    headers: { Authorization: `Bearer ${token}`, apikey: anonKey },
+  const who = await fetch(supabaseUrl + '/auth/v1/user', {
+    headers: { Authorization: 'Bearer ' + token, apikey: anonKey },
   });
   if (!who.ok) return new Response('Invalid token', { status: 401 });
 
@@ -148,99 +167,31 @@ Deno.serve(async (req) => {
   /* Sockets                                                           */
   /* ---------------------------------------------------------------- */
   const { socket: client, response } = Deno.upgradeWebSocket(req);
-  const upstream = new WebSocket(`${GEMINI_WS}?key=${apiKey}`);
 
-  let upstreamReady = false;
+  let upstream: WebSocket | null = null;
   let closed = false;
   const pending: string[] = [];
 
-  const shutdown = (code: number, reason: string) => {
+  const shutdown = (reason: string) => {
     if (closed) return;
     closed = true;
-    // 1000/1001 are the only codes a browser may send; anything else throws.
-    const safe = code === 1000 || code === 1001 ? code : 1000;
     try {
-      if (client.readyState === WebSocket.OPEN) client.close(safe, reason.slice(0, 120));
+      // 1000 is the only code it is safe to hand a browser here.
+      if (client.readyState === WebSocket.OPEN) client.close(1000, reason.slice(0, 120));
     } catch {
       /* already closing */
     }
     try {
-      if (upstream.readyState === WebSocket.OPEN) upstream.close(1000, 'relay closed');
+      if (upstream && upstream.readyState === WebSocket.OPEN) upstream.close(1000, 'relay closed');
     } catch {
       /* already closing */
     }
   };
 
-  const openTimer = setTimeout(() => {
-    if (!upstreamReady) {
-      console.error('gemini-live-relay: upstream did not open in time');
-      shutdown(1011, 'Live service did not respond');
-    }
-  }, UPSTREAM_OPEN_TIMEOUT_MS);
-
-  upstream.onopen = () => {
-    upstreamReady = true;
-    clearTimeout(openTimer);
-
-    /* The setup frame is ours, not the client's — see the file header. */
-    upstream.send(
-      JSON.stringify({
-        setup: {
-          model: Deno.env.get('GEMINI_LIVE_MODEL') ?? DEFAULT_MODEL,
-          generationConfig: {
-            responseModalities: ['AUDIO'],
-            /* Left without a languageCode on purpose: pinning one forces every
-               reply into that language, which is the opposite of following the
-               farmer. The prompt does the language work instead. */
-            speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
-            },
-            temperature: 0.7,
-          },
-          systemInstruction: { parts: [{ text: systemInstructionFor(langHint) }] },
-          // Transcripts drive the on-screen captions in both directions.
-          inputAudioTranscription: {},
-          outputAudioTranscription: {},
-        },
-      }),
-    );
-
-    for (const frame of pending) {
-      try {
-        upstream.send(frame);
-      } catch {
-        /* socket died mid-drain; onclose will tear the pair down */
-      }
-    }
-    pending.length = 0;
-  };
-
-  upstream.onmessage = async (event) => {
-    if (client.readyState !== WebSocket.OPEN) return;
-    try {
-      // Gemini answers with Blob frames in Deno; the browser wants text.
-      const payload =
-        typeof event.data === 'string' ? event.data : await (event.data as Blob).text();
-      client.send(payload);
-    } catch (e) {
-      console.error('gemini-live-relay: downstream forward failed', e);
-    }
-  };
-
-  upstream.onerror = () => {
-    // The event carries no detail worth logging and none worth returning.
-    console.error('gemini-live-relay: upstream socket error');
-    shutdown(1011, 'Live service error');
-  };
-
-  upstream.onclose = (e) => {
-    clearTimeout(openTimer);
-    shutdown(1000, `upstream closed (${e.code})`);
-  };
-
+  /* Buffer whatever the client sends while the handshake is still in flight. */
   client.onmessage = (event) => {
     if (typeof event.data !== 'string') return; // media arrives base64 in JSON
-    if (upstreamReady && upstream.readyState === WebSocket.OPEN) {
+    if (upstream && upstream.readyState === WebSocket.OPEN) {
       try {
         upstream.send(event.data);
       } catch (e) {
@@ -248,16 +199,140 @@ Deno.serve(async (req) => {
       }
       return;
     }
-    // Still connecting: hold the newest frames, drop the oldest.
     if (pending.length >= MAX_PENDING_FRAMES) pending.shift();
     pending.push(event.data);
   };
+  client.onerror = () => shutdown('client socket error');
+  client.onclose = () => shutdown('client closed');
 
-  client.onerror = () => shutdown(1011, 'client socket error');
-  client.onclose = () => {
-    clearTimeout(openTimer);
-    shutdown(1000, 'client closed');
+  const setupBase = {
+    generationConfig: {
+      responseModalities: ['AUDIO'],
+      /* No languageCode on purpose: pinning one forces every reply into that
+         language, which is the opposite of following the farmer. The prompt
+         does the language work instead. */
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } } },
+      temperature: 0.7,
+    },
+    systemInstruction: { parts: [{ text: systemInstructionFor(langHint) }] },
+    // Transcripts drive the on-screen captions in both directions.
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
   };
+
+  /**
+   * Try one model. Resolves with the socket once the service acknowledges the
+   * setup frame, or null if it errors, closes, or stays silent.
+   *
+   * Frames arriving between the acknowledgement and the caller attaching its
+   * own handler are kept in `early` and replayed, so nothing is lost.
+   */
+  function tryModel(model: string): Promise<{ socket: WebSocket; early: string[] } | null> {
+    return new Promise((resolve) => {
+      let settled = false;
+      const early: string[] = [];
+      let ws: WebSocket;
+
+      try {
+        ws = new WebSocket(GEMINI_WS + '?key=' + apiKey);
+      } catch {
+        resolve(null);
+        return;
+      }
+
+      const finish = (value: { socket: WebSocket; early: string[] } | null) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (!value) {
+          try {
+            ws.close();
+          } catch {
+            /* never opened */
+          }
+        }
+        resolve(value);
+      };
+
+      const timer = setTimeout(() => finish(null), UPSTREAM_OPEN_TIMEOUT_MS);
+
+      ws.onopen = () => ws.send(JSON.stringify({ setup: { ...setupBase, model } }));
+
+      ws.onmessage = async (event) => {
+        const text =
+          typeof event.data === 'string' ? event.data : await (event.data as Blob).text();
+        if (settled) {
+          early.push(text);
+          return;
+        }
+        /* setupComplete is the only acknowledgement that the model exists and
+           that this key may use it; an unusable model closes instead. */
+        if (text.includes('setupComplete')) finish({ socket: ws, early });
+        else early.push(text);
+      };
+
+      ws.onerror = () => finish(null);
+      ws.onclose = () => finish(null);
+    });
+  }
+
+  /* Deliberately not awaited: the upgrade response must be returned now, and
+     the client buffers into `pending` until this resolves. */
+  (async () => {
+    const candidates = modelsToTry();
+    let chosen: { socket: WebSocket; early: string[] } | null = null;
+    let model = '';
+
+    for (const candidate of candidates) {
+      if (closed) return;
+      chosen = await tryModel(candidate);
+      if (chosen) {
+        model = candidate;
+        break;
+      }
+      console.error('gemini-live-relay: model unavailable, trying next:', candidate);
+    }
+
+    if (!chosen || closed) {
+      console.error('gemini-live-relay: no usable Live model from', candidates.join(', '));
+      shutdown('Live service unavailable');
+      return;
+    }
+
+    console.log('gemini-live-relay: connected using', model);
+    upstream = chosen.socket;
+
+    upstream.onmessage = async (event) => {
+      if (client.readyState !== WebSocket.OPEN) return;
+      try {
+        // Gemini answers with Blob frames in Deno; the browser wants text.
+        const payload =
+          typeof event.data === 'string' ? event.data : await (event.data as Blob).text();
+        client.send(payload);
+      } catch (e) {
+        console.error('gemini-live-relay: downstream forward failed', e);
+      }
+    };
+    upstream.onerror = () => {
+      console.error('gemini-live-relay: upstream socket error');
+      shutdown('Live service error');
+    };
+    upstream.onclose = (e) => shutdown('upstream closed (' + e.code + ')');
+
+    // Anything the service said during the handshake, then anything the farmer
+    // said while waiting for it.
+    for (const frame of chosen.early) {
+      if (client.readyState === WebSocket.OPEN) client.send(frame);
+    }
+    for (const frame of pending) {
+      try {
+        upstream.send(frame);
+      } catch {
+        /* socket died mid-drain; onclose tears the pair down */
+      }
+    }
+    pending.length = 0;
+  })();
 
   return response;
 });
