@@ -231,23 +231,27 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
     audioService.stopSpeaking();
 
     const session = new GeminiLiveSession();
-    const ok = await session.connect(stream, {
-      onStatus: (st) => {
-        setLiveStatus(st);
-        setPhase(st === 'speaking' ? 'speaking' : st === 'connecting' ? 'processing' : 'listening');
+    const ok = await session.connect(
+      stream,
+      {
+        onStatus: (st) => {
+          setLiveStatus(st);
+          setPhase(st === 'speaking' ? 'speaking' : st === 'connecting' ? 'processing' : 'listening');
+        },
+          onUserText: (t) => setTranscript(t),
+        onAssistantText: (t) => setAnswer(t),
+        onError: (msg) => {
+          setLiveNotice(msg);
+          setLiveMode(false);
+          setLiveStatus('idle');
+        },
+        onClose: () => {
+          setLiveMode(false);
+          setLiveStatus('idle');
+        },
       },
-      onUserText: (t) => setTranscript(t),
-      onAssistantText: (t) => setAnswer(t),
-      onError: (msg) => {
-        setLiveNotice(msg);
-        setLiveMode(false);
-        setLiveStatus('idle');
-      },
-      onClose: () => {
-        setLiveMode(false);
-        setLiveStatus('idle');
-      },
-    });
+      language,
+    );
 
     if (!ok) {
       // connect() already reported why; fall back to the turn-based path.
@@ -266,7 +270,7 @@ export const LiveCameraModal: React.FC<LiveCameraModalProps> = ({
       const frame = captureFrame();
       if (frame) session.sendVideoFrame(frame);
     }, 1000);
-  }, [captureFrame, setPhase, startBrowserAsr]);
+  }, [captureFrame, language, setPhase, startBrowserAsr]);
 
   const stopEverything = useCallback(() => {
     sessionActiveRef.current = false;

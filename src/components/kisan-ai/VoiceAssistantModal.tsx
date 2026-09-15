@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MicOff, Loader2 } from 'lucide-react';
+import { X, MicOff, Loader2, Radio } from 'lucide-react';
 import { BigAudioReactiveOrb } from './BigAudioReactiveOrb';
 import { audioService, isVoiceFallback, languageLabel } from './audioService';
 import { VoiceCapture } from './voiceCapture';
+import { GeminiLiveSession } from './geminiLive';
 import { VoiceStatus, SpokenAnswer } from './types';
 
 interface VoiceAssistantModalProps {
@@ -47,8 +48,16 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
   const [spokenLanguage, setSpokenLanguage] = useState<string | null>(null);
   const [unsupported, setUnsupported] = useState(false);
   const [usingBrowserAsr, setUsingBrowserAsr] = useState(false);
+  /**
+   * Live streams continuously instead of taking one question at a time. Off by
+   * default so the Sarvam path — which works without the relay deployed —
+   * stays what happens when nothing is configured.
+   */
+  const [liveMode, setLiveMode] = useState(false);
+  const [liveNotice, setLiveNotice] = useState<string | null>(null);
 
   const captureRef = useRef<VoiceCapture | null>(null);
+  const liveRef = useRef<GeminiLiveSession | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const statusRef = useRef<VoiceStatus>('idle');
   const sessionActiveRef = useRef(false);
@@ -170,6 +179,11 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     captureRef.current?.stop();
     captureRef.current = null;
 
+    liveRef.current?.close();
+    liveRef.current = null;
+    setLiveMode(false);
+    setLiveNotice(null);
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -187,6 +201,65 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     setUserTranscript('');
     setUsingBrowserAsr(false);
   }, []);
+
+  /**
+   * Swap between continuous Live streaming and the turn-based Sarvam path.
+   *
+   * Never both: they would compete for the microphone, and the recogniser
+   * would transcribe the assistant's own voice out of the speaker.
+   */
+  const toggleLive = useCallback(async () => {
+    setLiveNotice(null);
+
+    if (liveRef.current) {
+      liveRef.current.close();
+      liveRef.current = null;
+      setLiveMode(false);
+      setStatus('listening');
+      return;
+    }
+
+    const stream = audioService.getMicStream();
+    if (!stream) {
+      setLiveNotice('A microphone is needed for live mode.');
+      return;
+    }
+
+    captureRef.current?.stop();
+    captureRef.current = null;
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* already stopped */
+    }
+    recognitionRef.current = null;
+    audioService.stopSpeaking();
+
+    const session = new GeminiLiveSession();
+    const ok = await session.connect(
+      stream,
+      {
+        onStatus: (st) =>
+          setStatus(st === 'speaking' ? 'speaking' : st === 'connecting' ? 'processing' : 'listening'),
+        onUserText: (t) => setUserTranscript(t),
+        onAssistantText: (t) => setAiSpeechText(t),
+        onError: (msg) => {
+          setLiveNotice(msg);
+          setLiveMode(false);
+        },
+        onClose: () => setLiveMode(false),
+      },
+      language,
+    );
+
+    if (!ok) {
+      setLiveMode(false);
+      return;
+    }
+
+    liveRef.current = session;
+    setLiveMode(true);
+  }, [language, setStatus]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -281,7 +354,9 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
 
   const statusLabel: Record<VoiceStatus, string> = {
     idle: '',
-    listening: 'Listening — speak in any language',
+    listening: liveMode
+      ? 'Live — just talk, you can interrupt any time'
+      : 'Listening — speak in any language',
     processing: 'Thinking…',
     speaking: 'Speaking',
   };
@@ -308,6 +383,23 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
             {isVoiceFallback(chipLanguage) && ' · nearest voice'}
             {usingBrowserAsr && ' · basic mode'}
           </span>
+          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void toggleLive()}
+            aria-pressed={liveMode}
+            title={liveMode ? 'Stop live conversation' : 'Start live conversation'}
+            className={
+              'flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide transition-all active:scale-95 ' +
+              (liveMode
+                ? 'bg-red-500/90 text-white'
+                : 'bg-white/[0.06] text-white/70 hover:bg-white/15 hover:text-white')
+            }
+          >
+            <Radio className={'w-4 h-4 ' + (liveMode ? 'animate-pulse' : '')} />
+            Live
+          </button>
+
           <button
             type="button"
             onClick={onClose}
@@ -316,6 +408,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+          </div>
         </header>
 
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8">
@@ -339,6 +432,12 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
           </div>
 
           <div className="w-full max-w-lg text-center px-4 mt-auto mb-10 min-h-[74px] flex flex-col items-center justify-center">
+            {liveNotice && (
+              <p role="status" className="mb-2 text-xs text-amber-300">
+                {liveNotice}
+              </p>
+            )}
+
             {!unsupported && (
               <p className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest text-white/35 uppercase mb-2">
                 {voiceStatus === 'processing' && <Loader2 className="w-3 h-3 animate-spin" />}

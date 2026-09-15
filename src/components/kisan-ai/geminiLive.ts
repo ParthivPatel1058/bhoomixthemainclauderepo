@@ -112,7 +112,12 @@ export class GeminiLiveSession {
    * user, or the socket refused — so the caller can fall back rather than sit
    * on a dead connection.
    */
-  public async connect(stream: MediaStream, handlers: GeminiLiveHandlers = {}): Promise<boolean> {
+  public async connect(
+    stream: MediaStream,
+    handlers: GeminiLiveHandlers = {},
+    /** UI language, passed as an opening hint only — the spoken language wins. */
+    languageHint?: string,
+  ): Promise<boolean> {
     this.handlers = handlers;
     this.closed = false;
     this.setStatus('connecting');
@@ -131,9 +136,11 @@ export class GeminiLiveSession {
       this.fail('Live advisory is not configured.');
       return false;
     }
+    const query = new URLSearchParams({ token });
+    if (languageHint) query.set('lang', languageHint);
     const wsUrl =
       base.replace(/^http/, 'ws').replace('.supabase.co', '.functions.supabase.co') +
-      `/gemini-live-relay?token=${encodeURIComponent(token)}`;
+      `/gemini-live-relay?${query.toString()}`;
 
     const opened = await new Promise<boolean>((resolve) => {
       let settled = false;

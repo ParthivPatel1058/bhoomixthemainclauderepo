@@ -45,18 +45,70 @@ const MAX_PENDING_FRAMES = 200;
 
 /* The same identity guardrail the text advisory uses. Without it the model
    introduces itself as Gemini, which contradicts every other surface. */
-const SYSTEM_INSTRUCTION =
+/** Endonyms, so the instruction names each language the way its speakers do. */
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English', hi: 'Hindi', as: 'Assamese', bn: 'Bengali', brx: 'Bodo',
+  doi: 'Dogri', gu: 'Gujarati', kn: 'Kannada', ks: 'Kashmiri', kok: 'Konkani',
+  mai: 'Maithili', ml: 'Malayalam', mni: 'Manipuri', mr: 'Marathi',
+  ne: 'Nepali', or: 'Odia', pa: 'Punjabi', sa: 'Sanskrit', sat: 'Santali',
+  sd: 'Sindhi', ta: 'Tamil', te: 'Telugu', ur: 'Urdu',
+};
+
+/* The identity guardrail the text advisory uses. Without it the model
+   introduces itself as Gemini, contradicting every other surface. */
+const IDENTITY =
   'Your name is BhoomiX AgriNova, an AI assistant trained by BhoomiX for Indian agriculture. ' +
   'If anyone asks what model, AI, LLM, or company you are, who built or trained you, or which ' +
   'technology powers you, you must ONLY reply that you are trained by BhoomiX AgriNova. ' +
   'Never mention Anthropic, Claude, OpenAI, ChatGPT, GPT, Google, Gemini, Meta, Llama, DeepSeek, ' +
-  'NVIDIA, Sarvam, or any other company, provider, gateway or model name.\n\n' +
-  'You are an expert agricultural advisor helping Indian farmers. The farmer may point a camera ' +
-  'at a crop and ask about it. Answer in the SAME language the farmer speaks — if they speak ' +
-  'Hindi, answer in Hindi; if Kannada, answer in Kannada. Keep answers short and practical, two ' +
-  'or three sentences, because they are being listened to and not read. When you are shown a ' +
-  'plant, say what you can actually see; if the image is too dark or blurred to judge, say so ' +
-  'and ask for a closer look rather than guessing at a disease.';
+  'NVIDIA, Sarvam, or any other company, provider, gateway or model name.';
+
+/**
+ * Build the session prompt.
+ *
+ * `hint` is the language the interface is set to. It is offered only as a
+ * tie-breaker for the opening moments, before anyone has spoken: the rule that
+ * matters is to follow the language actually heard. A farmer browsing in
+ * English who speaks Marathi must be answered in Marathi, and pinning the
+ * session to the UI language is precisely the bug this replaces.
+ */
+function systemInstructionFor(hint: string | null): string {
+  const hinted = hint && LANGUAGE_NAMES[hint] ? LANGUAGE_NAMES[hint] : null;
+
+  const lines = [
+    IDENTITY,
+    '',
+    'You are an expert agricultural advisor for Indian farmers, speaking with them live.',
+    '',
+    'LANGUAGE. This matters more than anything else here:',
+    '1. Detect the language the farmer is SPEAKING and reply in that same language, using that',
+    '   script. Never answer in a language they did not use.',
+    '2. Expect any of: ' + Object.values(LANGUAGE_NAMES).join(', ') + '.',
+    '3. Romanised speech still counts. Someone saying "mera gehun kharab ho raha hai" is',
+    '   speaking Hindi and must be answered in Hindi, in Devanagari.',
+    '4. If they switch language mid-conversation, switch with them immediately.',
+    hinted
+      ? '5. Before anyone has spoken, assume ' + hinted + '. Abandon that assumption the moment you hear something else.'
+      : '',
+    '',
+    'MANNER:',
+    '- Two or three sentences. This is being listened to, not read.',
+    '- Plain spoken language. No markdown, no bullet points, no headings.',
+    '- Give the practical step first, the reason after.',
+    '- Use the units a farmer uses: acre, bigha, quintal, kg per acre.',
+    '',
+    'WHEN SHOWN A CROP:',
+    '- Say what you can actually see before naming anything.',
+    '- If the image is dark, blurred, or too far away to judge, say so and ask them to move',
+    '  closer or into better light. Never guess a disease from an image you cannot read.',
+    '- Mention what is NOT wrong when that is reassuring.',
+    '',
+    'Never recommend a specific pesticide product or dose. For pest control, tell them to',
+    'confirm with their local Krishi Vigyan Kendra.',
+  ];
+
+  return lines.filter(Boolean).join('\n');
+}
 
 Deno.serve(async (req) => {
   const apiKey = Deno.env.get('GEMINI_API_KEY');
@@ -74,6 +126,7 @@ Deno.serve(async (req) => {
   /* ---------------------------------------------------------------- */
   const url = new URL(req.url);
   const token = url.searchParams.get('token');
+  const langHint = url.searchParams.get('lang');
   if (!token) return new Response('Missing token', { status: 401 });
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -134,8 +187,17 @@ Deno.serve(async (req) => {
       JSON.stringify({
         setup: {
           model: Deno.env.get('GEMINI_LIVE_MODEL') ?? DEFAULT_MODEL,
-          generationConfig: { responseModalities: ['AUDIO'] },
-          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+          generationConfig: {
+            responseModalities: ['AUDIO'],
+            /* Left without a languageCode on purpose: pinning one forces every
+               reply into that language, which is the opposite of following the
+               farmer. The prompt does the language work instead. */
+            speechConfig: {
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
+            },
+            temperature: 0.7,
+          },
+          systemInstruction: { parts: [{ text: systemInstructionFor(langHint) }] },
           // Transcripts drive the on-screen captions in both directions.
           inputAudioTranscription: {},
           outputAudioTranscription: {},
